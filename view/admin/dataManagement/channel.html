@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+    <link href="/time/daterangepicker.css" rel="stylesheet">
+    <style>
+        table {
+            table-layout: fixed;
+        }
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="btn-group hidden-xs form-inline">
+                            <div class="form-group">
+                                <input type="text" value="{$demo}" id="demo" readonly class="form_datetime form-control input-outline" style="width:190px;">
+                            </div>
+                            <div class="form-group">
+                                <button type="button" class="btn btn-outline btn-success" id="search">
+                                    <i aria-hidden="true"></i>搜索
+                                </button>
+                            </div>
+                            <div class="form-group">
+                                <button type="button" class="btn btn-outline btn-success" id="daochu">
+                                    <i aria-hidden="true"></i>导出
+                                </button>
+                            </div>
+                        </div>
+                        <div class="example">
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center" >日期</th>
+                                    <th class="text-center">日活</th>
+                                    <th class="text-center">新增</th>
+                                    <th class="text-center">新增充值总金额</th>
+                                    <th class="text-center">新增充值人数</th>
+                                    <th class="text-center">新增充值率</th>
+                                    <th class="text-center">充值总金额</th>
+                                    <th class="text-center">充值人数</th>
+                                    <th class="text-center">充值率</th>
+                                    <th class="text-center">ARPU</th>
+                                    <th class="text-center">ARPPU</th>
+                                    <th class="text-center">留存</th>
+                                    <th class="text-center">付费留存</th>
+                                    <th class="text-center">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($list)"}
+                                {volist name="list" id="data"}
+                                <tr>
+                                    <td class="text-center riq" id="riq" >{$data.riq}</td>
+                                    <td class="text-center">{$data.rih}</td>
+                                    <td class="text-center">{$data.xinz}</td>
+                                    <td class="text-center">{$data.nczzje}</td>
+                                    <td class="text-center nczrs">{$data.nczrs}</td>
+                                    <td class="text-center">{$data.nczl}%</td>
+                                    <td class="text-center">{$data.czzje}</td>
+                                    <td class="text-center" >{$data.czrs}</td>
+                                    <td class="text-center">{$data.czl}%</td>
+                                    <td class="text-center">{$data.arpu}</td>
+                                    <td class="text-center">{$data.arppu}</td>
+                                    <td class="text-center">{$data.retained}%</td>
+                                    <td class="text-center">{$data.topup}%</td>
+                                    <td class="text-center">
+                                        <button  class="btn btn-primary channellist2">
+                                                详情
+                                        </button>
+                                    </td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="9" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page > 1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+<!--查看留存详情-->
+<div class="modal fade" id="selectRate">
+    <div class="modal-dialog" style="width:80%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>详情</h3>
+            </div>
+            <table class="table table-hover table-responsive" id="select_forum_reply_table">
+                <thead>
+                <tr>
+                    <th class="text-center">昨日注册登录用户</th>
+                    <th class="text-center">昨日用户今天留存</th>
+                    <th class="text-center">相差</th>
+                </tr>
+                </thead>
+                <tbody id="member_tbody">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{include file="../view/admin/common/userItem.html"}
+<input type="hidden" value="{$token}" id="token">
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$user_role_menu_input}" id="user_role_menu">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script src="/admin/js/fileinput/fileinput.js" type="text/javascript"></script>
+<script src="/admin/js/fileinput/zh.js" type="text/javascript"></script>
+<script src="/admin/js/plugins/toastr/toastr.min.js"></script>
+<script src="/time/moment.min.js"></script>
+<script src="/time/daterangepicker.min.js"></script>
+<script src="/admin/js/date-select.js"></script>
+<style>
+</style>
+<script>
+    $('.nczrs').click(function () {
+        var rqi = $(this).prevAll('.riq').text();
+        $.ajax({
+            type: "get",    //请求类型
+            url: "/admin/channelPay",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data:{token:$('#token').val(),master_url:'/admin/channelPay',rqi:rqi},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                // toastr.success(rs.msg);
+                // setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+    })
+    $('.nczrs').click(function () {
+        var rqi = $(this).prevAll('.riq').text();
+        var token = $('#token').val();
+        window.location.href = "/admin/channelPay?token=" + token + '&master_url=/admin/channelPay&riq=' + rqi;
+    })
+
+    $(document).on('click','.channellist2',function () {
+        window.location.href = "/admin/channellist2?token=" + $("#token").val()  + '&master_url=/admin/channellist2'+'&demo=' + $('#demo').val();
+    })
+    $('body').on('hidden.bs.modal', '#selectRate', function () {
+        $("#member_tbody tr").remove();
+    });
+
+
+    $('#search').click(function () {
+        var token = $('#token').val();
+        var page = $("#page").val();
+        window.location.href = "/admin/channel?token=" + token + '&master_url=/admin/channel&page='+ page +'&demo=' + $('#demo').val();
+    })
+
+</script>
+</body>
+</html>

@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    <script type="text/javascript" src="/admin/layui/layui.js"></script>
+    <link rel="stylesheet" href="/admin/layui/css/layui.css">
+    <script type="text/javascript" src="/admin/js/echarts.js"></script>
+    <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <style>
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body class="gray-bg">
+
+<style>
+    .top-panel {
+        border: 1px solid #eceff9;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+    .top-panel > .layui-card-body {
+        height: 60px;
+    }
+
+    .top-panel-number {
+        line-height: 60px;
+        font-size: 30px;
+        border-right: 1px solid #eceff9;
+    }
+
+    .top-panel-tips {
+        line-height: 30px;
+        font-size: 12px
+    }
+</style>
+<div class="layui-fluid">
+    <div class="layuimini-main welcome">
+        <div class="layui-row layui-col-space15">
+            <div class="layui-col-xs12 layui-col-md4">
+
+                <div class="layui-card top-panel">
+                    <div class="layui-card-header">今日充值</div>
+                    <div class="layui-card-body">
+                        <div class="layui-row layui-col-space5">
+                            <div class="layui-col-xs6 layui-col-md6 top-panel-number">
+                                {$current_user_status['charge']['total']}
+                            </div>
+                            <div class="layui-col-xs6 layui-col-md6 top-panel-tips">
+                                市场: <a style="color: #1aa094">{$current_user_status['charge']['market']}</a>
+                                Koc: <a style="color: #1aa094">{$current_user_status['charge']['koc']}</a>
+                                1v1: <a style="color: #1aa094">{$current_user_status['charge']['1v1']}</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="layui-col-xs12 layui-col-md4">
+
+                <div class="layui-card top-panel">
+                    <div class="layui-card-header">今日活跃</div>
+                    <div class="layui-card-body">
+                        <div class="layui-row layui-col-space5">
+                            <div class="layui-col-xs6 layui-col-md6 top-panel-number">
+                                {$current_user_status['active']['total']}
+                            </div>
+                            <div class="layui-col-xs6 layui-col-md6 top-panel-tips">
+                                市场: <a style="color: #1aa094">{$current_user_status['active']['market']}</a>
+                                Koc: <a style="color: #1aa094">{$current_user_status['active']['koc']}</a>
+                                1v1: <a style="color: #1aa094">{$current_user_status['active']['1v1']}</a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+            <div class="layui-col-xs12 layui-col-md4">
+
+                <div class="layui-card top-panel">
+                    <div class="layui-card-header">今日注册</div>
+                    <div class="layui-card-body">
+                        <div class="layui-row layui-col-space5">
+                            <div class="layui-col-xs6 layui-col-md6 top-panel-number">
+                                {$current_user_status['register']['total']}
+                            </div>
+                            <div class="layui-col-xs6 layui-col-md6 top-panel-tips">
+                                市场: <a style="color: #1aa094">{$current_user_status['register']['market']}</a>
+                                Koc: <a style="color: #1aa094">{$current_user_status['register']['koc']}</a>
+                                1v1: <a style="color: #1aa094">{$current_user_status['register']['1v1']}</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+        <div class="layui-row layui-col-space15">
+            <div class="layui-col-xs12 layui-col-md6">
+                <div class="layui-card top-panel">
+                    <div id="main3" style="width: 100%;height:300px;"></div>
+                    <script type="text/javascript">
+
+                        var chartDom = document.getElementById('main3');
+                        var myChart = echarts.init(chartDom);
+                        var option;
+
+                        option = {
+                            title: {
+                                text: '每日充值(点击查看更多...)',
+                                subtext: ''
+                            },
+                            tooltip: {
+                                trigger: 'axis',
+                                axisPointer: {
+                                    type: 'cross'
+                                }
+                            },
+                            toolbox: {
+                                show: false,
+                                feature: {
+                                    saveAsImage: {}
+                                }
+                            },
+                            xAxis: {
+                                type: 'category',
+                                boundaryGap: false,
+                                // prettier-ignore
+                                //data: ['11-01', '11-02', '11-03', '11-04', '11-05', '11-06', '11-07', '11-08', '11-09','11-10','11-11','11-12','11-13','11-14','11-15']
+                                data: JSON.parse('<?php echo json_encode($dateList); ?>')
+
+                            },
+                            yAxis: {
+                                type: 'value',
+                                axisLabel: {
+                                    formatter: '{value} W'
+                                },
+                                axisPointer: {
+                                    snap: true
+                                }
+                            },
+                            visualMap: {
+                                show: false,
+                                dimension: 0,
+                                pieces: [
+                                    {
+                                        lte: 6,
+                                        color: 'green'
+                                    },
+                                    {
+                                        gt: 6,
+                                        lte: 8,
+                                        color: 'red'
+                                    },
+                                    {
+                                        gt: 8,
+                                        lte: 14,
+                                        color: 'green'
+                                    },
+                                    {
+                                        gt: 14,
+                                        lte: 17,
+                                        color: 'red'
+                                    },
+                                    {
+                                        gt: 17,
+                                        color: 'green'
+                                    }
+                                ]
+                            },
+                            series: [
+                                {
+                                    name: 'number',
+                                    type: 'line',
+                                    smooth: true,
+                                    // prettier-ignore
+                                    //data: [300, 280, 250, 260, 270, 300, 550, 500, 400, 390, 380, 390,300, 550, 500],
+                                    data: JSON.parse('<?php echo json_encode($chargeList); ?>'),
+                                    markArea: {
+                                        itemStyle: {
+                                            color: 'rgba(255, 173, 177, 0.4)'
+                                        },
+
+                                    }
+                                }
+                            ]
+                        };
+
+                        option && myChart.setOption(option);
+                        myChart.on('click', function (params) {
+                            var url = "/admin/userchargeDetail?master_url=/admin/userchargeDetail&current_date=" + params.name + "&token={$token}"
+                            $("#trigger").attr("href", url);
+                            $("#trigger").trigger("click");
+                            return false;
+                        })
+                    </script>
+                </div>
+            </div>
+            <div style="display: none" id="trigger" title="充值维度图表" href="" onclick="mydianji(this)">查看图表</div>
+            <div class="layui-col-xs12 layui-col-md6">
+                <div class="layui-card top-panel">
+                    <div id="main1" style="width: 100%;height:300px;"></div>
+                    <script>
+                        var chartDom = document.getElementById('main1');
+                        var myChart = echarts.init(chartDom);
+                        var option;
+
+                        option = {
+                            title: {
+                                text: '15日渠道充值',
+                                subtext: '',
+                                left: 'center'
+                            },
+                            tooltip: {
+                                trigger: 'item'
+                            },
+                            legend: {
+                                orient: 'vertical',
+                                left: 'left'
+                            },
+                            series: [
+                                {
+                                    name: 'Access From',
+                                    type: 'pie',
+                                    radius: '50%',
+                                    /* data: [
+                                         { value: 1048, name: 'appStore' },
+                                         { value: 735, name: 'KKOC' },
+                                         { value: 580, name: 'Vivo' },
+                                         { value: 484, name: 'GW' },
+                                         { value: 484, name: 'HuaWei' },
+                                         { value: 484, name: 'XiaoMi' }
+                                     ],*/
+
+                                    data: JSON.parse('<?php echo json_encode($channelChargeList); ?>'),
+                                    emphasis: {
+                                        itemStyle: {
+                                            shadowBlur: 10,
+                                            shadowOffsetX: 0,
+                                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                        }
+                                    }
+                                }
+                            ]
+                        };
+
+                        option && myChart.setOption(option);
+                    </script>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="layui-row layui-col-space15">
+            <div class="layui-col-xs12 layui-col-md6">
+                <div class="layui-card top-panel">
+                    <!--每日注册量-->
+
+                    <div id="main8" style="width: 100%;height:300px;"></div>
+
+                    <script>
+
+                        var app = {};
+
+                        var chartDom = document.getElementById('main8');
+                        var myChart = echarts.init(chartDom);
+                        var option;
+
+                        option = {
+                            legend: {},
+                            tooltip: {},
+                            title: {
+                                text: '7日注册量',
+                                subtext: ''
+                            },
+                            dataset: {
+                                //dimensions: ['product', '1101', '1102', '1103','1104','1105','1106','1107'],
+                                dimensions: JSON.parse('<?php echo json_encode($weekList); ?>'),
+                                /* source: [
+                                     { product: '注册量', 1101: 43.3, 1102: 85.8, 1103: 93.7,1104: 93.7 ,1105: 93.7 ,1106: 93.7 ,1107: 93.7  },
+                                     { product: '日活量', 1101: 43.3, 1102: 85.8, 1103: 93.7,1104: 93.7 ,1105: 93.7 ,1106: 93.7 ,1107: 93.7 },
+                                     { product: '充值量', 1101: 43.3, 1102: 85.8, 1103: 93.7,1104: 93.7 ,1105: 93.7 ,1106: 93.7 ,1107: 93.7 },
+                                 ]*/
+                                source: JSON.parse('<?php echo json_encode($week_source); ?>')
+                            },
+                            xAxis: {type: 'category'},
+                            yAxis: {},
+                            // Declare several bar series, each will be mapped
+                            // to a column of dataset.source by default.
+                            series: [{type: 'bar'}, {type: 'bar'}, {type: 'bar'}, {type: 'bar'}, {type: 'bar'}, {type: 'bar'}, {type: 'bar'}]
+                        };
+
+                        option && myChart.setOption(option);
+                    </script>
+
+
+                </div>
+            </div>
+            <div class="layui-col-xs12 layui-col-md6">
+                <div class="layui-card top-panel">
+                    <!--7日渠道注册-->
+                    <div id="main4" style="width: 100%;height:300px;"></div>
+                    <script>
+                        var chartDom = document.getElementById('main4');
+                        var myChart = echarts.init(chartDom);
+                        var option;
+
+                        option = {
+                            title: {
+                                text: '7日渠道注册',
+                                subtext: '',
+                                left: 'center'
+                            },
+                            tooltip: {
+                                trigger: 'item'
+                            },
+                            legend: {
+                                orient: 'vertical',
+                                left: 'left'
+                            },
+                            series: [
+                                {
+                                    name: 'Access From',
+                                    type: 'pie',
+                                    radius: '50%',
+                                    data: JSON.parse('<?php echo json_encode($channelRegisterList); ?>'),
+                                    emphasis: {
+                                        itemStyle: {
+                                            shadowBlur: 10,
+                                            shadowOffsetX: 0,
+                                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                        }
+                                    }
+                                }
+                            ]
+                        };
+
+                        option && myChart.setOption(option);
+                    </script>
+                </div>
+            </div>
+        </div>
+
+
+       <!-- <div class="layui-row layui-col-space15">
+            <div class="layui-col-xs12 layui-col-md12">
+                <div class="layui-card top-panel">
+                    <div id="main5" style="width: 100%;height:300px;"></div>
+                    <script>
+                        var chartDom = document.getElementById('main5');
+                        var myChart = echarts.init(chartDom);
+                        var option;
+
+                        option = {
+                            title: {
+                                text: '用户留存'
+                            },
+                            tooltip: {
+                                trigger: 'axis'
+                            },
+                            legend: {
+                                data: ['30日留存', '15日留存', '7日留存', '3日留存', '1日留存']
+                            },
+                            grid: {
+                                left: '3%',
+                                right: '4%',
+                                bottom: '3%',
+                                containLabel: true
+                            },
+                            toolbox: {
+                                show: false,
+                                feature: {
+                                    saveAsImage: {}
+                                }
+                            },
+                            xAxis: {
+                                type: 'category',
+                                boundaryGap: false,
+                                //data: ['5月', '6月', '7月', '8月', '9月', '10月', '11月']
+                                data: JSON.parse('<?php echo json_encode($keepMonthsList); ?>')
+                            },
+                            yAxis: {
+                                type: 'value'
+                            },
+                            series: [
+                                {
+                                    name: '30日留存',
+                                    type: 'line',
+                                    data: JSON.parse('<?php echo json_encode($keep30VagList); ?>')
+                                },
+                                {
+                                    name: '15日留存',
+                                    type: 'line',
+                                    data: JSON.parse('<?php echo json_encode($keep15VagList); ?>')
+                                },
+                                {
+                                    name: '7日留存',
+                                    type: 'line',
+                                    data: JSON.parse('<?php echo json_encode($keep7VagList); ?>')
+                                },
+                                {
+                                    name: '3日留存',
+                                    type: 'line',
+                                    data: JSON.parse('<?php echo json_encode($keep3VagList); ?>')
+                                },
+                                {
+                                    name: '1日留存',
+                                    type: 'line',
+                                    //data: [120, 132, 101, 134, 90, 230, 210]
+                                    data: JSON.parse('<?php echo json_encode($keep1VagList); ?>')
+                                }
+                            ]
+                        };
+
+                        option && myChart.setOption(option);
+
+                    </script>
+                </div>
+            </div>
+        </div>-->
+
+        <!--用户留存图表 -->
+        <div class="layui-row layui-col-space15">
+            <div class="layui-col-xs12 layui-col-md12">
+                <div class="layui-tab-content">
+                    <div class="layui-tab-item layui-show">
+                        <iframe scrolling="yes" style="width:100%;height:400px" name="main" frameborder="0" src="/admin/userkeepList?master_url=/admin/userkeepList&token={$token}"></iframe>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+        <!--用户城市分布图 -->
+        <div class="layui-row layui-col-space15">
+            <div class="layui-col-xs12 layui-col-md12">
+                <div class="layui-tab-content">
+                    <div class="layui-tab-item layui-show">
+                        <iframe scrolling="yes" style="width:100%;height:600px" name="main" frameborder="0" src="/admin/registeruserprovince?master_url=/admin/registeruserprovince&token={$token}"></iframe>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+        <!--房间消费分布图 -->
+        <div class="layui-row layui-col-space15">
+            <div class="layui-col-xs12 layui-col-md12">
+                <div class="layui-tab-content">
+                    <div class="layui-tab-item layui-show">
+                        <iframe scrolling="yes" style="width:100%;height:400px" name="main" frameborder="0" src="/admin/roomConsumeList?master_url=/admin/roomConsumeList&token={$token}"></iframe>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<script>
+
+    function mydianji(this_x) {
+        parent.childMenu(this_x);
+    }
+
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/admin/layui/css/layui.css" media="all">
+    <script src="/admin/js/jquery.min.js"></script>
+    <script src="/admin/js/xm-select.js"></script>
+    <style>
+        .layui-table-cell {
+            height: auto;
+            overflow: visible;
+            text-overflow: inherit;
+            white-space: normal;
+        }
+    </style>
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+</head>
+<body>
+
+<div style="padding:5px;">
+    <div class="demoTable">
+        <form class="layui-form" onsubmit="return false;" id="myformsearch">
+            {if condition="in_array('/admin/asaComeRoomList',$user_role_menu)"}
+            <button class="layui-btn layui-btn-warm J_menuItem" title="ASA引流配置配置"   href="/admin/asaComeRoomList?master_url=/admin/asaComeRoomList&token={$token}">ASA引流配置</button>
+            {/if}
+            <div class="layui-input-inline">
+                <input type="text" name="date" id="date_b" lay-verify="date" placeholder="日期开始" autocomplete="off"
+                       class="layui-input" value="{$date_b}">
+            </div>
+            <div class="layui-input-inline">
+                <input type="text" name="date" id="date_e" lay-verify="date" placeholder="日期结束" autocomplete="off"
+                       class="layui-input" value="{$date_e}">
+            </div>
+
+            <div class="layui-inline">
+                <select name="s_type" lay-verify="required" lay-search="" id="s_type">
+                    <option value="">=选择类型=</option>
+                    <option value="ios_channel">Ios推广渠道</option>
+                    <option value="huawei_channel">HuaWei推广渠道</option>
+                </select>
+            </div>
+            <button class="layui-btn" data-type="reload">搜索</button>
+            <button type="button" class="layui-btn layui-btn-normal" onclick="exportdata()">导出</button>
+        </form>
+    </div>
+    <blockquote class="layui-elem-quote" style="margin-bottom:0px">
+        <button class="layui-btn layui-btn-primary layui-border-black" id="sum_register_number"></button>
+        <button class="layui-btn layui-btn-primary layui-border-black" id="sum_charge_number"></button>
+        <button class="layui-btn layui-btn-primary layui-border-black" id="sum_charge_amount"></button>
+    </blockquote>
+    <table id="datatable" lay-filter="test"></table>
+</div>
+
+<script src="/admin/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+<script>
+
+    layui.use(['table', 'form', 'layer', 'laydate', 'jquery'], function () {
+
+        var $ = layui.jquery
+            , form = layui.form
+            , laydate = layui.laydate
+            , table = layui.table;
+
+        //日期
+        laydate.render({
+            elem: '#date_b'
+        });
+
+        laydate.render({
+            elem: '#date_e'
+        });
+
+
+        table.render({
+            elem: '#datatable'
+            , totalRow: true
+            //, height: 420
+            //, toolbar: '#addTemplate' //开启头部工具栏，并为其绑定左侧模板
+            , url: '/admin/asapromotedataList?master_url=/admin/asapromotedataList&token={$token}&isRequest=1' //数据接口
+            , page: true //开启分页
+            , cols: [[ //表头
+                {field: 'id', title: 'ID',width:'4%',hide:true}
+                , {field: 'room_id', title: '房间ID',width:'5%'}
+                , {field: 'room_name_short', title: '房名',width:'5%',event: 'viewroomname'}
+                , {field: 'begin_time', title: '开始时间',width:'12%'}
+                , {field: 'end_time', title: '结束时间',width:'12%'}
+                , {field: 'type', title: '类型',width:'8%'}
+                , {field: 'register_user_number', title: '注册人数',width:'7%',event: 'showregisteruser'}
+                , {field: 'enter_user_number', title: '进厅人数',width:'7%',event: 'showenterroomuser'}
+                , {field: 'user_charge_number', title: '首日充值人',width:'7%',event: 'showchargedetail',templet: '#format_user_charge_number'}
+                , {field: 'user_charge_amount', title: '首日付费额',width:'7%'}
+                , {field: 'charge_rate', title: '当日付费率',width:'7%'}
+                , {field: 'user_charge_number_sum', title: '累计充值人',width:'7%'}
+                , {field: 'user_charge_amount_sum', title: '累计充值额',width:'7%'}
+                , {field: 'keep_2_rate', title: '次日留',width:'5%'}
+                , {field: 'keep_3_rate', title: '三日留',width:'5%'}
+            ]]
+            , id: 'tablereload'
+            , limits: [20, 50, 100]
+            , limit: 20 //每页默认显示的数量
+            , where: {}
+            , done: function (res, curr, count) {
+                $("#sum_register_number").html("累计注册人数:" + res['hz']['sum_register_number']);
+                $("#sum_charge_number").html("累计至今充值人数:" + res['hz']['sum_charge_number']);
+                $("#sum_charge_amount").html("累计至今充值金额:" + res['hz']['sum_charge_amount']);
+            }
+        });
+
+
+        var $ = layui.$, active = {
+            reload: function () {
+                //执行重载
+                table.reload('tablereload', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    , where: {
+                        s_type: $('#s_type').val()
+                        ,date_b: $('#date_b').val()
+                        ,date_e: $('#date_e').val()
+                    }
+                });
+            }
+        };
+
+        $('.demoTable .layui-btn').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+
+
+        table.on('tool(test)', function (obj) {
+            let event = obj.event;
+            let data = obj.data;
+
+            if (event === "showchargedetail") {
+                var w = ($(window).width() * 0.7);
+                var h = ($(window).height() - 50);
+                var event_id = data.id
+                layer.open({
+                    resize: true,
+                    maxmin: true,
+                    title: '充值详情',
+                    shadeClose: true,
+                    area: [w + 'px', h + 'px'],
+                    type: 2,
+                    content: "/admin/asapromotechargelist?token={$token}&master_url=/admin/asapromotechargelist&id="+event_id,
+                });
+            }
+
+
+            if (event === "showregisteruser") {
+                var w = ($(window).width() * 0.7);
+                var h = ($(window).height() - 50);
+                var event_id = data.id
+                layer.open({
+                    resize: true,
+                    maxmin: true,
+                    title: '查看注册用户',
+                    shadeClose: true,
+                    area: [w + 'px', h + 'px'],
+                    type: 2,
+                    content: "/admin/asapromoteuserlist?token={$token}&master_url=/admin/asapromoteuserlist&type=register&id="+event_id,
+                });
+            }
+
+
+
+            if (event === "showenterroomuser") {
+                var w = ($(window).width() * 0.7);
+                var h = ($(window).height() - 50);
+                var event_id = data.id
+                layer.open({
+                    resize: true,
+                    maxmin: true,
+                    title: '查看进厅用户',
+                    shadeClose: true,
+                    area: [w + 'px', h + 'px'],
+                    type: 2,
+                    content: "/admin/asapromoteuserlist?token={$token}&master_url=/admin/asapromoteuserlist&type=enterroom&id="+event_id,
+                });
+            }
+
+
+
+
+            if (event === "viewroomname") {
+                    this.index = layer.tips('<div style="padding: 10px; font-size: 14px; color: #eee;">' + data.room_name + '</div>', this, {
+                        time: -1
+                        , maxWidth: 280
+                        , tips: [3, '#3A3D49']
+                    })
+
+            }
+
+            $(this).on('mouseleave', function () {
+                layer.close(this.index);
+            })
+
+
+        })
+
+    });
+
+
+    function exportdata() {
+        var date_b = $('#date_b').val();
+        var date_e = $('#date_e').val();
+        //var s_type = $('#s_type').val();
+        var params = "date_b=" + date_b + "&date_e=" + date_e + "&daochu=1&isRequest=1";
+        var host = "/admin/asapromotedataList?master_url=/admin/asapromotedataList&token={$token}&" + params;
+        window.location.href = host
+    }
+
+
+    $(function(){
+        $('.J_menuItem').on('click', function () {
+            parent.childMenu(this)
+        });
+
+    })
+
+
+</script>
+
+<script type="text/html" id="format_user_charge_number">
+    <span style="color:green">{{d.user_charge_number}}</span>
+</script>
+
+
+</body>
+</html>

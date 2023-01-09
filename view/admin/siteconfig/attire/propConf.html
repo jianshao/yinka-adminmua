@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<style>
+    .action_info {
+        display: none;
+    }
+
+    .actions {
+        font-size: 12px;
+    }
+</style>
+
+<body class="gray-bg">
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <!-- Panel Other -->
+        <div class="ibox float-e-margins">
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <!-- Example Events -->
+                        <div class="example-wrap">
+                            <div class="example">
+                                <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                    <button type="button" class="btn btn-outline btn-success" id="add">
+                                        <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加
+                                    </button>
+
+                                    <button type="button" class="btn btn-outline btn-success" id="clearCache">
+                                        <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>更新
+                                    </button>
+                                </div>
+                            </div>
+                            <table class="table table-hover table-responsive" id="data_table" style="word-wrap: break-word; word-break: break-all;">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center">id</th>
+                                        <th class="text-center">名称</th>
+                                        <th class="text-center">介绍</th>
+                                        <th class="text-center">图片</th>
+                                        <!--<th class="text-center">动画</th>-->
+                                        <th class="text-center">尺寸</th>
+                                        <th class="text-center">展示</th>
+                                        <th class="text-center">类型</th>
+                                        <th class="text-center">添加</th>
+                                        <th class="text-center">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {if condition="!empty($list)"}
+                                    {volist name="list" id="item"}
+                                    <tr>
+                                        <td style="width: 20px;" class="text-center kindId">{$item.kindId}</td>
+                                        <td style="width: 20px;" class="text-center update_name">{$item.name}</td>
+                                        <td style="width: 20px;" class="text-center update_desc">{$item.desc}</td>
+                                        <td style="width: 20px;" class="text-center "><img src="{$item.image_url}" width="50px" class="show_img" alt=""></td>
+                                        <!--                                <td style="width: 20px;" class="text-center" ><img src="{$item.animation}" width="50px" alt=""></td>-->
+                                        <td style="width: 20px;" class="text-center update_multiple" value="{$item.multiple}">{$item.multiple}
+                                        </td>
+                                        <td style="width: 20px;" class="text-center">{if condition="$item.showInBag ==0"} 不展示{else} 展示 {/if}</td>
+                                        <td style="width: 20px;" class="text-center">{$item.displayName}</td>
+                                        <td style="width: 20px;" class="text-center">{$item.createTime}</td>
+                                        <td style="width: 20px;" class="text-center">
+                                            <button greet_message="{$item.kindId}" checkedId="{$item.showInBag}" removeFormBagWhenDied="{$item.removeFormBagWhenDied}" selectedId="{$item.type}" type="{$item.displayType}" class="btn btn-success update">编辑
+                                            </button>
+                                            <button greet_message="{$item.kindId}" class="btn btn-success delete">删除</button>
+                                        </td>
+                                    </tr>
+                                    {/volist}
+                                    {else}
+                                    <tr class="no-records-found">
+                                        <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                    </tr>
+                                    {/if}
+                                </tbody>
+                            </table>
+                            {if condition = "$page.total_page >1"}
+                            <div id="Paginator" style="text-align: center">
+                                <ul id="pageLimit"></ul>
+                            </div>
+                            {/if}
+                            <!-- End Example Events -->
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <!-- End Panel Other -->
+        </div>
+    </div>
+    <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="addModalLabel">添加</h4>
+                </div>
+                <div class="modal-body add-append">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="add_info()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--操作modal-->
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="editModalLabel">编辑</h4>
+                </div>
+                <div class="modal-body edit-append">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="edit">修改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+    {include file="../view/admin/common/jsHeader.html"}
+    <input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+    <input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+    <input type="hidden" value="{$token}" name="token" id="token">
+    <script src="/admin/js/trap/fileinput.js" type="text/javascript"></script>
+    <script src="/admin/js/trap/fileinput_locale_zh.js" type="text/javascript"></script>
+    <script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+    <script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+    <script>
+        //清除缓存
+        $("#clearCache").on('click', function () {
+            var master_url = "/admin/clearCache";
+            var token = $("#token").val();
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                url: "/admin/clearCache", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: {
+                    master_url: master_url,
+                    token: token,
+                    type: 'prop_conf'
+                },
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 500); //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        })
+
+        var asset_types = JSON.parse('<?php echo json_encode($asset_types)?>');
+        var assets_str = "<option value='' >-----默认值-----</option>";
+        $.each(asset_types, function (index, asset_type) {
+            assets_str += "<option value='" + index + "' >" + asset_type + "</option>";
+        });
+
+        function actionInfo(action, action_name, assets_str, yes_check, no_check) {
+            if (yes_check == 'checked') {
+                var action_info = ''
+            } else {
+                var action_info = 'action_info'
+            }
+
+            return "<div class='form-group'>" +
+                "<label class='control-label'>" + "是否可" + action_name + ": " + " </label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='is_" + action + "' class='is_break' " + yes_check + " value='1'>" +
+                " 是" +
+                "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='is_" + action + "' class='is_break' " + no_check + " value='0'>" +
+                " 否" +
+                "</label>" +
+                "<div style='margin: 0% 5% 3%;'>" +
+                "<div class='form-group actions " + action_info + "'>" +
+                "<label class='control-label'>" + "名称:" + "</label>" +
+                "<input type='text' class='form-control' value='" + action_name + "' name='" + action + "_name' required='required'>" +
+                "</div>" +
+                "<div class='form-group action_assets actions " + action_info + "'>" +
+                "<table>" +
+                "<thead>" +
+                "<th style='width: 200px;'>资产ID</th>" +
+                "<th style='width: 200px;'>数量</th>" +
+                "</thead>" +
+                "<tbody>" +
+                "<tr>" +
+
+                "<td>" +
+                "<select name='" + action + "_asset_types[]' id='" + action + "' class='form-control'>" +
+                assets_str +
+                "</select>" +
+                "</td>" +
+
+                "<td><input type='text' class='form-control'" +
+                "oninput='this.value = this.value.replace(/[^0-9]/g, '');' name='" + action + "_asset_nums[]'" +
+                "value='0' required='required'></td>" +
+
+                "</tr>" +
+                "</tbody>" +
+                "</table>" +
+                "</div>" +
+
+                "<button class='" + action + "_addinput actions " + action_info + "' type='button'" +
+                "class='btn  btn-outline btn-success'>" +
+                "<i class='glyphicon glyphicon-plus' aria-hidden='true'></i>" +
+                "</button>" +
+                "<button class='delinput actions " + action_info + "' type='button'" +
+                "class='btn  btn-outline btn-success'>" +
+                "<i class='glyphicon glyphicon-minus' aria-hidden='true'></i>" +
+                "</button>" +
+                "</div>" +
+                "</div>";
+        }
+
+
+        function actionEditInfo(action, action_name, assets_str, yes_check, no_check) {
+            if (yes_check == 'checked') {
+                var action_info = ''
+            } else {
+                var action_info = 'action_info'
+            }
+
+            return "<div class='form-group'>" +
+                "<label class='control-label'>" + "是否可" + action_name + ": " + " </label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='is_" + action + "' class='is_break' " + yes_check + " value='1'>" +
+                " 是" +
+                "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='is_" + action + "' class='is_break' " + no_check + " value='0'>" +
+                " 否" +
+                "</label>" +
+                "<div style='margin: 0% 5% 3%;'>" +
+                "<div class='form-group actions " + action_info + "'>" +
+                "<label class='control-label'>" + "名称:" + "</label>" +
+                "<input type='text' class='form-control' name='" + action + "_name' value='" + action_name +
+                "' required='required'>" +
+                "</div>" +
+                "<div class='form-group action_assets actions " + action_info + "'>" +
+                "<table>" +
+                "<thead>" +
+                "<th style='width: 200px;'>资产ID</th>" +
+                "<th style='width: 200px;'>数量</th>" +
+                "</thead>" +
+                "<tbody>" +
+                "<tr>" +
+
+                assets_str +
+
+                "</tr>" +
+                "</tbody>" +
+                "</table>" +
+                "</div>" +
+
+                "<button class='" + action + "_addinput actions " + action_info + "' type='button'" +
+                "class='btn  btn-outline btn-success'>" +
+                "<i class='glyphicon glyphicon-plus' aria-hidden='true'></i>" +
+                "</button>" +
+                "<button class='delinput actions " + action_info + "' type='button'" +
+                "class='btn  btn-outline btn-success'>" +
+                "<i class='glyphicon glyphicon-minus' aria-hidden='true'></i>" +
+                "</button>" +
+                "</div>" +
+                "</div>";
+        }
+
+
+        var action_use_info = actionInfo('use', '使用', assets_str, '', 'checked');
+        var action_breakup_info = actionInfo('breakup', '分解', assets_str, '', 'checked');
+
+        $(document).on('click', '.delinput', function () {
+            $(this).parent().find('.action_assets table tbody').children(':last-child').remove();
+        });
+
+        function addinput(action) {
+            return "<tr>" +
+                "<td>" +
+                "<select name='" + action + "_asset_types[]' id='" + action + "' class='form-control'>" +
+                assets_str +
+                "</select>" +
+                "</td>" +
+                "<td><input type='text' class='form-control'" +
+                "oninput='this.value = this.value.replace(/[^0-9]/g, '');' name='" + action +
+                "_asset_nums[]' id='" + action + "_asset_nums'" +
+                "value='0' required='required'></td>" +
+                "</tr>"
+        }
+
+        $(document).on('click', '.use_addinput', function () {
+            $(this).parent().find('.action_assets table tbody').append(
+                addinput('use')
+            );
+        });
+
+        $(document).on('click', '.breakup_addinput', function () {
+            $(this).parent().find('.action_assets table tbody').append(
+                addinput('breakup')
+            );
+        });
+
+        var list = JSON.parse('<?php echo json_encode($list)?>');
+        //修改框追加
+        $('.update').on('click', function () {
+            let kindId = $(this).parents("tr").find(".kindId").text();
+            let item = {};
+            let actions_html = '';
+            $.each(list, function (index, el) {
+                if (el.kindId == kindId) {
+                    item = el;
+                }
+            });
+            //遍历action
+            if (typeof item.actions !== 'undefined' && item['actions'].length > 0) {
+                let actions = item['actions'];
+
+                var use_info = actionInfo('use', '使用', assets_str, '', 'checked');
+                var breakup_info = actionInfo('breakup', '分解', assets_str, '', 'checked');
+
+                let action_html_new = '';
+                $.each(actions, function (action_index, action_item) {
+
+                    let action_html = '';
+                    let action_type = action_item.type
+                    let action_display_name = action_item.displayName
+
+                    var sendAssets = action_item['sendAssets']
+
+                    if (action_type == 'use') {
+                        use_info = ''
+                    }
+
+                    if (action_type == 'breakup') {
+                        breakup_info = ''
+                    }
+
+                    $.each(sendAssets, function (idx, action) {
+                        assetId = action['assetId'];
+                        count = action['count'];
+
+                        let assets = "<option value='' >-----默认值-----</option>";
+
+                        $.each(asset_types, function (asset_id, asset_name) {
+                            if (asset_id == assetId) {
+                                assets += "<option value='" + asset_id +
+                                    "' selected='selected'>" +
+                                    asset_name + "</option>";
+                            } else {
+                                assets += "<option value='" + asset_id + "'>" +
+                                    asset_name +
+                                    "</option>";
+                            }
+                        });
+
+                        action_html += "<tr>" +
+                            "<td>" +
+                            "<select name='" + action_type +
+                            "_asset_types[]' id='" + action_type + "' class='form-control'>" +
+                            assets +
+                            "</select>" +
+                            "</td>" +
+                            "<td><input type='text' class='form-control'" +
+                            "oninput='this.value = this.value.replace(/[^0-9]/g, '');' name='" +
+                            action_type + "_asset_nums[]'" +
+                            "value='" + count + "' required='required'></td>" +
+                            "</tr>";
+                    });
+
+                    action_html_new += actionEditInfo(action_type, action_display_name, action_html, 'checked', '')
+
+                    actions_html = use_info + breakup_info + action_html_new
+                });
+            } else {
+                var action_use_info = actionInfo('use', '使用', assets_str, '', 'checked');
+                actions_html += action_use_info
+
+                var action_breakup_info = actionInfo('breakup', '分解', assets_str, '', 'checked');
+                actions_html += action_breakup_info
+            }
+            console.log(item)
+            let type_html = ''
+            if (item.type == 'avatar') {
+                type_html = "<div class='multipleDiv'>" +
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>" + "头像框比例:" + "</label>" +
+                    "<input type='text' class='form-control' name='multiple' value='" + item.multiple + "' required='required'>" +
+                    "</div>" +
+                    "</div>"
+            } else if (item.type == 'bubble') {
+                type_html = "<div class='imageAndroidDiv'>" +
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>安卓:</label>" +
+                    "<input type='file' class='form-control corner_sign' id='imageAndroid' required>" +
+                    "<div class='corner_sign_image'>" +
+                    "<input type='hidden' name='imageAndroid' value='" + item.imageAndroid + "'>" +
+                    "</div>" +
+                    "</div>" +
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>商城图:</label>" +
+                    "<input type='file' class='form-control corner_sign' id='bubbleWordImage' required>" +
+                    "<div class='corner_sign_image'>" +
+                    "<input type='hidden' name='bubbleWordImage' value='" + item.bubbleWordImage + "'>" +
+                    "</div>" +
+                    "</div>" +
+                    "</div>"
+            } else if (item.type == 'im_bubble') {
+                type_html = "<div class='imageAndroidDiv'>" +
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>安卓:</label>" +
+                    "<input type='file' class='form-control corner_sign' id='imageAndroid' required>" +
+                    "<div class='corner_sign_image'>" +
+                    "<input type='hidden' name='imageAndroid' value='" + item.imageAndroid + "'>" +
+                    "</div>" +
+                    "</div>" +
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>商城图:</label>" +
+                    "<input type='file' class='form-control corner_sign' id='bubbleWordImage' required>" +
+                    "<div class='corner_sign_image'>" +
+                    "<input type='hidden' name='bubbleWordImage' value='" + item.bubbleWordImage + "'>" +
+                    "</div>" +
+                    "</div>" +
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>" + "文字颜色:" + "</label>" +
+                    "<input type='text' class='form-control' name='textColor' value='" + item.textColor + "' required='required'>" +
+                    "</div>" +
+                    "</div>"
+            } else if (item.type == 'voiceprint') {
+                type_html = "<div class='colorDiv'>" +
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>" + "光圈颜色:" + "</label>" +
+                    "<input type='text' class='form-control' name='color' value='" + item.color + "' required='required'>" +
+                    "</div>" +
+                    "</div>"
+            }
+
+            $(".edit-append").empty();
+            $(".edit-append").prepend(
+                "<form id='attire_form' method='post' >" +
+
+                "<div >" +
+                "<label class='control-label' >" + "类型:" + "</label>" +
+                "<select name='type' id='get_type' class='form-control' disabled=‘disabled’>" +
+                "<option value='avatar' >头像框</option>" +
+                "<option value='bubble' >气泡</option>" +
+                "<option value='voiceprint' >光圈</option>" +
+                "<option value='mount' >坐骑</option>" +
+                "<option value='simple' >普通道具</option>" +
+                "<option value='im_bubble' >聊天气泡</option>" +
+                "</select>" +
+                "<input type='hidden' name='type' value='" + item.type + "'>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "装扮名称:" + "</label>" +
+                "<input type='text' class='form-control' name='name' id='update_name' value='" + item.name + "' required='required'>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "介绍:" + "</label>" +
+                "<input type='text' class='form-control' name='desc' id='update_desc' value='" + item.desc + "' required='required'>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>图片:</label>" +
+                "<input type='file' class='form-control corner_sign' id='image' required>" +
+                "<div class='corner_sign_image'>" +
+                "<input type='hidden' name='image' value='" + item.image + "'>" +
+                "</div>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>动画:</label>" +
+                "<input type='file' class='form-control corner_sign' id='animation' required>" +
+                "<div class='corner_sign_image'>" +
+                "<input type='hidden' name='animation' value='" + item.animation + "'>" +
+                "</div>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "背包中是否展示:" + "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='showInBag' class='is_show' checked value='1'>" + " 是" +
+                "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='showInBag' class='is_show'  value='0'>" + " 否" +
+                "</label>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "过期是否从背包删除:" + "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='removeFormBagWhenDied' class='removeFormBagWhenDied'  value='1'>" +
+                " 是" +
+                "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='removeFormBagWhenDied' class='removeFormBagWhenDied'  value='0'>" +
+                " 否" +
+                "</label>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "类型:" + "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='unit' class='unit' value='wearDay'>" + " 佩戴减天" +
+                "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='unit' class='unit'  value='day'>" + "自然减天" +
+                "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='unit' class='unit'  value='countMax1'>" + "权限专属" +
+                "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='unit' class='unit'  value='count'>" + "个" +
+                "</label>" +
+                "</div>" +
+
+                actions_html +
+                type_html +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "权重:" + "</label>" +
+                "<input type='text' class='form-control' name='weight' id='weight' value='" + item.weight + "' required='required'>" +
+                "</div>" +
+
+                "<input type='hidden' value='{$token}' name='token'>" +
+                "<input type='hidden' id='kindId' name='id' value='" + item.kindId + "'>" +
+                "<input type='hidden' value='/admin/propConfSave' id='master_url' name='master_url'>" +
+                "</form>"
+            );
+            $("#get_type").val($(this).attr('selectedId'));
+            $(":radio[name='showInBag'][value=" + $(this).attr('checkedId') + "]").attr("checked", "checked");
+            $(":radio[name='removeFormBagWhenDied'][value=" + $(this).attr('removeFormBagWhenDied') + "]").attr("checked", "checked");
+            $(":radio[name='unit'][value=" + $(this).attr('type') + "]").attr("checked", "checked");
+            $('#editModal').modal('show');
+
+        });
+
+        $(document).on('change', '#get_type', function () {
+            $('.multipleDiv').empty()
+            if ($(this).val() == 'bubble') {
+                $('#add_form  .multipleDiv').append(
+                    "<div class='imageAndroidDiv'>" +
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>安卓:</label>" +
+                    "<input type='file' class='form-control corner_sign' id='imageAndroid' required>" +
+                    "<div class='corner_sign_image'>" +
+                    "</div>" +
+                    "</div>" +
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>商城图:</label>" +
+                    "<input type='file' class='form-control corner_sign' id='bubbleWordImage' required>" +
+                    "<div class='corner_sign_image'>" +
+                    "</div>" +
+                    "</div>" +
+                    "</div>"
+                )
+                $('.colorDiv').empty()
+            } else if ($(this).val() == 'im_bubble') {
+                $('#add_form  .multipleDiv').append(
+                    "<div class='imageAndroidDiv'>" +
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>安卓:</label>" +
+                    "<input type='file' class='form-control corner_sign' id='imageAndroid' required>" +
+                    "<div class='corner_sign_image'>" +
+                    "</div>" +
+                    "</div>" +
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>商城图:</label>" +
+                    "<input type='file' class='form-control corner_sign' id='bubbleWordImage' required>" +
+                    "<div class='corner_sign_image'>" +
+                    "</div>" +
+                    "</div>" +
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>" + "文字颜色:" + "</label>" +
+                    "<input type='text' class='form-control' name='textColor' id='textColor' required='required'>" +
+                    "</div>" +
+                    "</div>"
+                )
+                $('.colorDiv').empty()
+            } else if ($(this).val() == 'voiceprint') {
+                $('#add_form .multipleDiv').append(
+                    "<div class='colorDiv'>" +
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>" + "光圈颜色:" + "</label>" +
+                    "<input type='text' class='form-control' name='color' required='required'>" +
+                    "</div>" +
+                    "</div>"
+                )
+                $('.imageAndroidDiv').empty()
+            } else if ($(this).val() == 'avatar') {
+                $('#add_form .multipleDiv').append(
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>" + "头像框比例:" + "</label>" +
+                    "<input type='text' class='form-control' name='multiple' required='required'>" +
+                    "</div>"
+                )
+                $('.colorDiv').empty()
+                $('.imageAndroidDiv').empty()
+            } else if ($(this).val() == 'simple' || $(this).val() == 'mount') {
+                $('.colorDiv').empty()
+                $('.imageAndroidDiv').empty()
+            }
+        })
+
+        //修改按钮
+        $('#edit').click(function () {
+            var attire_info = $("#attire_form").serializeArray();
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "get", //请求类型
+                url: "/admin/propConfSave", //请求的 URL地址
+                token: $("#token").val(),
+                dataType: "json", //返回的数据类型
+                data: attire_info,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000); //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+
+            return false;
+
+        })
+
+        //添加装扮信息
+        $('#add').on('click', function () {
+            $(".add-append").empty();
+            $(".add-append").prepend(
+                "<form id='add_form' method='post' >" +
+
+                "<div >" +
+                "<label class='control-label'>" + "类型:" + "</label>" +
+                "<select name='type' id='get_type' class='form-control'>" +
+                "<option value='avatar' selected>头像框</option>" +
+                "<option value='bubble' >气泡</option>" +
+                "<option value='voiceprint' >光圈</option>" +
+                "<option value='mount' >坐骑</option>" +
+                "<option value='simple' >普通道具</option>" +
+                "<option value='im_bubble' >聊天气泡</option>" +
+                "</select>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "装扮名称:" + "</label>" +
+                "<input type='text' class='form-control' name='name'  required='required'>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "介绍:" + "</label>" +
+                "<input type='text' class='form-control' name='desc' required='required'>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>图片:</label>" +
+                "<input type='file' class='form-control corner_sign' id='image' required>" +
+                "<div class='corner_sign_image' type='333'>" +
+                "</div>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>动画:</label>" +
+                "<input type='file' class='form-control corner_sign' id='animation' required>" +
+                "<div class='corner_sign_image'>" +
+                "</div>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "背包中是否展示:" + "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='showInBag' class='is_show' checked value='1'>" + " 是" +
+                "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='showInBag' class='is_show'  value='0'>" + " 否" +
+                "</label>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "过期是否从背包删除:" + "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='removeFormBagWhenDied' class='removeFormBagWhenDied' value='1'>" +
+                " 是" +
+                "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='removeFormBagWhenDied' class='removeFormBagWhenDied' checked  value='0'>" +
+                " 否" +
+                "</label>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "类型:" + "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='unit' class='unit' value='wearDay'>" + " 佩戴减天" +
+                "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='unit' class='unit' checked  value='day'>" + "自然减天" +
+                "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='unit' class='unit'  value='countMax1'>" + "权限专属" +
+                "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='unit' class='unit'  value='count'>" + "个" +
+                "</label>" +
+                "</div>" +
+
+
+                "</div>" +
+
+                action_use_info +
+
+                "</div>" +
+
+                action_breakup_info +
+
+                "</div>" +
+
+                "<div class='multipleDiv'>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "权重:" + "</label>" +
+                "<input type='text' class='form-control' name='weight' id='weight' required='required'>" +
+                "</div>" +
+
+                "<input type='hidden' value='{$token}' name='token'>" +
+                "<input type='hidden' value='/admin/propConfAdd' id='master_url' name='master_url'>" +
+                " </form>"
+            );
+            $('#addModal').modal('show');
+        });
+
+        $("#addModal").on("show.bs.modal", function () {
+            var modal = $(this)
+            console.log(modal.find('.add-append #get_type').val())
+            var type = modal.find('.add-append #get_type').val();
+            if (type == 'avatar') {
+                modal.find('.add-append .multipleDiv').append(
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>" + "头像框比例:" + "</label>" +
+                    "<input type='text' class='form-control' name='multiple' required='required'>" +
+                    "</div>")
+            }
+        })
+
+        $(document).on("change", ".is_break", function () {
+            let val = $(this).val()
+            console.log($(this).parent().parent().find('div .actions'))
+            if (val == 1) {
+                $(this).parent().parent().find('div .actions').removeClass('action_info');
+            } else if (val == 0) {
+                $(this).parent().parent().find('div .actions').addClass('action_info');
+            }
+        })
+
+        //图片上传
+        $(document).on("change", ".corner_sign", function () {
+            var that = $(this)
+            var sign = that.attr('id');
+            if (that[0].files[0]) {
+                var animationType = that[0].files[0].name.split('.');
+                if (animationType[1] != "bmp" && animationType[1] != "png" && animationType[1] != "gif" &&
+                    animationType[1] != "jpg" && animationType[1] != "jpeg" && animationType[1] != "svga") {
+                    toastr.warning("文件只限图片");
+                    return false;
+                }
+            }
+            var formData = new FormData();
+            formData.append("token", $("#token").val());
+            formData.append("master_url", $("#master_url").val());
+            formData.append("image", that[0].files[0]);
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                cache: false,
+                processData: false,
+                contentType: false,
+                type: "post", //请求类型
+                url: "/admin/ossAttireFile", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: formData,
+                success: function (rs) {
+                    if (rs.status !== 1) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    that.parent().find('.corner_sign_image').empty()
+                    that.parent().find('.corner_sign_image').append("<input type='hidden' name=" + sign + "  value=" + rs.image + ">");
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+
+            return false;
+        })
+
+        //添加执行
+        function add_info() {
+            var add_info = $("#add_form").serializeArray();
+            if (add_info[0]['value'] == '') {
+                toastr.warning("装扮名称必填");
+                return false;
+            }
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                url: "/admin/propConfAdd", //请求的 URL地址
+                token: $("#token").val(),
+                dataType: "json", //返回的数据类型
+                data: add_info,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000); //延迟5秒刷新页面
+
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+
+            return false;
+        }
+
+        $('.delete').click(function () {
+            var id = $(this).attr('greet_message')
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                url: "/admin/propConfDel", //请求的 URL地址
+                token: $("#token").val(),
+                dataType: "json", //返回的数据类型
+                data: {
+                    id: id,
+                    token: $('#token').val(),
+                    master_url: '/admin/propConfDel'
+                },
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000); //延迟5秒刷新页面
+
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+
+            return false;
+        });
+        $('#pageLimit').bootstrapPaginator({
+            currentPage: $("#page").val(),
+            totalPages: $("#total_page").val(),
+            size: "normal",
+            bootstrapMajorVersion: 3,
+            alignment: "right",
+            numberOfPages: '5',
+            pageUrl: function (type, page, current) {
+                //是每个分页码变成一个超链接
+                return '?page=' + page + '&master_url=/admin/propConf&token=' + $("#token").val()
+            },
+            itemTexts: function (type, page, current) {
+                switch (type) {
+                    case "first":
+                        return "首页";
+                    case "prev":
+                        return "上一页";
+                    case "next":
+                        return "下一页";
+                    case "last":
+                        return "末页";
+                    case "page":
+                        return page;
+                }
+            }
+            /*   onPageClicked:function (event, originalEvent, type, page) {
+            	   location.href = "?page="+page;
+               }*/
+        });
+    </script>
+    <div id="outerdiv" style="position:fixed;top:0;left:0;background:rgba(0,0,0,0.7);z-index:2;width:100%;height:100%;display:none;">
+        <div id="innerdiv" style="position:absolute;">
+            <img id="max_img" style="border:5px solid #fff;" src="" />
+        </div>
+    </div>
+    <!-- 全局js -->
+    <script>
+        $('.show_img').click(function () {
+            var _this = $(this); //将当前的min_img元素作为_this传入函数
+            imgShow("#outerdiv", "#innerdiv", "#max_img", _this);
+        })
+
+        function imgShow(outerdiv, innerdiv, max_img, _this) {
+            var src = _this.attr("src"); //获取当前点击的min_img元素中的src属性
+            $("#max_img").attr("src", src); //设置#max_img元素的src属性
+
+            /*获取当前点击图片的真实大小，并显示弹出层及大图*/
+            $("<img/>").attr("src", src).load(function () {
+                var windowW = $(window).width(); //获取当前窗口宽度
+                var windowH = $(window).height(); //获取当前窗口高度
+                var realWidth = this.width; //获取图片真实宽度
+                var realHeight = this.height; //获取图片真实高度
+                var imgWidth, imgHeight;
+                var scale = 0.8; //缩放尺寸，当图片真实宽度和高度大于窗口宽度和高度时进行缩放
+
+                if (realHeight > windowH * scale) {
+                    imgHeight = windowH * scale;
+                    imgWidth = imgHeight / realHeight * realWidth;
+                    if (imgWidth > windowW * scale) {
+                        imgWidth = windowW * scale;
+                    }
+                } else if (realWidth > windowW * scale) {
+                    imgWidth = windowW * scale;
+                    imgHeight = imgWidth / realWidth * realHeight;
+                } else {
+                    imgWidth = realWidth;
+                    imgHeight = realHeight;
+                }
+                $("#max_img").css("width", imgWidth); //以最终的宽度对图片缩放
+
+                var w = (windowW - imgWidth) / 2; //计算图片与窗口左边距
+                var h = (windowH - imgHeight) / 2; //计算图片与窗口上边距
+                $(innerdiv).css({
+                    "top": h,
+                    "left": w
+                }); //设置#innerdiv的top和left属性
+                $(outerdiv).fadeIn("fast"); //淡入显示#outerdiv及.pimg
+            });
+
+            $(outerdiv).click(function () {
+                $(this).fadeOut("fast");
+            });
+        }
+    </script>
+    </div>
+</body>
+
+</html>

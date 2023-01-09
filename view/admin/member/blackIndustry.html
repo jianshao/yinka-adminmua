@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="pull-right search form-inline">
+                            <input class="form-control input-outline" type="text" value="{$search_id}"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                   placeholder="用户Id"
+                                   id="user_id">
+                            {if condition="$detail==0"}
+                            <input type="radio" name="detail">查看详情
+                            {else}
+                            <input type="radio" name="detail" checked="checked">查看详情
+                            {/if}
+                            <button type="button" class=" btn btn-primary" id="search" onclick=search({$detail})>搜索</button>
+                        </div>
+                        <div class="example">
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">用户ID</th>
+                                    <th class="text-center">对方用户ID</th>
+                                    <th class="text-center">事件名称</th>
+                                    <th class="text-center">分数</th>
+                                    <th class="text-center">最后登录IP</th>
+                                    <th class="text-center">事件时间</th>
+                                    <th class="text-center">ext_1</th>
+                                    <th class="text-center">ext_2</th>
+                                    <th class="text-center">ext_3</th>
+                                    <th class="text-center">ext_4</th>
+                                    <th class="text-center">ext_5</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($data)"}
+                                {volist name="data" id="list"}
+                                <tr>
+                                    <td class="text-center">{$list.user_id}</td>
+                                    <td class="text-center">{$list.to_user_id}</td>
+                                    <td class="text-center">{$list.event_name}</td>
+                                    <td class="text-center">{$list.user_score}</td>
+                                    <td class="text-center">{$list.login_ip}</td>
+                                    <td class="text-center">{$list.str_date}</td>
+                                    <td class="text-center">{$list.ext_1}</td>
+                                    <td class="text-center">{$list.ext_2}</td>
+                                    <td class="text-center">{$list.ext_3}</td>
+                                    <td class="text-center">{$list.ext_4}</td>
+                                    <td class="text-center">{$list.ext_5}</td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page >1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+
+{include file="../view/admin/common/userItem.html"}
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$token}" id="token">
+<input type="hidden" value="/admin/avatarOssFile" name="master_url" id="master_url">
+<input type="hidden" value="/admin/prettyavatarOssFile" name="masters_url" id="masters_url">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script>
+
+
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/memberList&token=' + $("#token").val() + '&user_name=' + $("#search_name").val()+'&head_frame='+$("#head_frame").val()+'&ip='+$('#ip').val()+'&deviceid='+$('#deviceid').val()
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+        /*   onPageClicked:function (event, originalEvent, type, page) {
+               location.href = "?page="+page;
+           }*/
+    });
+
+    function search(detail) {
+        var user_id = $("#user_id").val();
+        var token = $('#token').val();
+        let params = "&user_id=" + user_id + '&detail=' + detail
+        window.location.href = "/admin/getUserScore?token=" + token + '&master_url=/admin/getUserScore' + params
+    }
+
+    $("input[type='radio']").on('click', function () {
+        var isChecked = "1";
+        if (localStorage.getItem("history_detail") == null) {
+            isChecked = "0"
+            localStorage.setItem("history_detail", "0")
+        } else {
+            isChecked = localStorage.getItem("history_detail")
+        }
+        var detail = 0;
+        if (isChecked !== "1" && this.checked) {
+            $(this).data('checked', true);
+            localStorage.setItem("history_detail", "1")
+            detail = 1;
+        }else{
+            $(this).prop('checked', false);
+            localStorage.setItem("history_detail", "0")
+            detail = 0;
+        }
+
+        var user_id = $("#user_id").val();
+        var token = $('#token').val();
+        let params = "&user_id=" + user_id + '&detail=' + detail
+        window.location.href = "/admin/getUserScore?token=" + token + '&master_url=/admin/getUserScore' + params
+    })
+
+
+
+
+</script>
+
+</body>
+
+</html>

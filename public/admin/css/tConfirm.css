@@ -1,0 +1,16 @@
+/*关于提示框的信息的css tom add on Mar 31, 2016*/
+
+.verticalAlign{ vertical-align:middle; display:inline-block; height:100%; margin-left:-1px;}
+.fancybox-inner{min-width: 400px}
+.fancybox-inner .popBox {padding: 20px 0; margin: 0px auto; background-color: white; border-radius: 5px; border: 5px solid black; }
+.fancybox-inner .popBox .ttBox{height: 30px; line-height: 30px; padding: 0px 10px; border-bottom: 1px dashed #bbb;font-family: arial, helvetica, sans-serif;}
+.fancybox-inner .popBox .ttBox .tt{font-size: 18px; display: block; float: left; height: 30px; position: relative;}
+.fancybox-inner .popBox  .clsBtn{display: block; cursor: pointer; width: 12px; height: 12px; position: absolute; top: 22px; right: 30px; background: url(./img/icons.png) -48px -96px no-repeat;}
+.fancybox-inner .popBox .txtBox{margin: 0px 20px;}
+.fancybox-inner .popBox .txtBox .bigIcon{float: left; margin-right: 20px; width: 48px; height: 48px; background-image: url(./img/icons.png); background-repeat: no-repeat; background-position: 48px 0;}
+.fancybox-inner .popBox .txtBox p{ min-height:84px; margin-top: 16px; line-height: 35px;font-size: 30px;   color: black;}
+.fancybox-inner .popBox .txtBox p input{ height: 30px; border: solid 1px #eef0f1; font-size: 18px; margin-top: 6px;}
+.fancybox-inner .popBox .btnArea{text-align: right;border-top: 1px dashed #bbb;padding: 20px 0 0 0}
+.fancybox-inner .popBox .sgBtn{ cursor: pointer; padding: 5px 20px;  margin-right: 10px; text-align: center; color: #FFFFFF; border-radius: 5px;}
+.fancybox-inner .popBox .sgBtn.ok{background-color: #0095d9; color: #FFFFFF;}
+.fancybox-inner .popBox .sgBtn.cancel{background-color: #546a79; color: #FFFFFF;}

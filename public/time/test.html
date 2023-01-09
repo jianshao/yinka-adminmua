@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <link rel="stylesheet" type="text/css" href="./daterangepicker.css">
+
+    <style>
+
+        .form-control:focus {
+            border-color: #66afe9;
+            outline: 0;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
+            box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
+        }
+
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        input {
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+        }
+
+        .btn-default {
+            background-color: #fff;
+            border: 1px solid #828080;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: #08c;
+            border: 1px solid #08c;
+            border-radius: 3px;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            background-color: #357ebd;
+        }
+    </style>
+
+</head>
+<body class="gray-bg">
+<div class="daterangepicker ltr show-ranges show-calendar opensright"
+     style="display: none; top: 54px; left: 8px; right: auto;">
+    <div class="ranges">
+        <ul>
+            <li data-range-key="今日" class="active">今日</li>
+            <li data-range-key="昨日" class="">昨日</li>
+            <li data-range-key="最近7日" class="">最近7日</li>
+            <li data-range-key="最近30日" class="">最近30日</li>
+            <li data-range-key="本月" class="">本月</li>
+            <li data-range-key="上月">上月</li>
+            <li data-range-key="自定义">自定义</li>
+        </ul>
+    </div>
+    <div class="drp-calendar left">
+        <div class="calendar-table">
+            <table class="table-condensed">
+                <thead>
+                <tr>
+                    <th class="prev available"><span></span></th>
+                    <th colspan="5" class="month">六月 2020</th>
+                    <th></th>
+                </tr>
+                <tr>
+                    <th>一</th>
+                    <th>二</th>
+                    <th>三</th>
+                    <th>四</th>
+                    <th>五</th>
+                    <th>六</th>
+                    <th>日</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td class="off ends available" data-title="r0c0">25</td>
+                    <td class="off ends available" data-title="r0c1">26</td>
+                    <td class="off ends available" data-title="r0c2">27</td>
+                    <td class="off ends available" data-title="r0c3">28</td>
+                    <td class="off ends available" data-title="r0c4">29</td>
+                    <td class="weekend off ends available" data-title="r0c5">30</td>
+                    <td class="weekend off ends available" data-title="r0c6">31</td>
+                </tr>
+                <tr>
+                    <td class="available" data-title="r1c0">1</td>
+                    <td class="available" data-title="r1c1">2</td>
+                    <td class="available" data-title="r1c2">3</td>
+                    <td class="available" data-title="r1c3">4</td>
+                    <td class="available" data-title="r1c4">5</td>
+                    <td class="weekend available" data-title="r1c5">6</td>
+                    <td class="weekend available" data-title="r1c6">7</td>
+                </tr>
+                <tr>
+                    <td class="available" data-title="r2c0">8</td>
+                    <td class="available" data-title="r2c1">9</td>
+                    <td class="available" data-title="r2c2">10</td>
+                    <td class="available" data-title="r2c3">11</td>
+                    <td class="available" data-title="r2c4">12</td>
+                    <td class="weekend available" data-title="r2c5">13</td>
+                    <td class="weekend available" data-title="r2c6">14</td>
+                </tr>
+                <tr>
+                    <td class="available" data-title="r3c0">15</td>
+                    <td class="available" data-title="r3c1">16</td>
+                    <td class="available" data-title="r3c2">17</td>
+                    <td class="available" data-title="r3c3">18</td>
+                    <td class="available" data-title="r3c4">19</td>
+                    <td class="weekend available" data-title="r3c5">20</td>
+                    <td class="weekend available" data-title="r3c6">21</td>
+                </tr>
+                <tr>
+                    <td class="available" data-title="r4c0">22</td>
+                    <td class="available" data-title="r4c1">23</td>
+                    <td class="available" data-title="r4c2">24</td>
+                    <td class="available" data-title="r4c3">25</td>
+                    <td class="available" data-title="r4c4">26</td>
+                    <td class="weekend available" data-title="r4c5">27</td>
+                    <td class="weekend available" data-title="r4c6">28</td>
+                </tr>
+                <tr>
+                    <td class="available" data-title="r5c0">29</td>
+                    <td class="available" data-title="r5c1">30</td>
+                    <td class="off ends available" data-title="r5c2">1</td>
+                    <td class="off ends available" data-title="r5c3">2</td>
+                    <td class="off ends available" data-title="r5c4">3</td>
+                    <td class="weekend off ends available" data-title="r5c5">4</td>
+                    <td class="weekend off ends available" data-title="r5c6">5</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="calendar-time" style="display: none;"></div>
+    </div>
+    <div class="drp-calendar right">
+        <div class="calendar-table">
+            <table class="table-condensed">
+                <thead>
+                <tr>
+                    <th></th>
+                    <th colspan="5" class="month">七月 2020</th>
+                    <th class="next available"><span></span></th>
+                </tr>
+                <tr>
+                    <th>一</th>
+                    <th>二</th>
+                    <th>三</th>
+                    <th>四</th>
+                    <th>五</th>
+                    <th>六</th>
+                    <th>日</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td class="off ends available" data-title="r0c0">29</td>
+                    <td class="off ends available" data-title="r0c1">30</td>
+                    <td class="available" data-title="r0c2">1</td>
+                    <td class="available" data-title="r0c3">2</td>
+                    <td class="available" data-title="r0c4">3</td>
+                    <td class="weekend available" data-title="r0c5">4</td>
+                    <td class="weekend available" data-title="r0c6">5</td>
+                </tr>
+                <tr>
+                    <td class="available" data-title="r1c0">6</td>
+                    <td class="available" data-title="r1c1">7</td>
+                    <td class="available" data-title="r1c2">8</td>
+                    <td class="available" data-title="r1c3">9</td>
+                    <td class="available" data-title="r1c4">10</td>
+                    <td class="weekend available" data-title="r1c5">11</td>
+                    <td class="weekend available" data-title="r1c6">12</td>
+                </tr>
+                <tr>
+                    <td class="today active start-date active end-date available" data-title="r2c0">13</td>
+                    <td class="available" data-title="r2c1">14</td>
+                    <td class="available" data-title="r2c2">15</td>
+                    <td class="available" data-title="r2c3">16</td>
+                    <td class="available" data-title="r2c4">17</td>
+                    <td class="weekend available" data-title="r2c5">18</td>
+                    <td class="weekend available" data-title="r2c6">19</td>
+                </tr>
+                <tr>
+                    <td class="available" data-title="r3c0">20</td>
+                    <td class="available" data-title="r3c1">21</td>
+                    <td class="available" data-title="r3c2">22</td>
+                    <td class="available" data-title="r3c3">23</td>
+                    <td class="available" data-title="r3c4">24</td>
+                    <td class="weekend available" data-title="r3c5">25</td>
+                    <td class="weekend available" data-title="r3c6">26</td>
+                </tr>
+                <tr>
+                    <td class="available" data-title="r4c0">27</td>
+                    <td class="available" data-title="r4c1">28</td>
+                    <td class="available" data-title="r4c2">29</td>
+                    <td class="available" data-title="r4c3">30</td>
+                    <td class="available" data-title="r4c4">31</td>
+                    <td class="weekend off ends available" data-title="r4c5">1</td>
+                    <td class="weekend off ends available" data-title="r4c6">2</td>
+                </tr>
+                <tr>
+                    <td class="off ends available" data-title="r5c0">3</td>
+                    <td class="off ends available" data-title="r5c1">4</td>
+                    <td class="off ends available" data-title="r5c2">5</td>
+                    <td class="off ends available" data-title="r5c3">6</td>
+                    <td class="off ends available" data-title="r5c4">7</td>
+                    <td class="weekend off ends available" data-title="r5c5">8</td>
+                    <td class="weekend off ends available" data-title="r5c6">9</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="calendar-time" style="display: none;"></div>
+    </div>
+    <div class="drp-buttons"><span class="drp-selected">2020-07-13 - 2020-07-13</span>
+        <button class="cancelBtn btn btn-sm btn-default" type="button">取消</button>
+        <button class="applyBtn btn btn-sm btn-primary" type="button">确定</button>
+    </div>
+</div>
+<!--时间框打开注释可用-->
+<!--<input id="demo" >-->
+
+
+<script src="./jquery-1.10.2.js"></script>
+<script src="./jquery.min1.js"></script>
+<script src="./moment.min.js"></script>
+<script src="./daterangepicker.min.js"></script>
+
+<script>
+    $(function () {
+        var locale = {
+            "format": 'YYYY-MM-DD',
+            "separator": " - ",
+            "applyLabel": "确定",
+            "cancelLabel": "取消",
+            "fromLabel": "起始时间",
+            "toLabel": "结束时间'",
+            "customRangeLabel": "自定义",
+            "weekLabel": "W",
+            "daysOfWeek": ["日", "一", "二", "三", "四", "五", "六"],
+            "monthNames": ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"],
+            "firstDay": 1
+        };
+        $('#demo').daterangepicker({
+            'locale': locale,
+            ranges: {
+                '今日': [moment(), moment()],
+                '昨日': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                '最近7日': [moment().subtract(6, 'days'), moment()],
+                '最近30日': [moment().subtract(29, 'days'), moment()],
+                '本月': [moment().startOf('month'), moment().endOf('month')],
+                '上月': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month')
+                    .endOf('month')
+                ]
+            },
+            "alwaysShowCalendars": true,
+            "startDate": new Date(),
+            "endDate": new Date(),
+            "opens": "right",
+        }, function (start, end, label) {
+            console.log('New date range selected: ' + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD') + ' (predefined range: ' + label + ')');
+        });
+    })
+
+</script>
+
+</body>
+</html>
+</body>
+</html>

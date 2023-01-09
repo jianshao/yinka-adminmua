@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="example">
+                            <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                <button type="button" class="btn open btn-outline btn-success">
+                                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加
+                                </button>
+                                <button type="button" class="btn delRedis btn-outline btn-success">
+                                    <i class="glyphicon glyphicon-fire" aria-hidden="true"></i>清缓存
+                                </button>
+                            </div>
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">id</th>
+                                    <th class="text-center">爵位官阶</th>
+                                    <th class="text-center" style="width: 100px">爵位图标</th>
+                                    <th class="text-center">贵族值</th>
+                                    <th class="text-center">保级值</th>
+                                    <th class="text-center">全服广播</th>
+                                    <th class="text-center">禁言</th>
+                                    <th class="text-center">防踢</th>
+                                    <th class="text-center">管家</th>
+                                    <th class="text-center">svga</th>
+                                    <th class="text-center">详情</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($data)"}
+                                {volist name="data" id="list"}
+                                <tr>
+                                    <td class="text-center duke_id">{$list.duke_id}</td>
+                                    <td class="text-center duke_name">{$list.duke_name}</td>
+                                    <td class="text-center duke_image"><img src="{$list.duke_image}" style="width: 50px;"></td>
+                                    <td class="text-center duke_coin">{$list.duke_coin}</td>
+                                    <td class="text-center duke_relegation">{$list.duke_relegation}</td>
+                                    <td class="text-center upgrade_broadcast" upgrade_broadcast="{if $list.upgrade_broadcast == '有'} 1 {else} 0 {/if}">{$list.upgrade_broadcast}</td>
+                                    <td class="text-center avoid_forbidwords" avoid_forbidwords="{if $list.avoid_forbidwords == '有'} 1 {else} 0 {/if}">{$list.avoid_forbidwords}</td>
+                                    <td class="text-center avoid_kick" avoid_kick="{if $list.avoid_kick == '有'} 1 {else} 0 {/if}">{$list.avoid_kick}</td>
+                                    <td class="text-center is_butler" is_butler="{if $list.is_butler == '有'} 1 {else} 0 {/if}">{$list.is_butler}</td>
+                                    <td class="text-center"  style="text-align: center;width: 100px"><div src="{$list.special_effects}" loops="0" clearsAfterStop="true" style="width: 100px;height: 100px"></div></td>
+                                    <td width="130px">
+                                        <div class="btn-group hidden-xs form-inline">
+                                        <button class="btn btn-success dukeSelect" dukeID="{$list.duke_id}">详情</button>
+                                        <button class="btn btn-success editDuke" dukeID="{$list.duke_id}">编辑</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page >1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+
+<!--添加-->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+                </button>
+                <h4 class="modal-title" id="editModalLabel">添加</h4>
+            </div>
+            <div class="modal-body edit-append">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" >关闭</button>
+                <button type="button" class="btn btn-primary" id="edit_info">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--编辑-->
+<div class="modal fade" id="dukeModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+                </button>
+                <h4 class="modal-title" id="dukeModalLabel">编辑</h4>
+            </div>
+            <div class="modal-body edit-save">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" >关闭</button>
+                <button type="button" class="btn btn-primary" id="save_info">编辑</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$token}" id="token">
+<input type="hidden" value="/admin/avatarOssFile" name="master_url" id="master_url">
+<input type="hidden" value="/admin/prettyavatarOssFile" name="masters_url" id="masters_url">
+<script src="https://cdn.jsdelivr.net/npm/svgaplayerweb@2.3.1/build/svga.min.js"></script>
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script>
+    //添加
+    $(function () {
+    //编辑装扮信息
+    $('.editDuke').on('click',function(){
+        $(".edit-save").empty();
+        $(".edit-append").empty();
+        $(".edit-save").prepend(
+            "<form id='edit_form' method='post' >"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>  爵位官阶： </label>"+
+            "<input type='text' class='form-control  duke_name' name='duke_name'  value='' required='required'>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>爵位图标:</label>"+
+            "<input type='file' class='form-control addimage' imagename='duke_image' value='' required>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>svga:</label>"+
+            "<input type='file' class='form-control addimageSvga' imagename='special_effects' value='' required>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>贵族值:</label>"+
+            "<input type='text' id='desc' class='form-control duke_coin' name='duke_coin'  value='' required='required'>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>保级值:</label>"+
+            "<input type='text' id='name' class='form-control name duke_relegation' name='duke_relegation' value='' required>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>升级全服广播:</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='upgrade_broadcast' class='upgrade_broadcast' checked  value='1'> 是"+
+            "</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='upgrade_broadcast' class='upgrade_broadcast'  value='0'> 否"+
+            "</label>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>是否可以防止禁言:</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='avoid_forbidwords' class='avoid_forbidwords' checked value='1'> 是"+
+            "</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='avoid_forbidwords' class='avoid_forbidwords'  value='0'> 否"+
+            "</label>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>是否可以防止被踢出房间:</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='avoid_kick' class='avoid_kick' checked value='1'> 是"+
+            "</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='avoid_kick' class='avoid_kick'  value='0'> 否"+
+            "</label>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>是否有专属管家:</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='is_butler' class='is_butler' checked value='1'> 是"+
+            "</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='is_butler' class='is_butler'  value='0'> 否"+
+            "</label>"+
+            "</div>"+
+            "<input type='hidden' name='duke_id' class='saveDukeId'>"+
+            "<input type='hidden' value='{$token}' name='token'>"+
+            "<input type='hidden' value='/admin/dukeSave' name='master_url'>"+
+            "</form>"
+        );
+        $("#edit_form").prepend();
+        $(".saveDukeId").val($(this).parents("tr").find(".duke_id").text());
+        $(".duke_name").val($(this).parents("tr").find(".duke_name").text());
+        $(".duke_coin").val($(this).parents("tr").find(".duke_coin").text());
+        $(".duke_relegation").val($(this).parents("tr").find(".duke_relegation").text());
+
+        var upgrade_broadcast = $(this).parents("tr").find(".upgrade_broadcast").attr('upgrade_broadcast');
+        $(":radio[name='upgrade_broadcast'][value="+upgrade_broadcast+"]").attr("checked","checked");
+
+        var avoid_forbidwords = $(this).parents("tr").find(".avoid_forbidwords").attr('avoid_forbidwords');
+        $(":radio[name='avoid_forbidwords'][value="+avoid_forbidwords+"]").attr("checked","checked");
+
+        var avoid_kick = $(this).parents("tr").find(".avoid_kick").attr('avoid_kick');
+        $(":radio[name='avoid_kick'][value="+avoid_kick+"]").attr("checked","checked");
+
+        var is_butler = $(this).parents("tr").find(".is_butler").attr('is_butler');
+        $(":radio[name='is_butler'][value="+is_butler+"]").attr("checked","checked");
+
+        $('#dukeModal').modal('show');
+    });
+    //添加装扮信息
+    $('.open').on('click',function(){
+        $(".edit-append").empty();
+        $(".edit-save").empty();
+        $(".edit-append").prepend(
+            "<form id='edit_form' method='post' >"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>  爵位等级(id)： </label>"+
+            "<input type='text' class='form-control  duke_id' name='duke_id'  value='' required='required'>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>  爵位官阶： </label>"+
+            "<input type='text' class='form-control  duke_name' name='duke_name'  value='' required='required'>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>爵位图标:</label>"+
+            "<input type='file' class='form-control addimage' imagename='duke_image' value='' required>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>svga:</label>"+
+            "<input type='file' class='form-control addimageSvga' imagename='special_effects' value='' required>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>贵族值:</label>"+
+            "<input type='text' id='desc' class='form-control duke_coin' name='duke_coin'  value='' required='required'>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>保级值:</label>"+
+            "<input type='text' id='name' class='form-control name duke_relegation' name='duke_relegation' value='' required>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>  气泡框： </label>"+
+            "<input type='text' class='form-control price' name='bubble_box[]'  value='' required='required'>"+
+            "<button id='bubbleBoxInput' class='addpriceinput' type='button' class='btn  btn-outline btn-success'>"+
+            "<i class='glyphicon glyphicon-plus' aria-hidden='true'></i>"+
+            "</button>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>  座驾： </label>"+
+            "<input type='text' class='form-control price' name='car[]'  value='' required='required'>"+
+            "<button id='carinput' class='addpriceinput' type='button' class='btn  btn-outline btn-success'>"+
+            "<i class='glyphicon glyphicon-plus' aria-hidden='true'></i>"+
+            "</button>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>  头像框： </label>"+
+            "<input type='text' class='form-control price' name='headframe[]'  value='' required='required'>"+
+            "<button id='headframeinput' class='addpriceinput' type='button' class='btn  btn-outline btn-success'>"+
+            "<i class='glyphicon glyphicon-plus' aria-hidden='true'></i>"+
+            "</button>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>  特权礼物： </label>"+
+            "<input type='text' class='form-control price' name='privilege_gift[]'  value='' required='required'>"+
+            "<button id='privilegegiftinput' class='addpriceinput' type='button' class='btn  btn-outline btn-success'>"+
+            "<i class='glyphicon glyphicon-plus' aria-hidden='true'></i>"+
+            "</button>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>  麦位： </label>"+
+            "<input type='text' class='form-control price' name='wheat_aperture[]'  value='' required='required'>"+
+            "<button id='wheatapertureinput' class='addpriceinput' type='button' class='btn  btn-outline btn-success'>"+
+            "<i class='glyphicon glyphicon-plus' aria-hidden='true'></i>"+
+            "</button>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>升级全服广播:</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='upgrade_broadcast' class='upgrade_broadcast' checked  value='1'> 是"+
+            "</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='upgrade_broadcast' class='upgrade_broadcast'  value='0'> 否"+
+            "</label>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>是否可以防止禁言:</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='avoid_forbidwords' class='avoid_forbidwords' checked value='1'> 是"+
+            "</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='avoid_forbidwords' class='avoid_forbidwords'  value='0'> 否"+
+            "</label>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>是否可以防止被踢出房间:</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='avoid_kick' class='avoid_kick' checked value='1'> 是"+
+            "</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='avoid_kick' class='avoid_kick'  value='0'> 否"+
+            "</label>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>是否有专属管家:</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='is_butler' class='is_butler' checked value='1'> 是"+
+            "</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='is_butler' class='is_butler'  value='0'> 否"+
+            "</label>"+
+            "</div>"+
+            "<input type='hidden' value='{$token}' name='token'>"+
+            "<input type='hidden' value='/admin/dukeAdd' name='master_url'>"+
+            "</form>"
+        );
+        $('#editModal').modal('show');
+    });
+    //图片上传
+    $(document).on("change",".addimage",function(){
+        if($('.addimage')[0].files[0]){
+            var animationType = $('.addimage')[0].files[0].name.split('.');
+            if (animationType[1] != "bmp"&&animationType[1] != "png"&&animationType[1] != "gif" && animationType[1]!="jpg" && animationType[1]!="jpeg" && animationType[1] != "svga") {
+                toastr.warning("不支持文件");
+                return false;
+            }
+        }
+        var imagename = $(this).attr('imagename');
+        var $this = $(this);
+        var formData = new FormData();
+        formData.append("token", $("#token").val());
+        formData.append("master_url", $("#master_url").val());
+        formData.append("image", $('.addimage')[0].files[0]);
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            cache: false,
+            processData: false,
+            contentType: false,
+            type: "post",    //请求类型
+            url: "/admin/ossAttireFile",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: formData,
+            success: function (rs) {
+                if (rs.status !== 1) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                $this.parent().append("<input type='hidden' name="+imagename+"  value="+rs.image+">");
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+    });
+    $(document).on("change",".addimageSvga",function(){
+        if($('.addimageSvga')[0].files[0]){
+            var animationType = $('.addimageSvga')[0].files[0].name.split('.');
+            if (animationType[1] != "bmp"&&animationType[1] != "png"&&animationType[1] != "gif" && animationType[1]!="jpg" && animationType[1]!="jpeg" && animationType[1] != "svga") {
+                toastr.warning("不支持文件");
+                return false;
+            }
+        }
+        var imagename = $(this).attr('imagename');
+        var $this = $(this);
+        var formData = new FormData();
+        formData.append("token", $("#token").val());
+        formData.append("master_url", $("#master_url").val());
+        formData.append("image", $('.addimageSvga')[0].files[0]);
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            cache: false,
+            processData: false,
+            contentType: false,
+            type: "post",    //请求类型
+            url: "/admin/ossAttireFile",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: formData,
+            success: function (rs) {
+                if (rs.status !== 1) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                $this.parent().append("<input type='hidden' name="+imagename+"  value="+rs.image+">");
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+    });
+
+    //追加框
+    $(document).on("click",".addpriceinput",function(){
+        var inputname = $(this).prev().attr('name')
+        $(this).before(
+            "<input type='text' class='form-control day' name='"+inputname+"'  value='' required='required'>"
+        );
+    });
+
+    //编辑执行
+    $('#save_info').on('click',function(){
+        var edit_info = $("#edit_form").serializeArray();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/dukeSave",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data: edit_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout('delayer()', 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+    })
+    //添加执行
+    $('#edit_info').on('click',function() {
+        var edit_info = $("#edit_form").serializeArray();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/dukeAdd",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data: edit_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+    })
+    })
+
+    //详情
+    $(function () {
+        $('.dukeSelect').click(function () {
+            window.location.href = "/admin/dukeDetails?token=" + $('#token').val() + '&master_url=/admin/dukeDetails&page=1&id=' + $(this).attr('dukeID');
+        })
+    })
+    function delayer(){
+        window.location = "";
+    }
+    $('.delRedis').click(function () {
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/dukeRedis",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data: {'token':$('#token').val(),'master_url':'/admin/dukeRedis'},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout('delayer()', 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+    })
+</script>
+
+</body>
+
+</html>

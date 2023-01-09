@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+    <link href="/time/daterangepicker.css" rel="stylesheet">
+</head>
+
+<body class="gray-bg">
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <!-- Panel Other -->
+        <div class="ibox float-e-margins">
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <!-- Example Events -->
+                        <div class="example">
+                            <div class="form-inline">
+                                <div class="form-group">
+                                    <label for="">时间:</label>
+                                    <input type="text" value="{$demo}" id="demo" readonly class="form_datetime form-control input-outline" style="width:190px;">
+                                </div>
+                                <div class="form-group">
+                                    <label for=""> 封禁状态:</label>
+                                    <select class="form-control" id="status">
+                                        {if $status==1} <option value="1" selected="selected">封禁 </option> {else} <option value="1">封禁 </option>{/if}
+                                        <!-- {if $status==2} <option value="2" selected="selected">解封 </option> {else} <option value="2">解封 </option>{/if} -->
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <input class="form-control input-outline" type="text" value="{$search_id}" oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="用户Id" id="user_id">
+                                </div>
+
+<!--                                <div class="form-group">-->
+<!--                                    <input class="form-control input-outline" type="text" value="{$reason}" placeholder="原因" id="reason">-->
+<!--                                </div>-->
+
+                                <div class="form-group">
+                                    <input class="form-control input-outline" type="text" value="{$blackinfo}" placeholder="IP - 设备id - 身份证号 - id" id="blackinfo">
+                                </div>
+                                <div class="form-group">
+                                    <button type="button" class=" btn btn-primary" id="search">搜索</button>
+                                    <button type="button" class=" btn btn-primary" id="add_gift">添加</button>
+                                    <button type="button" class=" btn btn-primary" id="refresh">重置</button>
+                                    <button type="button" class="btn btn-outline btn-success" id="daochu">
+                                        <i aria-hidden="true"></i>导出
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="example-wrap">
+
+                                <table class="table table-hover table-responsive" id="data_table">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center">用户ID</th>
+                                            <th class="text-center">用户等级</th>
+                                            <th class="text-center">所属公会</th>
+                                            <th class="text-center">封禁时长</th>
+                                            <th class="text-center">封禁类型</th>
+                                            <th class="text-center">封禁参数</th>
+                                            <th class="text-center">封禁状态</th>
+                                            <th class="text-center">创建时间</th>
+                                            <th class="text-center">封禁时间</th>
+                                            <th class="text-center">封禁理由</th>
+                                            <th class="text-center">操作人员</th>
+                                            <th class="text-center">操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {if condition="!empty($data)"}
+                                        {volist name="data" id="list"}
+                                        <tr>
+                                            <td class="text-center">{$list.user_id}</td>
+                                            <td class="text-center">{$list.lv_dengji}</td>
+                                            <td class="text-center">{$list.guild_nickname}</td>
+                                            <td class="text-center">{$list.info}</td>
+                                            <td class="text-center">{$list.type_desc}</td>
+                                            <td class="text-center">{$list.blackinfo}</td>
+                                            <td class="text-center">{$list.status}</td>
+                                            <td class="text-center">{$list.create_time}</td>
+                                            <td class="text-center">{$list.update_time}</td>
+                                            <td class="text-center">{$list.reason}</td>
+                                            <td class="text-center">{$list.admin_user}</td>
+                                            <td class="text-center">
+                                                {if condition="$list.status == '封禁'"}
+                                                <button class="btn btn-success unlock" uid="{$list.user_id}" ; blackinfo="{$list.blackinfo}" type="{$list.type}">解封</button>
+                                                {else}
+                                                <button class="btn btn-success banned" uid="{$list.user_id}" ; blackinfo="{$list.blackinfo}" type="{$list.type}">封禁</button>
+                                                {/if}
+                                            </td>
+                                        </tr>
+                                        {/volist}
+                                        {else}
+                                        <tr class="no-records-found">
+                                            <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                        </tr>
+                                        {/if}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {if condition = "$page.total_page >1"}
+                        <div id="Paginator" style="text-align: center">
+                            <ul id="pageLimit"></ul>
+                        </div>
+                        {/if}
+                        <!-- End Example Events -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Panel Other -->
+        <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                        </button>
+                        <h4 class="modal-title" id="addModalLabel">添加</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form id='add_form' method="post">
+                            <div class="form-group">
+                                <label class="control-label">用户ID:</label>
+                                <input type="text" class="form-control" name='uid' value="" required="required">
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">封禁类型：</label>
+                                <select class="form-control typeSelect" name="type" aria-required="true">
+                                    <option value="1">ip</option>
+                                    <option value="2">设备ID</option>
+                                    <option value="3">身份证号码</option>
+                                    <option value="4" selected>ID封禁</option>
+                                    <option value="5">设备唯一标识</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label">备注:</label>
+                                <input type="text" class="form-control" name='reason' value="" required="required">
+                            </div>
+                            <div class='form-group' id="uid_black">
+                                <label class='control-label'>你会怎么选择？:</label>
+                                <select name="time" class="form-control time" id="head_frame" style="width:200px;">
+                                    <option value="0">==选择封禁时长==</option>
+                                    <option value="1800">封禁30分钟</option>
+                                    <option value="7200">封禁2小时</option>
+                                    <option value="21600">封禁6小时</option>
+                                    <option value="43200">封禁12小时</option>
+                                    <option value="86400">封禁24小时</option>
+                                    <option value="259200">封禁3天</option>
+                                    <option value="604800">封禁7天</option>
+                                    <option value="2592000">封禁30天</option>
+                                    <option value="-1">永久封禁</option>
+                                </select>
+                            </div>
+                            <input type="hidden" value="/admin/deviceIpAdd" name="master_url">
+                            <input type="hidden" value="{$token}" name="token">
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="button" class="btn btn-primary" onclick="add_info()">保存</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+    <input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+    <input type="hidden" value="{$token}" id="token">
+    <input type="hidden" value="{$user_role_menu_input}" id="user_role_menu">
+    <!-- 全局js -->
+    {include file="../view/admin/common/jsHeader.html"}
+    <script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+    <script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+    <script src="/admin/js/plugins/toastr/toastr.min.js"></script>
+    <script src="/time/moment.min.js"></script>
+    <script src="/time/daterangepicker.min.js"></script>
+    <script src="/admin/js/date-select.js"></script>
+    <script>
+        $('.typeSelect').on('change', function () {
+            if ($(this).val() == 4) {
+                $("#uid_black").attr("style", "display:block;"); //显示div
+            } else {
+                $("#uid_black").attr("style", "display:none;"); //隐藏div
+            }
+        })
+
+        $('#add_gift').on('click', function () {
+            $('#addModal').modal('show');
+        });
+
+        function add_info() {
+            var add_info = $("#add_form").serializeArray();
+
+
+            if (add_info[0]['value'] == 'null' || add_info[0]['value'] == '') {
+                toastr.warning('用户ID不能为空');
+                return false;
+            }
+
+            if (add_info[2]['value'] == 'null' || add_info[2]['value'] == '') {
+                toastr.warning('备注不能为空');
+                return false;
+            }
+
+            if (add_info[3]['value'] == 0 && add_info[1].value == 4 ) {
+                toastr.warning('请选择封禁时长');
+                return false;
+            }
+
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "get", //请求类型
+                url: "/admin/deviceIpAdd", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: add_info,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000); //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        }
+
+        $('#pageLimit').bootstrapPaginator({
+            currentPage: $("#page").val(),
+            totalPages: $("#total_page").val(),
+            size: "normal",
+            bootstrapMajorVersion: 3,
+            alignment: "right",
+            numberOfPages: '5',
+            pageUrl: function (type, page, current) {
+                //是每个分页码变成一个超链接
+                return '?page=' + page + '&master_url=/admin/blackList&token=' + $("#token").val() + '&demo=' + $("#demo").val() + '&user_id=' + $('#user_id').val() + '&status=' + $("#status").val() + '&blackinfo=' + $("#blackinfo").val();
+            },
+            itemTexts: function (type, page, current) {
+                switch (type) {
+                    case "first":
+                        return "首页";
+                    case "prev":
+                        return "上一页";
+                    case "next":
+                        return "下一页";
+                    case "last":
+                        return "末页";
+                    case "page":
+                        return page;
+                }
+            }
+        });
+        $('#search').click(function () {
+            window.location.href = "/admin/blackList?token=" + $('#token').val() + '&master_url=/admin/blackList&page=1&user_id=' + $("#user_id").val() + '&demo=' + $("#demo").val() + '&status=' + $("#status").val() + '&blackinfo=' + $("#blackinfo").val();
+        })
+        $('#refresh').click(function () {
+            $("#user_id").val('')
+            $("#status").val(1)
+            $("#blackinfo").val('')
+        })
+
+        //  解封
+        $('.unlock').click(function () {
+            if (confirm("奥利给！确定要解封此封禁吗？")) {
+                $.ajax({
+                    async: false, //表示请求是否异步处理
+                    type: "post", //请求类型
+                    url: "/admin/memberUnsealings", //请求的 URL地址
+                    token: $("#token").val(),
+                    dataType: "json", //返回的数据类型
+                    data: {
+                        token: $('#token').val(),
+                        master_url: '/admin/memberUnsealings',
+                        blackinfo: $(this).attr('blackinfo'),
+                        id: $(this).attr('uid'),
+                        type: $(this).attr('type')
+                    },
+                    success: function (rs) {
+                        if (rs.code !== 200) {
+                            toastr.warning(rs.msg);
+                            return false;
+                        }
+                        toastr.success(rs.msg);
+                        setTimeout(location, 1000); //延迟5秒刷新页面
+                    },
+                    error: function (rs) {
+                        toastr.warning('请求失败');
+                    }
+                });
+
+                function location() {
+                    window.location.href = window.location.href;
+                }
+                return false;
+            } else {
+                window.location.reload()
+            }
+        })
+
+        //  封禁
+        $('.banned').click(function () {
+            if (confirm("萨斯给！确定要封禁此用户吗？")) {
+                $.ajax({
+                    async: false, //表示请求是否异步处理
+                    type: "get", //请求类型
+                    url: "/admin/deviceIpAdd", //请求的 URL地址
+                    token: $("#token").val(),
+                    dataType: "json", //返回的数据类型
+                    data: {
+                        token: $('#token').val(),
+                        master_url: '/admin/deviceIpAdd',
+                        uid: $(this).attr('uid'),
+                        type: $(this).attr('type'),
+                        reason: '违规',
+                        time: -1
+                    },
+                    success: function (rs) {
+                        if (rs.code !== 200) {
+                            toastr.warning(rs.msg);
+                            return false;
+                        }
+                        toastr.success(rs.msg);
+                        setTimeout(location, 1000); //延迟5秒刷新页面
+                    },
+                    error: function (rs) {
+                        toastr.warning('请求失败');
+                    }
+                });
+
+                function location() {
+                    window.location.href = window.location.href;
+                }
+                return false;
+            } else {
+                window.location.reload()
+            }
+        })
+
+        $('#daochu').click(function () {
+            var stime = $('#datetimeStart').val();
+            var etime = $('#datetimeEnd').val();
+            var token = $('#token').val();
+            var page = $("#page").val();
+            //var reason = $("#reason").val();
+            if (stime > etime) {
+                toastr.warning('开始时间不能大于结束时间');
+                return false;
+            }
+            window.location.href = "/admin/blackList?token=" + token +
+                '&master_url=/admin/blackList' + '&demo=' + $('#demo').val() + '&daochu=1';
+        })
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="example">
+                            {if condition="in_array('/admin/vipPrivilege',$user_role_menu)"}
+                            <div class="pull-right search form-inline">
+                                <input class="form-control input-outline" type="text"
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                       placeholder="请输入Id" value="{$id}"
+                                       id="id">
+                                <!-- <input class="form-control input-outline" type="text"
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                       placeholder="输入1是上架，2是下架" value="{$status}"
+                                       id="status"> -->
+                                会员类型:<select class="form-control" id="type">
+                                <option value="1" {if $type == 1} echo selected="selected" {/if}>普通会员</option>
+                                <option value="2" {if $type == 2} echo selected="selected" {/if}>年费会员</option>
+                            </select>
+                                是否启用:<select class="form-control" id="status">
+                                <option value="0" {if $status == 0} echo selected="selected" {/if}>否</option>
+                                <option value="1" {if $status == 1} echo selected="selected" {/if}>是</option>
+                            </select>
+                                <button type="button" class=" btn btn-primary" id="search">搜索</button>
+                            </div>
+                            {/if}
+                            <div class="example">
+                                {if condition="in_array('/admin/addPrivilege',$user_role_menu)"}
+                                <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                    <button type="button" class="btn btn-outline btn-success" id="add_privilege">
+                                        <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加会员特权
+                                    </button>
+                                </div>
+                                {/if}
+                                <table class="table table-hover table-responsive" id="data_table" style="word-wrap: break-word; word-break: break-all;">
+                                    <thead>
+                                    <tr>
+                                        <th class="text-center">ID</th>
+                                        <th class="text-center">会员类型</th>
+                                        <th class="text-center">会员特权描述</th>
+                                        <th class="text-center">会员特权图片</th>
+                                        <th class="text-center">会员特权预览</th>
+                                        <th class="text-center">会员特权预览图片</th>
+                                        <th class="text-center">会员特权排序</th>
+                                        <th class="text-center">特权图片亮度</th>
+                                        <th class="text-center">状态</th>
+                                        <th class="text-center">操作</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {if condition="!empty($data)"}
+                                    {volist name="data" id="list"}
+                                    <tr>
+                                        <td style="width: 20px;" class="text-center id" id="id" >{$list.id}</td>
+                                        <td style="width: 20px;" class="text-center type" >{$list.type}</td>
+                                        <td style="width: 20px;" class="text-center title" >{$list.title}</td>
+                                        <td style="width: 20px;" class="text-center "><img src="{$list.picture}" style="width: 50px;" alt="暂无"></td>
+                                        <td style="width: 20px;" class="text-center content" >{$list.content}</td>
+                                        <td style="width: 20px;" class="text-center "><img src="{$list.preview_picture}" style="width: 50px;" alt="暂无"></td>
+                                        <td style="width: 20px;" class="text-center sort">{$list.sort}</td>
+                                        <td style="width: 20px;" class="text-center state">{$list.state}</td>
+                                        <td style="width: 20px;" class="text-center status" value="{$list.status}">{$list.status}</td>
+                                        <td style="width: 20px;" class="text-center">
+                                            {if condition="in_array('/admin/vipPrivilege',$user_role_menu)"}
+                                            <button class="btn btn-success editPrivilege" id="editPrivilege">编辑</button>
+                                            <button class="btn btn-success editPrivilegeImage" id="ossFile">修改|新增图片</button>
+                                            {/if}
+                                        </td>
+                                    </tr>
+                                    {/volist}
+                                    {else}
+                                    <tr class="no-records-found">
+                                        <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                    </tr>
+                                    {/if}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {if condition = "$page.total_page >1"}
+                        <div id="Paginator" style="text-align: center">
+                            <ul id="pageLimit"></ul>
+                        </div>
+                        {/if}
+                        <!-- End Example Events -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Panel Other -->
+    </div>
+    <!--添加会员特权-->
+    <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="addModalLabel">添加会员特权</h4>
+                </div>
+                <div class="modal-body">
+                    <form id='add_form' method="post">
+                        <div class="form-group">
+                            <label class="control-label">会员特权类型:</label>
+                            <select class="form-control " name="type"  required="" aria-required="true">
+                                <option value="1">普通会员</option>
+                                <option value="2">年费会员</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">会员特权图片文案:</label>
+                            <input type="text" class="form-control" name="title"  value="" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">会员特权预览文案:</label>
+                            <input type="text" class="form-control" name="content"  value="" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">会员特权排序:</label>
+                            <input type="text" class="form-control" name="sort" value="" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">展示图标亮度:</label>
+                            <select class="form-control " name="state"  required="" aria-required="true">
+                                <option value="0">暗色</option>
+                                <option value="1">亮色</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">是否启用：</label>
+                            <select class="form-control " name="status"  required="" aria-required="true">
+                                <option value="1">是</option>
+                                <option value="0">否</option>
+                            </select>
+                        </div>
+                        <input type="hidden" value="/admin/addPrivilege" name="master_url">
+                        <input type="hidden" value="{$token}" name="token">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="add_info()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--编辑图片-->
+    <div class="modal fade" id="uploadFileModal" tabindex="-1" role="dialog" aria-labelledby="uploadFileModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="upload-file-name">图片编辑</h4>
+                </div>
+                <div class="modal-body">
+                    <form id='uploads_files' method="post" enctype="multipart/form-data">
+                        <input type="hidden" id="id" value="">
+                        <div class="form-group">
+                            <label class="control-label">更新会员特权图片[PNG]</label>
+                            <input type="file" class="form-control picture" name="picture" id="picture"  value="" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">更新会员特权预览图片[PNG]</label>
+                            <input type="file" class="form-control preview_picture" name="preview_picture" id="preview_picture"  value="" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="add_imgs()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--编辑会员特权-->
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="editModalLabel">编辑会员特权</h4>
+                </div>
+                <div class="modal-body edit-append">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="edit_info()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--操作modal-->
+    <input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+    <input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+    <input type="hidden" value="{$token}" name="token" id="token">
+    <input type="hidden" value="/admin/ossFile" name="master_url" id="master_url">
+    <!-- 全局js -->
+    {include file="../view/admin/common/jsHeader.html"}
+    <script src="/admin/js/trap/fileinput.js" type="text/javascript"></script>
+    <script src="/admin/js/trap/fileinput_locale_zh.js" type="text/javascript"></script>
+    <script>
+        $('body').on('hidden.bs.modal', '#editModal', function () {
+            $("#editModal form").remove();
+        });
+        //添加或更改图片
+        $('.editPrivilegeImage').on('click',function(){
+            $("#id").val($(this).parents("tr").find(".id").text());
+            $("#picture").val($(this).parents("tr").find(".picture").text());
+            $("#preview_picture").val($(this).parents("tr").find(".preview_picture").text());
+            $('#uploadFileModal').modal('show');
+        })
+        function add_imgs(){
+            if($("#id").val() == ""){
+                toastr.warning('未获得特权ID');
+                return false;
+            }
+            var formData = new FormData();
+            formData.append("id", $("#id").val());
+            formData.append("token", $("#token").val());
+            formData.append("master_url", $("#master_url").val());
+            formData.append("picture", $('#picture')[0].files[0]);
+            formData.append("preview_picture", $('#preview_picture')[0].files[0]);
+            $.ajax({
+                async: false,    //表示请求是否异步处理
+                cache: false,
+                processData: false,
+                contentType: false,
+                type: "post",    //请求类型
+                url: "/admin/addPrivilegePicture",//请求的 URL地址
+                dataType: "json",//返回的数据类型
+                data: formData,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000);   //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        }
+        //清除缓存
+        $("#clearCache").on('click',function(){
+            var master_url = "/admin/clearCache";
+            var token = $("#token").val();
+            $.ajax({
+                async: false,    //表示请求是否异步处理
+                type: "post",    //请求类型
+                url: "/admin/clearCache",//请求的 URL地址
+                dataType: "json",//返回的数据类型
+                data:{master_url:master_url,token:token},
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 500);   //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        })
+
+        $('#pageLimit').bootstrapPaginator({
+            currentPage: $("#page").val(),
+            totalPages: $("#total_page").val(),
+            size: "normal",
+            bootstrapMajorVersion: 3,
+            alignment: "right",
+            numberOfPages: '5',
+            pageUrl: function (type, page, current) {
+                //是每个分页码变成一个超链接
+                return '?page=' + page + '&master_url=/admin/vipPrivilege&token=' + $("#token").val();
+            },
+            itemTexts: function (type, page, current) {
+                switch (type) {
+                    case "first":
+                        return "首页";
+                    case "prev":
+                        return "上一页";
+                    case "next":
+                        return "下一页";
+                    case "last":
+                        return "末页";
+                    case "page":
+                        return page;
+                }
+            }
+        });
+        //搜索
+        $("#search").click(function () {
+            var id = $("#id").val();
+            var status = $("#status").val();
+            var type = $("#type").val();
+            if (isNaN(id)) {
+                toastr.warning('请输入正确的Id');
+                return false;
+            }
+            var token = $('#token').val();
+            window.location.href = "/admin/vipPrivilege?token=" + token + '&master_url=/admin/vipPrivilege&page=1&id=' + id+'&status=' + status + '&type=' + type;
+        })
+
+        //添加会员特权信息
+        $('#add_privilege').on('click',function(){
+            $('#addModal').modal('show');
+        });
+
+        function add_info(){
+            var add_info = $("#add_form").serializeArray();
+            if (add_info[0]['value'] == '') {
+                toastr.warning('会员特权类型不能为空');
+                return false;
+            }
+            if (add_info[1]['value'] == '') {
+                toastr.warning('会员特权图片文案不能为空');
+                return false;
+            }
+            if(add_info[2]['value'] == ''){
+                toastr.warning('会员特权排序不能为空');
+                return false;
+            }
+            if (add_info[3]['value'] == '') {
+                toastr.warning('会员特权状态不能为空');
+                return false;
+            }
+            $.ajax({
+                async: false,    //表示请求是否异步处理
+                type: "post",    //请求类型
+                url: "/admin/addPrivilege",//请求的 URL地址
+                dataType: "json",//返回的数据类型
+                data: add_info,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000);   //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        }
+        //编辑会员特权信息
+        $('.editPrivilege').on('click',function(){
+            $(".edit-append").prepend(
+                "<form id='edit_form' method='post'>"+
+                " <input type='hidden' value='/admin/editPrivilege' name='id' class='id'>"+
+                "<div class='form-group'>"+
+                "<label class='control-label'>"+"会员类型:"+"</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='type' class='type'  value='2'>"+" 年费会员"+
+                "</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='type' class='type'  value='1'>"+" 普通会员"+
+                "</label>"+
+                "</div>"+
+                "<div class='form-group'>"+
+                "<label class='control-label'>" + "会员特权描述： "+"</label>"+
+                "<input type='text' class='form-control title' name='title'  value='' required='required'>"+
+                "</div>"+
+                "<div class='form-group'>"+
+                "<label class='control-label'>" + "会员特权预览描述： "+"</label>"+
+                "<input type='text' class='form-control content' name='content'  value='' required='required'>"+
+                "</div>"+
+                "<div class='form-group'>"+
+                "<label class='control-label'>"+"会员特权排序:"+"</label>" +
+                "<input type='text' class='form-control sort' name='sort'>"+
+                "</div>"+
+                "<div class='form-group'>"+
+                "<label class='control-label'>"+"亮度:"+"</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='state' class='state'  value='0'>"+" 暗色"+
+                "</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='state' class='state'  value='1'>"+" 亮色"+
+                "</label>"+
+                "</div>"+
+                "<div class='form-group'>"+
+                "<label class='control-label'>"+"状态:"+"</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='status' class='status'  value='1'>"+" 启用"+
+                "</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='status' class='status'  value='0'>"+" 禁用"+
+                "</label>"+
+                "</div>"+
+                " <input type='hidden' value='/admin/exitGift' name='master_url'>"+
+                "<input type='hidden' value='{$token}' name='token'>"+
+                " </form>"
+            );
+            var id = $(this).parents("tr").find(".id").text();
+            var type = $(this).parents("tr").find(".type").text();
+            if(type === '年费特权') {
+                type = 2;
+            }else {
+                type = 1;
+            }
+            $(":radio[name='type'][value="+type+"]").attr("checked","checked");
+            $(".title").val($(this).parents("tr").find(".title").text());
+            $(".content").val($(this).parents("tr").find(".content").text());
+            $(".sort").val($(this).parents("tr").find(".sort").text());
+            var status = $(this).parents("tr").find(".status").text();
+            var state = $(this).parents("tr").find(".state").text();
+            if(status === '启用') {
+                status = 1;
+            } else {
+                status = 0;
+            }
+            if(state === '亮色') {
+                state = 1;
+            } else {
+                state = 0;
+            }
+            $(":radio[name='status'][value="+status+"]").attr("checked","checked");
+            $(":radio[name='state'][value="+state+"]").attr("checked","checked");
+            $(".id").val(id);
+            $('#editModal').modal('show');
+        });
+        function edit_info(){
+            var edit_info = $("#edit_form").serializeArray();
+            if (edit_info[1]['value'] == '') {
+                toastr.warning('会员特权类型不能为空');
+                return false;
+            }
+            if (edit_info[2]['value'] == '') {
+                toastr.warning('会员特权图片文案不能为空');
+                return false;
+            }
+            if(edit_info[3]['value'] == ''){
+                toastr.warning('会员特权排序不能为空');
+                return false;
+            }
+            if (edit_info[4]['value'] == '') {
+                toastr.warning('会员特权状态不能为空');
+                return false;
+            }
+            $.ajax({
+                async: false,    //表示请求是否异步处理
+                type: "post",    //请求类型
+                url: "/admin/editPrivilege",//请求的 URL地址
+                dataType: "json",//返回的数据类型
+                data: edit_info,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000);   //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        }
+    </script>
+</body>
+</html>

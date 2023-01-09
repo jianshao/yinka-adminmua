@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/time/daterangepicker.css">
+
+    <style>
+
+        .form-control:focus {
+            border-color: #66afe9;
+            outline: 0;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
+            box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
+        }
+
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        #demo {
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+        }
+        .btn-default {
+            background-color: #fff;
+            border: 1px solid #828080;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: #08c;
+            border: 1px solid #08c;
+            border-radius: 3px;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            background-color: #357ebd;
+        }
+    </style>
+
+</head>
+<body class="gray-bg">
+
+<!--数据表格-->
+<div class="wrapper wrapper-content animated fadeInRight" >
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="btn-group hidden-xs form-inline">
+                            <button type="button" class="btn editGift btn-outline btn-success add_gift" id="add_gift">
+                                <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加
+                            </button>
+
+                        </div>
+                        <div class="example">
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center" >id</th>
+                                    <th class="text-center" >活动名称</th>
+                                    <th class="text-center" >m豆</th>
+                                    <th class="text-center" >比例</th>
+                                    <th class="text-center" >红包数量</th>
+                                    <th class="text-center" >开始</th>
+                                    <th class="text-center" >结束</th>
+                                    <th class="text-center" >红包</th>
+                                    <th class="text-center" >进度条</th>
+                                    <th class="text-center" >动画</th>
+                                    <th class="text-center" >按钮</th>
+                                    <th class="text-center" width="50px">开启</th>
+                                    <th class="text-center" >操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($data)"}
+                                {volist name="data" id="list"}
+                                <tr>
+                                    <td class="text-center id">{$list.id}</td>
+                                    <td class="text-center name">{$list.name}</td>
+                                    <td class="text-center money">{$list.money}</td>
+                                    <td class="text-center proportion">{$list.proportion}</td>
+                                    <td class="text-center red_number">{$list.red_number}</td>
+                                    <td class="text-center create_time">{$list.create}</td>
+                                    <td class="text-center update_time">{$list.update}</td>
+                                    <td class="text-center redid"><img src="{$list.image}" alt="" width="40"></td>
+                                    <td class="text-center redid"><img src="{$list.progressbar_image}" alt="" width="50"></td>
+                                    <td class="text-center"  style="text-align: center;width: 100px"><div src="{$list.animation}" loops="0" clearsAfterStop="true" style="width: 100px;height: 100px"></div></td>
+                                    <td class="text-center redid"><img src="{$list.grabbutton}" alt="" width="50"></td>
+                                    <td class="text-center redid">{if condition="$list.status==1" }开启{else}关闭{/if}</td>
+                                    <td class="text-center redid">
+                                        <button class="btn btn-success add_gift save" giftid="{$list.giftid}" create="{$list.create_time}" update="{$list.update_time}">编辑</button>
+                                        <button greet_message="{$list.id}" class="btn btn-success details">详情</button>
+                                    </td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="9" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+
+<!--编辑装扮信息-->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+                </button>
+                <h4 class="modal-title" id="editModalLabel">编辑装扮信息</h4>
+            </div>
+            <div class="modal-body edit-append">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" >关闭</button>
+                <button type="button" class="btn btn-primary" onclick="edit_info()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--操作modal-->
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$token}" name="token" id="token">
+<input type="hidden" value="/admin/ossAttireFile" name="master_url" id="master_url">
+
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+
+<script src="/time/jquery-1.10.2.js"></script>
+<script src="/time/moment.min.js"></script>
+
+<script src="/time/daterangepicker.min.js"></script>
+<script src="/admin/js/bootstrap.min.js?v=3.3.6"></script>
+<script src="https://cdn.jsdelivr.net/npm/svgaplayerweb@2.3.1/build/svga.min.js"></script>
+<script>
+    $('.details').click(function () {
+        window.location.href = "/admin/activityRedDetails?token=" + $('#token').val() + '&master_url=/admin/activityRedDetails&id=' + $(this).attr('greet_message');
+    })
+    //添加装扮信息
+    $('.editGift').on('click',function(){
+        $(".attire-append").empty();
+        $(".edit-append").empty();
+        $(".edit-append").prepend(
+            "<form id='edit_form' method='post' >"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"活动名称:"+"</label>" +
+            "<input type='text' class='form-control' name='name'  required='required'>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"m豆:"+"</label>" +
+            "<input type='text' class='form-control' name='money' required='required'>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"比列:"+"</label>" +
+            "<input type='text' class='form-control' name='proportion'  oninput=\"this.value = this.value.replace(/[^0-9]/g, '');\" required='required'>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"红包数量:"+"</label>" +
+            "<input type='text' class='form-control' name='red_number'  oninput=\"this.value = this.value.replace(/[^0-9]/g, '');\" required='required'>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"开始 - 结束:"+"</label>" +
+            "<input type='text' class='form_datetime form-control input-outline demo' readonly name='demo'>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>红包:</label>"+
+            "<input type='file' class='form-control corner_sign' name='image' id='image' required>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>进度条:</label>"+
+            "<input type='file' class='form-control corner_sign' name='progressbar_image' id='progressbar_image' required>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>动画:</label>"+
+            "<input type='file' class='form-control corner_sign' id='animation' name='animation' required>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>按钮:</label>"+
+            "<input type='file' class='form-control corner_sign' name='grabbutton' id='grabbutton' required>"+
+            "</div>"+
+
+
+            "<input type='hidden' value='{$token}' name='token'>"+
+            "<input type='hidden' value='/admin/addAttire' id='master_url' name='master_url'>"+
+            " </form>"
+        );
+        $('#editModal').modal('show');
+    });
+    //图片上传
+    $(document).on("change",".corner_sign",function(){
+        var sign = $(this).attr('id');
+        if($(this)[0].files[0]){
+            var animationType = $(this)[0].files[0].name.split('.');
+            if (animationType[1] != "bmp"&&animationType[1] != "png"&&animationType[1] != "gif" && animationType[1]!="jpg" && animationType[1]!="jpeg" && animationType[1] != "svga") {
+                toastr.warning("文件只限图片");
+                return false;
+            }
+        }
+        var formData = new FormData();
+        formData.append("token", $("#token").val());
+        formData.append("master_url", $("#master_url").val());
+        formData.append("image", $(this)[0].files[0]);
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            cache: false,
+            processData: false,
+            contentType: false,
+            type: "post",    //请求类型
+            url: "/admin/ossAttireFile",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: formData,
+            success: function (rs) {
+                if (rs.status !== 1) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                $('#edit_form').append("<input type='hidden' name="+sign+"  value="+rs.image+">");
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    })
+
+    //添加执行
+    function edit_info(){
+        var edit_info = $("#edit_form").serializeArray();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/addActivityRed",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data: edit_info,
+            success: function (rs) {
+                if (rs.code != 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+
+            },
+            // error: function (rs) {
+            //     toastr.warning('请求失败');
+            // }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    }
+    //编辑
+    $('.save').on('click',function(){
+        $(".attire-append").empty();
+        $(".edit-append").empty();
+        $(".edit-append").prepend(
+            "<form id='edit_form' method='post' >"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"活动名称:"+"</label>" +
+            "<input type='text' class='form-control save_name' name='name'  required='required'>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"m豆:"+"</label>" +
+            "<input type='text' class='form-control save_money' name='money' required='required'>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"比列:"+"</label>" +
+            "<input type='text' class='form-control save_proportion' name='proportion'  oninput=\"this.value = this.value.replace(/[^0-9]/g, '');\" required='required'>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"红包数量:"+"</label>" +
+            "<input type='text' class='form-control save_red_number' name='red_number'  oninput=\"this.value = this.value.replace(/[^0-9]/g, '');\" required='required'>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"开始 - 结束:"+"</label>" +
+            "<input type='text' class='form-control save_create_time input-outline demo' name='demo' readonly required='required'>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>红包:</label>"+
+            "<input type='file' class='form-control corner_sign' name='image' id='image' required>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>进度条:</label>"+
+            "<input type='file' class='form-control corner_sign' name='progressbar_image' id='progressbar_image' required>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>动画:</label>"+
+            "<input type='file' class='form-control corner_sign' name='animation' id='animation' required>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>按钮:</label>"+
+            "<input type='file' class='form-control corner_sign' id='grabbutton' name='grabbutton' required>"+
+            "</div>"+
+
+
+            "<input type='hidden' value='{$token}' name='token'>"+
+            "<input type='hidden' id='saveId' name='id'>"+
+            "<input type='hidden' value='/admin/addAttire' id='master_url' name='master_url'>"+
+            " </form>"
+        );
+        $("#saveId").val($(this).parents("tr").find(".id").text());
+        $(".save_name").val($(this).parents("tr").find(".name").text());
+        $(".save_giftid").val($(this).attr('giftid'));
+        $(".save_money").val($(this).parents("tr").find(".money").text());
+        $(".save_proportion").val($(this).parents("tr").find(".proportion").text());
+        $(".save_red_number").val($(this).parents("tr").find(".red_number").text());
+
+        $('#editModal').modal('show');
+    });
+    //图片上传
+    // $(document).on("change",".corner_sign",function(){
+    //     var sign = $(this).attr('id');
+    //     if($(this)[0].files[0]){
+    //         var animationType = $(this)[0].files[0].name.split('.');
+    //         if (animationType[1] != "bmp"&&animationType[1] != "png"&&animationType[1] != "gif" && animationType[1]!="jpg" && animationType[1]!="jpeg" && animationType[1] != "svga") {
+    //             toastr.warning("文件只限图片");
+    //             return false;
+    //         }
+    //     }
+    //     var formData = new FormData();
+    //     formData.append("token", $("#token").val());
+    //     formData.append("master_url", $("#master_url").val());
+    //     formData.append("image", $(this)[0].files[0]);
+    //     $.ajax({
+    //         async: false,    //表示请求是否异步处理
+    //         cache: false,
+    //         processData: false,
+    //         contentType: false,
+    //         type: "post",    //请求类型
+    //         url: "/admin/ossAttireFile",//请求的 URL地址
+    //         dataType: "json",//返回的数据类型
+    //         data: formData,
+    //         success: function (rs) {
+    //             if (rs.status !== 1) {
+    //                 toastr.warning(rs.msg);
+    //                 return false;
+    //             }
+    //             toastr.success(rs.msg);
+    //             $('#edit_form').append("<input type='hidden' name="+sign+"  value="+rs.image+">");
+    //         },
+    //         error: function (rs) {
+    //             toastr.warning('请求失败');
+    //         }
+    //     });
+    //     function location() {
+    //         window.location.href = window.location.href;
+    //     }
+    //     return false;
+    // })
+
+    //添加执行
+    function edit_info(){
+        var edit_info = $("#edit_form").serializeArray();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/addActivityRed",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data: edit_info,
+            success: function (rs) {
+                if (rs.code != 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+
+            },
+            // error: function (rs) {
+            //     toastr.warning('请求失败');
+            // }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    }
+    $(document).on('click','.add_gift',function () {
+        var locale = {
+            "format": 'YYYY-MM-DD HH:mm',
+            "separator": " - ",
+            "applyLabel": "确定",
+            "cancelLabel": "取消",
+            "fromLabel": "起始时间",
+            "toLabel": "结束时间'",
+            "customRangeLabel": "自定义",
+            "weekLabel": "W",
+            "daysOfWeek": ["日", "一", "二", "三", "四", "五", "六"],
+            "monthNames": ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"],
+            "firstDay": 1
+        };
+        $('.demo').daterangepicker({
+            'locale': locale,
+            timePicker: true, //显示时间
+            ranges: {
+                '今日': [moment(), moment()],
+                '昨日': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                '最近7日': [moment().subtract(6, 'days'), moment()],
+                '最近30日': [moment().subtract(29, 'days'), moment()],
+                '本月': [moment().startOf('month'), moment().endOf('month')],
+                '上月': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month')
+                    .endOf('month')
+                ]
+            },
+            "alwaysShowCalendars": true,
+            "opens": "right",
+        }, function (start, end, label) {
+            timeRangeChange = [start.format('YYYY-MM-DD HH:mm:00'), end.format('YYYY-MM-DD HH:mm:00')];
+            console.log(timeRangeChange);
+        });
+    })
+    // $(document).on('click','.save',function () {
+    //     var locale = {
+    //         "format": 'YYYY-MM-DD',
+    //         "separator": " - ",
+    //         "applyLabel": "确定",
+    //         "cancelLabel": "取消",
+    //         "fromLabel": "起始时间",
+    //         "toLabel": "结束时间'",
+    //         "customRangeLabel": "自定义",
+    //         "weekLabel": "W",
+    //         "daysOfWeek": ["日", "一", "二", "三", "四", "五", "六"],
+    //         "monthNames": ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"],
+    //         "firstDay": 1
+    //     };
+    //     $('.demo').daterangepicker({
+    //         timePicker: true, //显示时间
+    //         timePicker24Hour: true, //时间制
+    //         timePickerSeconds: true, //时间显示到秒
+    //         startDate: moment().hours(0).minutes(0).seconds(0), //设置开始日期
+    //         endDate: moment(new Date()), //设置结束器日期
+    //         maxDate: moment(new Date()), //设置最大日期
+    //         "opens": "center",
+    //         ranges: {
+    //             // '今天': [moment(), moment()],
+    //             '昨天': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+    //             '上周': [moment().subtract(6, 'days'), moment()],
+    //             '前30天': [moment().subtract(29, 'days'), moment()],
+    //             '本月': [moment().startOf('month'), moment().endOf('month')],
+    //             '上月': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+    //         },
+    //         showWeekNumbers: true,
+    //         locale: {
+    //             format: "YYYY-MM-DD HH:mm:ss", //设置显示格式
+    //             applyLabel: '确定', //确定按钮文本
+    //             cancelLabel: '取消', //取消按钮文本
+    //             customRangeLabel: '自定义',
+    //             daysOfWeek: ['日', '一', '二', '三', '四', '五', '六'],
+    //             monthNames: ['一月', '二月', '三月', '四月', '五月', '六月',
+    //                 '七月', '八月', '九月', '十月', '十一月', '十二月'
+    //             ],
+    //             firstDay: 1
+    //         },
+    //     }, function(start, end, label) {
+    //         timeRangeChange = [start.format('YYYY-MM-DD HH:mm:ss'), end.format('YYYY-MM-DD HH:mm:ss')];
+    //         console.log(timeRangeChange);
+    //     });
+    //     var create = $(this).attr('create');
+    //     var update = $(this).attr('update');
+    //     var time = create+' - '+update;
+    //     $(".save_create_time").val(time);
+    // })
+
+</script>
+</body>
+</html>

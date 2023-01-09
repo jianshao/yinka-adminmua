@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="example">
+
+                            <div class="example">
+
+                                <table class="table table-hover table-responsive" id="data_table" style="word-wrap: break-word; word-break: break-all;">
+                                    <thead>
+                                    <tr>
+                                        <th class="text-center">地图</th>
+                                        <th class="text-center">体力</th>
+                                        <th class="text-center">比例</th>
+                                        <th class="text-center">操作</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {if condition="!empty($data)"}
+                                    {volist name="data" id="list"}
+                                    <tr>
+                                        <td style="width: 20px;" class="text-center greet_message" >{$list.game_name}</td>
+                                        <td style="width: 20px;" class="text-center greet_message" >{$list.game_energy}</td>
+                                        <td style="width: 20px;" class="text-center greet_message" >{$list.tili}</td>
+                                        <td style="width: 20px;" class="text-center">
+                                            <button id="{$list.id}" class="btn save btn-success" style="background-color: rgb(72,119,194);border-color: rgb(72,119,194);">编辑奖池</button>
+                                            <button gameid="{$list.id}" class="btn game_proportion btn-success" style="background-color: rgb(69,69,102);border-color: rgb(69,69,102);">编辑奖池比例</button>
+                                            <button gameid="{$list.id}" class="btn addGameImage1 btn-success" style="background-color: rgb(48,107,154);border-color:rgb(48,107,154);">游戏封面</button>
+                                            <button gameid="{$list.id}" class="btn addGameImage2 btn-success" style="background-color: rgb(172,119,123);border-color: rgb(172,119,123);">游戏地图</button>
+                                            <button gameid="{$list.id}" class="btn addGameImage3 btn-success" style="background-color: rgb(226,83,106);border-color: rgb(226,83,106);">地图遮盖</button>
+                                            <button gameid="{$list.id}" class="btn addGameImage4 btn-success" style="background-color: rgb(89,140,118);border-color: rgb(89,140,118);">地图背景</button>
+                                            <button gameid="{$list.id}" class="btn addGameImage5 btn-success" style="background-color:rgb(201,89,120);border-color:rgb(201,89,120);">奖励图</button>
+                                        </td>
+                                    </tr>
+                                    {/volist}
+                                    {else}
+                                    <tr class="no-records-found">
+                                        <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                    </tr>
+                                    {/if}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- End Example Events -->
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!--编辑图片-->
+        <div class="modal fade" id="uploadFileModal" tabindex="-1" role="dialog" aria-labelledby="uploadFileModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                        </button>
+                        <h4 class="modal-title" id="upload-file-name">图片编辑</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form id='uploads_files' method="post" enctype="multipart/form-data">
+                            <input type="hidden" id="gifts_id" value="">
+                            <input type="hidden" id="type" value="">
+                            <div class="form-group">
+                                <label class="control-label">添加图片[PNG]</label>
+                                <input type="file" class="form-control gift_image" name="gift_image" id="gift_image"  value="" required>
+                            </div>
+<!--                            <div class="form-group">-->
+<!--                                <label class="control-label">添加动画[GIF]:</label>-->
+<!--                                <input type="file" class="form-control animation" name="animation"  id="animation" value="" required>-->
+<!--                            </div>-->
+<!--                            <div class="form-group">-->
+<!--                                <label class="control-label">添加大动画[SVGA]:</label>-->
+<!--                                <input type="file" class="form-control gift_animation" name="gift_animation" id="gift_animation" value="" required>-->
+<!--                            </div>-->
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="button" class="btn btn-primary" onclick="add_imgs()">保存</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Panel Other -->
+    </div>
+    <input type="hidden" value="{$token}" id="token">
+    <input type="hidden" value="/admin/ossFileStart" name="master_url" id="master_url">
+    <!-- 全局js -->
+    {include file="../view/admin/common/jsHeader.html"}
+    <script src="/admin/js/trap/fileinput.js" type="text/javascript"></script>
+    <script src="/admin/js/trap/fileinput_locale_zh.js" type="text/javascript"></script>
+    <script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+    <script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+    <script>
+
+        $('.save').click(function () {
+            var id = $(this).attr('id');
+            var token = $('#token').val();
+            window.location.href = "/admin/gameJson?token=" + token + '&master_url=/admin/gameJson&id='+id;
+        })
+        $('.game_proportion').click(function () {
+            var id = $(this).attr('gameid');
+            var token = $('#token').val();
+            window.location.href = "/admin/gameProportion?token=" + token + '&master_url=/admin/gameProportion&id='+id;
+        })
+        //添加或更改图片
+        $('.addGameImage1').on('click',function(){
+            $("#gifts_id").val($(this).attr('gameid'));
+            $("#type").val('game_cover');
+            $('#uploadFileModal').modal('show');
+        })
+        $('.addGameImage2').on('click',function(){
+            $("#gifts_id").val($(this).attr('gameid'));
+            $("#type").val('game_map');
+            $('#uploadFileModal').modal('show');
+        })
+        $('.addGameImage3').on('click',function(){
+            $("#gifts_id").val($(this).attr('gameid'));
+            $("#type").val('game_covermap');
+            $('#uploadFileModal').modal('show');
+        })
+        $('.addGameImage4').on('click',function(){
+            $("#gifts_id").val($(this).attr('gameid'));
+            $("#type").val('game_bgmap');
+            $('#uploadFileModal').modal('show');
+        })
+        $('.addGameImage5').on('click',function(){
+            $("#gifts_id").val($(this).attr('gameid'));
+            $("#type").val('game_image');
+            $('#uploadFileModal').modal('show');
+        })
+        function add_imgs(){
+            if($("#gifts_id").val() == ""){
+                toastr.warning('未获得ID');
+                return false;
+            }
+            // if($('#gift_image')[0].files[0]){
+            //     var gift_imageType = $('#gift_image')[0].files[0].name.split('.');
+            //     if(gift_imageType[1] != 'png'){
+            //         toastr.warning('礼物图标请选择png格式文件');
+            //         return false;
+            //     }
+            // }
+
+            var formData = new FormData();
+            formData.append("id", $("#gifts_id").val());
+            formData.append("type", $("#type").val());
+            formData.append("token", $("#token").val());
+            formData.append("master_url", $("#master_url").val());
+            formData.append("gift_image", $('#gift_image')[0].files[0]);
+            $.ajax({
+                async: false,    //表示请求是否异步处理
+                cache: false,
+                processData: false,
+                contentType: false,
+                type: "post",    //请求类型
+                url: "/admin/GameImage",//请求的 URL地址
+                dataType: "json",//返回的数据类型
+                data: formData,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000);   //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="example">
+                            <div class="example">
+                                <button type="button" class="btn btn-outline btn-success" id="clearCache">
+                                    <i class="glyphicon glyphicon-fire" aria-hidden="true"></i>清除缓存
+                                </button>
+                                <table class="table table-hover table-responsive" id="data_table" style="word-wrap: break-word; word-break: break-all;">
+                                    <thead>
+                                    <tr>
+                                        <th class="text-center">周ID</th>
+                                        <th class="text-center">周期</th>
+                                        <th class="text-center">详情</th>
+                                        <th class="text-center">数量</th>
+                                        <th class="text-center">类型</th>
+                                        <th class="text-center">奖励</th>
+                                        <th class="text-center">png</th>
+<!--                                        <th class="text-center">操作</th>-->
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {if condition="!empty($list)"}
+                                    {volist name="list" id="list"}
+                                    <tr>
+                                        <td style="width: 20px;" class="text-center id" >{$list.id}</td>
+                                        <td style="width: 20px;" class="text-center" >{$list.name}</td>
+                                        <td style="width: 20px;" class="text-center" >{$list.desc}</td>
+                                        <td style="width: 20px;" class="text-center" >{$list.count}</td>
+                                        <td style="width: 20px;" class="text-center" >{$list.cycle}</td>
+                                        <td style="width: 20px;" class="text-center" >{$list.smallName}</td>
+                                        <td style="width: 20px;" class="text-center" ><img src="{$list.img}" width="50px" alt=""></td>
+<!--                                        <td style="width: 20px;" class="text-center">-->
+<!--                                            <button greet_message="{$list.id}" class="btn btn-success save">编辑</button>-->
+<!--                                            <button greet_message="{$list.id}" class="btn btn-success details">详情</button>-->
+<!--                                        </td>-->
+                                    </tr>
+                                    {/volist}
+                                    {else}
+                                    <tr class="no-records-found">
+                                        <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                    </tr>
+                                    {/if}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- End Example Events -->
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!-- End Panel Other -->
+    </div>
+</div>
+{include file="../view/admin/common/jsHeader.html"}
+<script>
+    //清除缓存
+    $("#clearCache").on('click',function(){
+        var master_url = "/admin/clearCache";
+        var token = $("#token").val();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/clearCache",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data:{master_url:master_url,token:token,type:'weekcheckin_conf'},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 500);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    })
+</script>

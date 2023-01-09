@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+    <style>
+        table {
+            table-layout: fixed;
+        }
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="btn-group hidden-xs form-inline">
+                            <div class="form-group">
+                                表名：<input type="text" id="from"   class="form_datetime form-control input-outline">
+                                ID：<input type="text" id="id"  class="form_datetime form-control input-outline">
+                            </div>
+                            &#12288
+                            <button type="button" class="btn btn-outline btn-success del_info" style="float:right;">
+                                <i aria-hidden="true"></i>执行删除
+                            </button>
+
+                        </div>
+                    </div>
+
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+<div class="modal fade" id="del_info">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>取消操作</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <i class="fa fa-trash-o" id="del_msg"></i>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger del" data-btn-danger="modal">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+{include file="../view/admin/common/userItem.html"}
+<input type="hidden" value="{$token}" id="token">
+<input type="hidden" value="{$user_role_menu_input}" id="user_role_menu">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<style>
+</style>
+<script>
+
+    $('.del_info').click(function () {
+        $('#del_info').modal('show')
+        $("#del_msg").html(' 您确定要删除吗? ')
+    })
+    $('.del').click(function() {
+        var id = $("#id").val();
+        var from = $("#from").val();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "get",    //请求类型
+            url: "/admin/delete",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data: {id:id,from:from,token:$("#token").val(),master_url:'/admin/delete'},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    })
+</script>
+</body>
+</html>

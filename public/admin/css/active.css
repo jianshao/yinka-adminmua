@@ -1,0 +1,131 @@
+h1{
+    text-align: center;
+}
+.activi{
+    position: relative;
+    bottom: 0;
+    overflow: scroll;
+    height: 475px;
+    min-width: 1080px;
+}
+.addBtn{
+    position: absolute;
+    top: 233px;
+    right: 187px;
+}
+.topWindow span,.bottomWindow span{
+    text-align: right;
+    line-height: 26px;
+}
+.topWindow input{
+    margin-bottom: 10px;
+}
+.topWindow,.bottomWindow {
+    padding: 10px 10%;
+}
+.bottomWindow button{
+    height: 26px;
+    line-height: 12px;
+    font-size: 25px;
+    width: 40px;
+}
+.bottomWindow input[type=text],.bottomWindow input[type=number]{
+    margin-right: 10px;
+}
+
+.consumption_items>div,.consumption_currency>div,.reward_item>div,.reward_currency>div,.behavior>div{
+    margin: 10px 0;
+}
+.right_bot{
+    padding-top: 23px;
+}
+.is_associatedBig span{
+    line-height: 21px;
+}
+.form-control{
+    width: 25%;
+    height: 25px;
+    margin-right: 10px;
+    border-radius: 0;
+    font-size: 14px;
+    padding: 0;
+    padding-left: 10px;
+}
+.bottomWindow,.topWindow{position: relative;width: 100%;overflow: hidden}
+
+.delete_activi{
+    margin-top: 49px;
+    width: auto !important;
+    font-size: 14px !important;
+    z-index: 999;
+}
+.detail_window{
+    height: 420px;
+    background: #fff;
+    text-align: center;
+    overflow: scroll;
+    border: 1px solid #aaaaaa
+}
+.detail_window p{
+    text-align: left;
+    margin-left: 104px;
+    font-weight: 700;
+}
+.detail_window p span{
+    font-weight: 500;
+}
+.detail_top{
+    margin-bottom: 20px;
+    display: flex;
+    font-size: 18px;
+
+}
+.detail_top div,.detail_bottom div{
+    width: 100%;
+
+}
+.detail_bottom{
+    margin-bottom: 20px;
+    border-top: 1px solid #dadada;
+    padding-top: 20px;
+    font-size: 18px;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+}
+.close_detail,.close_activi{
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+.detail_bigp{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: end;
+    width: 60%;
+    margin: 0 auto;
+}
+.detail_bottom h1{
+    margin-bottom: 30px;
+}
+.modal-dialog{
+    width: 75% !important;
+    overflow: scroll;
+    height: 472px;
+}
+.modal-header{
+    padding: 5px 20px;
+}
+.modal-content{
+    position: relative;
+}
+.modal-
+.modal-footer{
+    border: none;
+}
+.activi{
+    width: 80%;
+    margin: 0 auto;
+    position: fixed;
+    top: 100px;
+}

@@ -1,0 +1,136 @@
+.body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    line-height: 1.428571429;
+    font-size: 1.5625rem;
+    background-color: #ffffff;
+    display: block;
+}
+.common-user-info-box{
+    width: 100%;
+    height: 100%;
+}
+.login-info-box{
+    width: 100%;
+    height: 100%;
+}
+.common-box-top{
+    width: 100%;
+    height: 100%;
+}
+.common-box-top-left{
+    width: 30%;
+    height: 100%;
+    float: left;
+}
+.common-box-top-right{
+    width: 70%;
+    height: 100%;
+    float: left;
+    padding: 3%;
+}
+.commom-right-top-box{
+    width: 100%;
+    height: 75%;
+    padding: 2%;
+}
+.common-right-bottom-box{
+    width: 100%;
+    height: 25%;
+    padding: 2%;
+}
+.common-user-img{
+    background: #D4BAFF;
+    width:60%;
+    height: 60%;
+    margin-left: 20%;
+    margin-top: 10%;
+    padding: 0.125rem;
+}
+.common-user-image{
+    width:99%;
+    height: 99%;
+}
+.ban-user{
+    background: #ed5565;
+    margin-top: 10%;
+    margin-left: 30%;
+}
+.historydongtai-record{
+    margin-top: 10%;
+    margin-left: 30%;
+    background: #1c84c6;
+}
+.receiving-giftdongtai{
+    margin-top: 10%;
+    margin-left: 30%;
+    background: #1c84c6;
+}
+.giving-gift{
+    margin-top: 10%;
+    margin-left: 30%;
+    background: #1c84c6;
+}
+.entry-records{
+    margin-top: 10%;
+    margin-left: 30%;
+    background: #1c84c6;
+}
+.forbid-records{
+    margin-top: 10%;
+    margin-left: 30%;
+    background: #1c84c6;
+}
+.clear-attention{
+    margin-top: 10%;
+    margin-left: 30%;
+    background: #1c84c6;
+}
+.common-left-historydongtai-record{
+    background: #F06E57;
+    width: 8rem;
+    height: 3.25rem;
+    border: 0px solid #00000000;
+    color: #FFFFFF;
+    font-size: 1.5625rem;
+    border-radius:0.6125rem;
+}
+.common-botton-btn{
+    width: 7rem;
+    height: 2.75rem;
+    border: 0px solid #00000000;
+    color: #FFFFFF;
+    border-radius:0.6125rem;
+}
+.common-botton-btn-exit{
+    width: 7rem;
+    height: 2.5rem;
+    border: 0px solid #00000000;
+    color: #FFFFFF;
+    border-radius:0.6125rem;
+    background: #ed5565;
+    float: left;
+    margin-top: -0.75rem;
+}
+.commontop-right-list{
+    width: 100%;
+    margin: 0.625rem;
+    float: left;
+}
+.commontop-right-list-labell{
+    width: 20%;
+    float: left;
+    margin-right: 0.625rem;
+}
+.commontop-right-list-divv{
+    float: left;
+    width: 40%;
+}
+.exit-input{
+    width: 100%;
+}
+.no{
+
+}
+.yes{
+
+}

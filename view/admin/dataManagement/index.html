@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+    <style>
+        table {
+            table-layout: fixed;
+        }
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="btn-group hidden-xs form-inline">
+                            <div class="form-group">
+                                <input type="text" value="{$demo}" id="demo" readonly class="form_datetime form-control input-outline" style="width:190px;">
+                            </div>
+                            &#12288
+                            <button type="button" class="btn btn-outline btn-success" style="float:right;" id="daochu">
+                                <i aria-hidden="true"></i>导出
+                            </button>
+                            &#12288
+                            <button type="button" class="btn btn-outline btn-success" style="float:right;" id="search">
+                                <i aria-hidden="true"></i>搜索
+                            </button>
+
+                        </div>
+                        <div class="example">
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center" width="100px" style="color: #40bf57">日期</th>
+                                    <th class="text-center" style="color: #40bf57">日活</th>
+                                    <th class="text-center" style="color: #40bf57">新增</th>
+                                    <th class="text-center" style="color: #40bf57">新增充值</th>
+                                    <th class="text-center" style="color: #40bf57">新充值人</th>
+                                    <th class="text-center" style="color: #40bf57">新充值率</th>
+                                    <th class="text-center" style="color: #7d90ef;">总充值</th>
+                                    <th class="text-center" style="color: #7d90ef;">充值人数</th>
+                                    <th class="text-center" style="color: #7d90ef;">直+代(额)</th>
+                                    <th class="text-center" style="color: #7d90ef;">直+代(人)</th>
+                                    <th class="text-center" style="color: #fc401b;">vip</th>
+                                    <th class="text-center" style="color: #fc401b;">充值率</th>
+                                    <th class="text-center" style="color: #7d90ef;">ARPU</th>
+                                    <th class="text-center" style="color: #7d90ef;">ARPPU</th>
+                                    <th class="text-center">三日付费</th>
+                                    <th class="text-center">七日付费</th>
+                                    <th class="text-center">十五付费</th>
+                                    <th class="text-center">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($list)"}
+                                {volist name="list" id="data"}
+                                <tr>
+                                    <td class="text-center" class="riq" id="riq" style="color: #40bf57">{$data.riq}</td>
+                                    <td class="text-center" style="color: #40bf57">{$data.rih}</td>
+                                    <td class="text-center" style="color: #40bf57">{$data.xinz}</td>
+                                    <td class="text-center" style="color: #40bf57">{$data.nczzje}</td>
+                                    <td class="text-center" style="color: #40bf57">{$data.nczrs}</td>
+                                    <td class="text-center" style="color: #40bf57">{$data.nczl/100}%</td>
+                                    <td class="text-center" style="color: #7d90ef;">{$data.czzje}</td>
+                                    <td class="text-center" style="color: #7d90ef;"><a href="#" riq="{$data.riq}" beancredit="0" class="getCzrs">{$data.czrs}</a></td>
+                                    <td class="text-center" style="color: #7d90ef;">{$data.czje + $data.czzje}</td>
+                                    <td class="text-center" style="color: #7d90ef;"><a href="#" riq="{$data.riq}" beancredit="1" class="getCzrs">{$data.czr + $data.czrs}</a></td>
+                                    <td class="text-center" style="color: #fc401b;">{$data.vip}</td>
+                                    <td class="text-center" style="color: #fc401b;">{$data.czl/100}%</td>
+                                    <td class="text-center">{$data.arpu/100}</td>
+                                    <td class="text-center">{$data.arppu/100}</td>
+                                    <td class="text-center">{$data.scharge}</td>
+                                    <td class="text-center">{$data.qcharge}</td>
+                                    <td class="text-center">{$data.swcharge}</td>
+                                    <td class="text-center">
+                                        {if condition="in_array('/admin/retention',$user_role_menu)"}
+                                        <button class="btn btn-success select_retention">留存</button>
+                                        {/if}
+                                        <br>
+                                        {if condition="in_array('/admin/userbiDetail',$user_role_menu)"}
+                                        <button class="btn btn-primary"><a href="{$admin_url}/userbiDetail?master_url=/admin/userbiDetail&token={$token}&master_url=/admin/userbiDetail&page=1&riqi={$data.riq}">详情</a></button>
+                                        {/if}
+                                    </td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="9" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page > 1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+<!--查看留存详情-->
+<div class="modal fade" id="selectRate">
+    <div class="modal-dialog" style="width:80%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>详情</h3>
+            </div>
+            <table class="table table-hover table-responsive" id="select_forum_reply_table">
+                <thead>
+                <tr>
+                    <th class="text-center">id</th>
+                    <th class="text-center">次日留存</th>
+                    <th class="text-center">三日留存</th>
+                    <th class="text-center">七日留存</th>
+                </tr>
+                </thead>
+                <tbody id="member_tbody">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{include file="../view/admin/common/userItem.html"}
+<input type="hidden" value="{$token}" id="token">
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$user_role_menu_input}" id="user_role_menu">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<style>
+</style>
+<script>
+    $(document).on('click','.getCzrs',function () {
+        var timeVal = $(this).attr('riq');
+        var beancredit = $(this).attr('beancredit');
+        var time1 = timeVal+' 00:00:00'
+        var time2 = timeVal+' 23:59:59'
+        if(beancredit == 0){
+            window.location.href = "/admin/userPay?token=" + $("#token").val()  + '&master_url=/admin/userPay'+'&start_time=' + time1 + '&end_time=' + time2 + '&daochu=0'
+        }else{
+            window.location.href = "/admin/userPayBeancredit?token=" + $("#token").val()  + '&master_url=/admin/userPayBeancredit'+'&start_time=' + time1 + '&end_time=' + time2 + '&daochu=0'
+        }
+    })
+    $('body').on('hidden.bs.modal', '#selectRate', function () {
+        $("#member_tbody tr").remove();
+    });
+
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/dataManagementIndex&token=' + $("#token").val() + '&strtime='+$("#datetimeStart").val()+'&endtime='+$("#datetimeEnd").val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+    });
+    $('#search').click(function () {
+        var strtime = $('#datetimeStart').val();
+        var endtime = $('#datetimeEnd').val();
+        var token = $('#token').val();
+        var page = $("#page").val();
+        if(strtime > endtime){
+            toastr.warning('开始时间不能大于结束时间');
+            return false;
+        }
+        window.location.href = "/admin/dataManagementIndex?token=" + token + '&master_url=/admin/dataManagementIndex&page='+ page +'&strtime=' + strtime + '&endtime=' + endtime;
+    })
+    $('#daochu').click(function () {
+        var strtime = $('#datetimeStart').val();
+        var endtime = $('#datetimeEnd').val();
+        var token = $('#token').val();
+        var page = $("#page").val();
+        if(strtime > endtime){
+            toastr.warning('开始时间不能大于结束时间');
+            return false;
+        }
+        window.location.href = "/admin/dataManagementIndex?token=" + token + '&master_url=/admin/dataManagementIndex&page='+ page +'&strtime=' + strtime + '&endtime=' + endtime + '&daochu=1';
+    })
+    $("#datetimeStart").datetimepicker({
+        weekStart: 1,
+        todayBtn: true,
+        todayHighlight: 1,
+        startView: 2,
+        forceParse: 0,
+        showMeridian: 1,
+        format: 'yyyy-mm-dd',
+        minView: '3',
+        language: 'zh-CN',
+        autoclose: true,
+        startDate: '-10y,-10m,-10d'
+    }).on("click", function () {
+        $("#datetimeStart").datetimepicker("setStartDate")
+    });
+    $("#datetimeEnd").datetimepicker({
+        weekStart: 1,
+        todayBtn: true,
+        todayHighlight: 1,
+        startView: 2,
+        forceParse: 0,
+        showMeridian: 1,
+        format: 'yyyy-mm-dd ',
+        minView: '3',
+        language: 'zh-CN',
+        autoclose: true,
+        startDate: '-10y,-10m,-10d'
+    }).on("click", function () {
+        $("#datetimeEnd").datetimepicker("setEndDate")
+    });
+    /*$('.datetimeStart').datetimepicker({
+        language: 'zh-CN',
+        weekStart: 1,
+        todayBtn: 1,
+        autoclose: 1,
+        todayHighlight: 1,
+        startView: 2,
+        minView: 2,
+        forceParse: 0,
+        autoclose: true,
+        format: 'yyyy-mm-dd',
+    })
+
+    $(".datetimeEnd").datetimepicker({
+        weekStart: 1,
+        todayBtn: 1,
+        todayHighlight: 1,
+        startView: 2,
+        forceParse: 0,
+        format: 'yyyy-mm-dd',
+        minView: 2,
+        language: 'zh-CN',
+        autoclose: true,
+    })*/
+    //留存详情
+    $(".select_retention").click(function () {
+        var riq= $(this).parents("tr").find("#riq").text();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/retention",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {
+                riq: riq,
+                master_url: '/admin/retention',
+                token: $("#token").val(),
+            },
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                //if (rs.data.length > 0) {
+                    //$(rs.data).each(function (i, n) {
+                        $("#member_tbody").prepend("<tr class = " + rs.data.id + ">" +
+                            "<td class='text-center'>" + rs.data.id + "</td>" +
+                            "<td class='text-center'>" + rs.data.cirlc + "</td>" +
+                            "<td class='text-center'>" + rs.data.sanrlc + "</td>" +
+                            "<td class='text-center'>" + rs.data.qirlc + "</td>" +
+                            "</tr>"
+                        );
+                    //});
+                //} else {
+                    //$("#member_tbody").prepend("<tr class='no-records-found'><td colspan='9' class='text-center'>没有找到匹配的记录</td></tr>");
+                //}
+                $('#selectRate').modal('show')
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        return false;
+    });
+</script>
+</body>
+</html>

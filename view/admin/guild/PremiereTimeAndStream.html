@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/time/daterangepicker.css">
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+
+        <div class="ibox-content">
+
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        {if condition="in_array('/admin/PremiereTimeAndStream',$user_role_menu)"}
+                        <div class="pull-right search form-inline">
+                            <input class="form-control input-outline" type="text" oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="请输入房间Id" value="{$room_id}" id="room_id">
+                            <input class="form-control input-outline" type="text" oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="请输入用户Id" value="{$user_id}" id="user_id">
+                            <input type="text" value="{$strtime}" id="datetimeStart"  readonly class="form_datetime form-control input-outline">
+                            <button type="button" class=" btn btn-primary" id="search">搜索</button>
+                        </div>
+                        {/if}
+                        <div class="example">
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center">房间ID</th>
+                                        <th class="text-center">房主昵称</th>
+                                        <th class="text-center">房主ID</th>
+                                        <th class="text-center">本月在线</th>
+                                        <th class="text-center">房间流水</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($data)"}
+                                {volist name="$data" id="data"}
+                                    <tr>
+                                        <td class="text-center">{$data.id}</td>
+                                        <td class="text-center">{$data.nickname}</td>
+                                        <td class="text-center">{$data.user_id}</td>
+                                        <td class="text-center">{$data.when}</td>
+                                        <td class="text-center">{$data.coin}</td>
+                                    </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="9" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+                {if condition = "$page.total_page >1"}
+                <div id="Paginator" style="text-align: center">
+                    <ul id="pageLimit"></ul>
+                </div>
+                {/if}
+                <!-- End Example Events -->
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Panel Other -->
+</div>
+<!--操作modal-->
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$token}" name="token" id="token">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<script>
+    $("#search").click(function () {
+        window.location.href = "/admin/PremiereTimeAndStream?token=" +$('#token').val()+ '&master_url=/admin/PremiereTimeAndStream&page=1&user_id='+$('#user_id').val()+'&room_id='+$('#room_id').val()+'&time='+$('#datetimeStart').val();
+    })
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/PremiereTimeAndStream&token=' + $("#token").val()+'&user_id='+$('#user_id').val()+'&room_id='+$('#room_id').val()+'&time='+$('#datetimeStart').val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+    });
+    $("#datetimeStart").datetimepicker({
+        format: 'yyyy-mm-01',
+        weekStart: 1,
+        autoclose: true,
+        startView: 3,
+        minView: 3,
+        forceParse: false,
+        language: 'zh-CN'
+    }).on("click", function () {
+        $("#datetimeStart").datetimepicker("setStartDate")
+    });
+
+</script>
+</body>
+
+</html>

@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+
+<body class="gray-bg">
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <!-- Panel Other -->
+        <div class="iturntable float-e-margins">
+            <div class="iturntable-content">
+                <div class="ibox-content">
+                    <div class="row row-lg">
+                        <div class="col-sm-12">
+                            <!-- Example Events -->
+                            <div class="example-wrap">
+                                <div class="example">
+                                    <div class="example">
+                                        <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                            <!-- <button type="button" class="btn btn-outline btn-success" id="add_gift">
+                                        <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加
+                                    </button> -->
+                                            {if condition="$isOpen == 1"}
+                                            <button type="button" class="btn btn-danger btn-success open" status="0">
+                                        <i class="glyphicon glyphicon-cloud-download" aria-hidden="true"></i>关闭
+                                    </button> {else}
+                                            <button type="button" class="btn btn-outline btn-success open" status="1">
+                                        <i class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></i>开启
+                                    </button> {/if}
+                                            <button type="button" class="btn btn-outline btn-success" id="online">
+                                        <i class="glyphicon glyphicon-cloud" aria-hidden="true"></i>上线
+                                    </button>
+                                            <button type="button" class="btn btn-outline btn-success" id="update-turntableconf">
+                                        <i class="glyphicon glyphicon-pencil" aria-hidden="true"></i>编辑配置
+                                    </button>
+
+                                        </div>
+                                        <table class="table table-hover table-responsive" id="data_table" style="word-wrap: break-word; word-break: break-all;">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-center">游戏模式</th>
+                                                    <th class="text-center">模式名称</th>
+                                                    <th class="text-center">重置分数</th>
+                                                    <th class="text-center">单价</th>
+                                                    <th class="text-center">led值</th>
+                                                    <th class="text-center">公屏值</th>
+                                                    <th class="text-center">配置</th>
+
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {if condition="!empty($data)"} {volist name="data" id="list"}
+                                                <tr>
+                                                    <td class="text-center gameId">{$key}</td>
+                                                    <td class="text-center name">{$list->name ?? ''}</td>
+                                                    <td class="text-center resetScore">{$list->resetScore}</td>
+                                                    <td class="text-center knockScore">{$list->knockScore}</td>
+                                                    <td class="text-center ledGiftValue">{$list->ledGiftValue}</td>
+                                                    <td class="text-center publicGiftValue">{$list->publicGiftValue}</td>
+                                                    <td class="text-center ">
+                                                        <button type="button" class="btn btn-primary save" wid="{$key}">编辑</button>
+                                                        <button type="button" wid="{$key}" class="btn btn-primary prize-pool">奖池</button>
+                                                        <button type="button" wid="{$key}" class="btn btn-danger btn-success the-refresh">刷新奖池</button>
+                                                    </td>
+                                                </tr>
+                                                {/volist} {else}
+                                                <tr class="no-records-found">
+                                                    <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                                </tr>
+                                                {/if}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <!-- End Example Events -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Panel Other -->
+        </div>
+    </div>
+
+    <!--操作modal-->
+    <!--编辑-->
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                    <h4 class="modal-title" id="editModalLabel">编辑信息</h4>
+                </div>
+                <div class="modal-body edit-append">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="edit_info()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--添加-->
+    <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                    <h4 class="modal-title" id="addModalLabel">添加</h4>
+                </div>
+                <div class="modal-body">
+                    <form id='add_form' method="post">
+                        <div class="form-group">
+                            <label class='control-label'>id:</label>
+                            <input type="text" class="form-control" placeholder="id" oninput="this.value = this.value.replace(/[^0-9]/g, '');" value="" name="turntableId" required>
+                        </div>
+                        <div class="form-group">
+                            <label class='control-label'>昵称:</label>
+                            <input type="text" class="form-control" placeholder="昵称" value="" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label class='control-label'>单价（积分）:</label>
+                            <input type="text" class="form-control" placeholder="单价（积分）" value="" name="price" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="hidden" value="/admin/addTurntable" name="master_url">
+                            <input type="hidden" value="{$token}" name="token">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="add_info()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--配置-->
+    <div class="modal fade" id="turntableModel" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                    <h4 class="modal-title" id="saveTurntableModel">编辑</h4>
+                </div>
+                <div class="modal-body">
+                    <form id='save_turntable_form' method="post">
+                        <div class="form-group">
+                            <label class='control-label'>公屏飘屏:</label>
+                            <input type="text" class="form-control" placeholder="公屏飘屏" value="" name="fullPublicGiftValue" required>
+                        </div>
+                        <div class="form-group">
+                            <label class='control-label'>全屏票屏:</label>
+                            <input type="text" class="form-control" placeholder="全屏票屏" value="" name="fullFlutterGiftValue" required>
+                        </div>
+                        <div class="form-group">
+                            <label class='control-label'>锦鲤榜:</label>
+                            <input type="text" class="form-control" placeholder="锦鲤榜" value="" name="inJinliGiftValue" required>
+                        </div>
+                        <input type="hidden" value="/admin/addTurntable" name="master_url">
+                        <input type="hidden" value="{$token}" name="token">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="save_turntable_info()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <input type="hidden" value="{$token}" name="token" id="token">
+    <!-- 全局js -->
+    {include file="../view/admin/common/jsHeader.html"}
+    <script src="/admin/js/trap/fileinput.js" type="text/javascript"></script>
+    <script src="/admin/js/trap/fileinput_locale_zh.js" type="text/javascript"></script>
+    <script>
+        $(document).on('click', '.the-refresh', function() {
+            if (confirm("确认要刷新整个的奖池吗?")) {
+                $.ajax({
+                    async: false, //表示请求是否异步处理
+                    type: "post", //请求类型
+                    url: "/admin/refreshAllTurntablePool", //请求的 URL地址
+                    dataType: "json", //返回的数据类型
+                    data: {
+                        master_url: '/admin/refreshAllTurntablePool',
+                        token: $("#token").val(),
+                        turntableId: $(this).attr('wid')
+                    },
+                    success: function(rs) {
+                        if (rs.code !== 200) {
+                            toastr.warning(rs.msg);
+                            return false;
+                        }
+                        toastr.success(rs.msg);
+                        setTimeout(location, 500); //延迟5秒刷新页面
+                    },
+                    error: function(rs) {
+                        toastr.warning('请求失败');
+                    }
+                });
+
+                function location() {
+                    window.location.href = window.location.href;
+                }
+                return false;
+            }
+        })
+
+        $(document).on('click', '.open', function() {
+            var status = $(this).attr('status')
+            alert(status)
+            if (status == 0) {
+                if (confirm("确认要关闭游戏吗?")) {
+                    open(status)
+                }
+            } else {
+                open(status)
+            }
+        })
+
+        function open(status) {
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                url: "/admin/turntableSwitch", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: {
+                    master_url: '/admin/turntableSwitch',
+                    token: $("#token").val(),
+                    status: status
+                },
+                success: function(rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 500); //延迟5秒刷新页面
+                },
+                error: function(rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        }
+
+        //清除缓存
+        $("#online").on('click', function() {
+                var master_url = "/admin/digTreasure/clearCache";
+                var token = $("#token").val();
+                $.ajax({
+                    async: false, //表示请求是否异步处理
+                    type: "post", //请求类型
+                    url: "/admin/digTreasure/clearCache", //请求的 URL地址
+                    dataType: "json", //返回的数据类型
+                    data: {
+                        master_url: master_url,
+                        token: token
+                    },
+                    success: function(rs) {
+                        if (rs.code !== 200) {
+                            toastr.warning(rs.msg);
+                            return false;
+                        }
+                        toastr.success(rs.msg);
+                        setTimeout(location, 500); //延迟5秒刷新页面
+                    },
+                    error: function(rs) {
+                        toastr.warning('请求失败');
+                    }
+                });
+
+                function location() {
+                    window.location.href = window.location.href;
+                }
+                return false;
+            })
+            //奖池
+        $('.prize-pool').on('click', function() {
+            window.location.href = "/admin/digTreasure/getPools?token=" + $('#token').val() + '&master_url=/admin/digTreasure/getPools&gameId=' + $(this).parents("tr").find(".gameId").text();
+        })
+
+        $('#update-turntableconf').on('click', function() {
+            $('#turntableModel').modal('show');
+        })
+
+        //编辑
+        $('.save').on('click', function() {
+            $('#edit_form').empty()
+            $(".edit-append").prepend(
+                "<form id='edit_form' method='post'>" +
+                "<input type='hidden' name='gameId' class='gameId'>" +
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "游戏模式:" + "</label>" +
+                "<input type='text' class='form-control gameId' name='gameId' value='' disabled='disabled' required>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "模式名称:" + "</label>" +
+                "<input type='text' class='form-control name' name='name' value='' required>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "单价:" + "</label>" +
+                "<input type='text' class='form-control knockScore' name='knockScore' value='' required>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "重置积分:" + "</label>" +
+                "<input type='text' class='form-control resetScore' name='resetScore' value='' required>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "LED值:" + "</label>" +
+                "<input type='text' class='form-control ledGiftValue' name='ledGiftValue' value='' required>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "公屏值:" + "</label>" +
+                "<input type='text' class='form-control publicGiftValue' name='publicGiftValue' value='' required>" +
+                "</div>" +
+
+                " <input type='hidden' value='/admin/digTreasure/setConfig' name='master_url'>" +
+                "<input type='hidden' value='{$token}' name='token'>" +
+                " </form>"
+            );
+            var id = $(this).parents("tr").find(".gameId").text();
+            $(".gameId").val($(this).parents("tr").find(".gameId").text());
+            $(".name").val($(this).parents("tr").find(".name").text());
+            $(".knockScore").val($(this).parents("tr").find(".knockScore").text());
+            $(".resetScore").val($(this).parents("tr").find(".resetScore").text());
+            $(".ledGiftValue").val($(this).parents("tr").find(".ledGiftValue").text());
+            $(".publicGiftValue").val($(this).parents("tr").find(".publicGiftValue").text());
+            $(".gameId").val(id);
+
+            $('#editModal').modal('show');
+        });
+
+        //添加
+        $('#add_gift').on('click', function() {
+            $('#addModal').modal('show');
+        });
+
+        //追加框
+        $(document).on("click", ".addpriceinput", function() {
+            $(this).parent().append(
+                '<div class=\'form-group\'>' +
+                '<input type="text" class="form-control" placeholder="特殊礼物" value="" name="gifts[]" required>' +
+                '<button id=\'addpriceinput\' type=\'button\' class=\'btn  btn-outline btn-success addpriceinput\'>' +
+                '  <i class=\'glyphicon glyphicon-plus\' aria-hidden=\'true\'></i>' +
+                '</button>' +
+                '<button id=\'addpriceinput\' type=\'button\' class=\'btn  btn-outline btn-success minus\'>' +
+                '  <i class=\'glyphicon glyphicon-minus\' aria-hidden=\'true\'></i>' +
+                '</button>' +
+                '</div>'
+            );
+        });
+
+        //删除框
+        $(document).on("click", ".minus", function() {
+            if ($(this).parent('.form-group').siblings().size() < 2) {
+                toastr.warning('元素过少不可删除');
+            } else {
+                // console.log($(this).parent('.form-group').siblings().size())
+                $(this).parent('.form-group').remove()
+            }
+        })
+
+        function add_info() {
+            var add_info = $("#add_form").serializeArray();
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                url: "/admin/addTurntable", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: add_info,
+                success: function(rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000); //延迟5秒刷新页面
+                },
+                error: function(rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        }
+
+        function edit_info() {
+            var edit_info = $("#edit_form").serializeArray();
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                url: "/admin/digTreasure/setConfig", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: edit_info,
+                success: function(rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000); //延迟5秒刷新页面
+                },
+                error: function(rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        }
+
+        function save_turntable_info() {
+            var save_turntable_form = $("#save_turntable_form").serializeArray();
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                url: "/admin/saveTurntableForm", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: save_turntable_form,
+                success: function(rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000); //延迟5秒刷新页面
+                },
+                error: function(rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        }
+    </script>
+</body>
+
+</html>

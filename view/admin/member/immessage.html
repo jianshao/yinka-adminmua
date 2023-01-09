@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/admin/layui/css/layui.css" media="all">
+    <script src="/admin/js/jquery.min.js"></script>
+    <style>
+        .layui-table-cell {
+            height: auto;
+            overflow: visible;
+            text-overflow: inherit;
+        }
+
+
+    </style>
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+</head>
+<body>
+
+
+<div style="padding:5px;">
+    <div class="demoTable">
+        <form class="layui-form" onsubmit="return false;" id="myform">
+            <div class="layui-input-inline">
+                <input type="text" name="date" id="date_b" lay-verify="date" placeholder="日期开始" autocomplete="off"
+                       class="layui-input" value="{$date_b}">
+            </div>
+            <div class="layui-input-inline">
+                <input type="text" name="date" id="date_e" lay-verify="date" placeholder="日期结束" autocomplete="off"
+                       class="layui-input" value="{$date_e}">
+            </div>
+
+            <div class="layui-inline">
+                <input class="layui-input" name="from_uid" id="from_uid" style="width:80px" placeholder="发送者">
+            </div>
+
+            <div class="layui-inline">
+                <input class="layui-input" name="to_uid" id="to_uid" style="width:80px" placeholder="接收者">
+            </div>
+
+
+            <div class="layui-inline">
+                <input class="layui-input" name="keyword" id="keyword" style="width:80px" placeholder="关键词">
+            </div>
+
+            <div class="layui-inline">
+                <select name="modules" lay-verify="required" lay-search="" id="type">
+                    <option value="">消息类型</option>
+                    {foreach name="typeList" item="list" key="k"}
+                    <option value="{$k}">{$list}</option>
+                    {/foreach}
+                </select>
+            </div>
+
+            <div class="layui-inline">
+                <select name="modules" lay-verify="required" lay-search="" id="status">
+                    <option value="">消息状态</option>
+                    {foreach name="statusList" item="list" key="k"}
+                    <option value="{$k}">{$list}</option>
+                    {/foreach}
+                </select>
+            </div>
+
+            <button class="layui-btn" data-type="reload">搜索</button>
+            <button type="button" class="layui-btn layui-btn-normal" onclick="exportdata()">导出</button>
+        </form>
+    </div>
+
+    <table id="datatable" lay-filter="test"></table>
+</div>
+
+<script src="/admin/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+<script>
+
+
+    layui.use(['table', 'form', 'layer', 'laydate', 'jquery'], function () {
+
+        var $ = layui.jquery
+            , form = layui.form
+            , laydate = layui.laydate
+            , table = layui.table;
+
+        //日期
+        laydate.render({
+            elem: '#date_b'
+        });
+
+        laydate.render({
+            elem: '#date_e'
+        });
+
+
+        table.render({
+            elem: '#datatable'
+            , totalRow: true
+            //, height: 420
+            //, toolbar: '#addTemplate' //开启头部工具栏，并为其绑定左侧模板
+            , url: '/admin/checkimMsgList?master_url=/admin/checkimMsgList&token={$token}&isRequest=1' //数据接口
+            , page: true //开启分页
+            , cols: [[ //表头
+                {field: 'id', title: 'ID', width: '7%'}
+                , {field: 'from_uid', title: '发送者', width: '7%'}
+                , {field: 'to_uid', title: '接收者', width: '7%'}
+                , {field: 'type_mark', title: '消息类型', width: '7%'}
+                , {field: 'status_mark', title: '消息状态', width: '7%'}
+                , {field: 'message', title: '聊天内容', templet: '#format_message',event: 'viewmessage',width: '15%'}
+                , {field: 'check_response_part', title: '监测反馈',event: 'viewcheckresponse',width: '15%'}
+                , {field: 'api_response_part', title: 'api反馈',event: 'viewapiresponse',width: '15%'}
+                , {field: 'created_time', title: '创建时间', width: '10%'}
+                , {title: '查看', toolbar: '#viewaction', width: '10%'}
+            ]]
+            , id: 'tablereload'
+            , limits: [20, 50, 100]
+            , limit: 20 //每页默认显示的数量
+            //, cellMinWidth: 200
+            , where: {}
+            , done: function (res, curr, count) {
+                setColor('.layui-table');
+                /*
+                 $("#send_total").html("发送量:" + res['hz']['send_total']);
+                 $("#client_total").html("点击量:" + res['hz']['client_total']);
+                 $("#recall_total").html("召回量:" + res['hz']['recall_total']);
+                 $("#charge_sum").html("召回后充值总金额:" + res['hz']['charge_sum']);
+                 */
+            }
+        });
+
+
+        var $ = layui.$, active = {
+            reload: function () {
+                //执行重载
+                table.reload('tablereload', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    , where: {
+                        date_b: $("#date_b").val()
+                        , date_e: $("#date_e").val()
+                        , status: $('#status').val()
+                        , type: $('#type').val()
+                        , from_uid: $('#from_uid').val()
+                        , to_uid: $('#to_uid').val()
+                        , keyword: $('#keyword').val()
+                    }
+                });
+            }
+        };
+
+        $('.demoTable .layui-btn').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+
+        table.on('tool(test)', function (obj) {
+            let event = obj.event;
+            let data = obj.data;
+            if (event === "viewcheckresponse") {
+                this.index = layer.tips('<div style="padding: 10px; font-size: 14px; color: #eee;">' + data.check_response + '</div>', this, {
+                    time: -1
+                    , maxWidth: 280
+                    , tips: [3, '#3A3D49']
+                })
+            }
+
+            if (event === "viewapiresponse") {
+                this.index = layer.tips('<div style="padding: 10px; font-size: 14px; color: #eee;">' + data.api_response + '</div>', this, {
+                    time: -1
+                    , maxWidth: 280
+                    , tips: [3, '#3A3D49']
+                })
+            }
+
+            if (event === "viewmessage") {
+                if(data.type == 0){
+                    this.index = layer.tips('<div style="padding: 10px; font-size: 14px; color: #eee;">' + data.message + '</div>', this, {
+                        time: -1
+                        , maxWidth: 280
+                        , tips: [3, '#3A3D49']
+                    })
+                }
+
+            }
+
+            $(this).on('mouseleave', function () {
+                layer.close(this.index);
+            })
+
+            if (event === "imdetail") {
+                var w = ($(window).width() * 0.7);
+                var h = ($(window).height() - 50);
+                var from_uid = data.from_uid
+                var to_uid = data.to_uid
+                layer.open({
+                    resize: true,
+                    maxmin: true,
+                    title: '聊天详情',
+                    shadeClose: true,
+                    area: [w + 'px', h + 'px'],
+                    type: 2,
+                    content: "/admin/checkimMsgDetail?token={$token}&master_url=/admin/checkimMsgDetail&from_uid=" + from_uid + "&to_uid=" + to_uid,
+                });
+            }
+        })
+
+
+    });
+
+
+    function setColor(tableClassName){
+        var $table = $(tableClassName).eq(1);
+        if($table.length > 0){
+            //遍历所有行
+            $table.find('tr').each(function(){
+                var status = $(this).find('td[data-field="status_mark"]').text();
+                if(status == "撤回"){   //给状态为2的数据行设置背景色
+                    $(this).attr('style',"background:#ef4136;color:#000");
+                }
+            })
+        }
+    }
+
+
+</script>
+
+
+<script type="text/html" id="format_created_time">
+    <div>{{layui.util.toDateString(d.created_time*1000,'yyyy-MM-dd HH:mm:ss')}}</div>
+</script>
+
+
+<script type="text/html" id="format_message">
+    {{#  if(d.type == 0 ){ }}
+    <span>{{d.message_part}}</span>
+    {{#  } else if(d.type == 1) { }}
+    <div><a target="_blank" href="{{d.oss}}{{d.message}}"><img src="{{d.oss}}{{d.message}}" style="width:50px;height:50px"></a></div>
+    {{#  } else if(d.type == 8) { }}
+    <div><a target="_blank" href="{{d.message}}"><img src="{{d.message}}" style="width:50px;height:50px"></a></div>
+    {{#  } else if(d.type == 2) { }}
+    <div>
+        <audio src="{{d.oss}}{{d.message}}" controls="controls" style="width:210px;height:25px"></audio>
+    </div>
+    {{#  } else{ }}
+    <span>{{d.message}}</span>
+    {{#  } }}
+</script>
+
+
+<script type="text/html" id="viewaction001">
+    <button type="button" class="layui-btn layui-btn-normal J_menuItem" title="im聊天详情"
+            href="/admin/checkimMsgDetail?master_url=/admin/checkimMsgDetail&token={$token}">聊天详情
+    </button>
+</script>
+
+
+<script type="text/html" id="viewaction">
+    <button type="button" class="layui-btn layui-btn-normal" lay-event="imdetail">聊天详情</button>
+</script>
+
+
+<script>
+    layui.use(['jquery'], function () {
+        $('.J_menuItem').on('click', function () {
+            parent.childMenu(this)
+        });
+    })
+
+
+    function exportdata() {
+        var from_uid = $('#from_uid').val();
+        var to_uid = $('#to_uid').val();
+        var date_b = $('#date_b').val();
+        var date_e = $('#date_e').val();
+        var type = $('#type').val();
+        var status = $('#status').val();
+        var params = "from_uid=" + from_uid + "&to_uid=" + to_uid + "&date_b=" + date_b + "&date_e=" + date_e + "&status=" + status + "&type=" + type + "&daochu=1&isRequest=1";
+        var host = "/admin/checkimMsgList?master_url=/admin/checkimMsgList&token={$token}&" + params;
+        window.location.href = host
+    }
+
+</script>
+
+
+</body>
+</html>

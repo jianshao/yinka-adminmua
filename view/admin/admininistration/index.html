@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="btn-group hidden-xs form-inline">
+                            <div class="form-group">
+                                <input type="text" id="datetimeStart" readonly class="form_datetime"> ——
+                                <input type="text" id="datetimeEnd" readonly class="form_datetime">
+                            </div>
+                            <button type="button" class="btn btn-outline btn-success" style="float:right;" id="search">
+                                <i aria-hidden="true"></i>导出Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+<input type="hidden" value="{$token}" id="token">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<style>
+</style>
+<script>
+    $('#search').click(function () {
+        var start = $("#datetimeStart").val();
+        var end = $("#datetimeEnd").val();
+        var token = $('#token').val();
+        window.location.href = "/admin/excelList?token=" + token + '&master_url=/admin/excelList&start=' + start + '&end=' + end;
+    });
+
+    $("#datetimeStart").datetimepicker({
+        weekStart: 1,
+        todayBtn: 1,
+        todayHighlight: 1,
+        startView: 2,
+        forceParse: 0,
+        showMeridian: 1,
+        format: 'yyyy-mm-dd hh:ii:ss',
+        minView: '0',
+        language: 'zh-CN',
+        autoclose: true,
+    }).on("click", function () {
+        $("#datetimeStart").datetimepicker("setEndDate", $("#datetimeEnd").val())
+    });
+
+    $("#datetimeStart").datetimepicker("setDate", new Date());
+
+    $("#datetimeEnd").datetimepicker({
+        weekStart: 1,
+        todayBtn: 1,
+        todayHighlight: 1,
+        startView: 2,
+        forceParse: 0,
+        showMeridian: 1,
+        format: 'yyyy-mm-dd hh:ii:ss',
+        minView: '0',
+        language: 'zh-CN',
+        autoclose: true,
+    }).on("click", function () {
+        $("#datetimeEnd").datetimepicker("setStartDate", $("#datetimeStart").val())
+    });
+
+</script>
+</body>
+</html>

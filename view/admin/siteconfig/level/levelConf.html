@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+
+<div class="modal-dialog" id="divLevel">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="modal-title" id="addModalLabel">金币抽奖</h4>
+        </div>
+
+        <div class="modal-body">
+            <button type="button" class="btn btn-outline btn-success" id="privilege">
+                <i class="glyphicon glyphicon-fire" aria-hidden="true"></i>等级奖励
+            </button>
+            <button type="button" class="btn btn-outline btn-success" id="level">
+                <i class="glyphicon glyphicon-fire" aria-hidden="true"></i>等级经验
+            </button>
+            <button type="button" class="btn btn-outline btn-success" id="clearCache">
+                <i class="glyphicon glyphicon-fire" aria-hidden="true"></i>清除缓存
+            </button>
+            <form id='add_form' method="post">
+                {if condition="$list['type'] == 1"}
+
+                {volist name="list['val']" id="privilege"}
+                <div class="form-group">
+                    等级：<input type="text" class="form-control " value="{$privilege.level}" required>
+                    奖励：<input type="text" class="form-control " value="{$privilege.title}" required>
+                    详情：<input type="text" class="form-control " value="{$privilege.content}" required>
+                    提示：<input type="text" class="form-control " value="{$privilege.rewardMsg}" required>
+                    ID：<input type="text" class="form-control " value="{$privilege.assetId}" required>
+                    数量：<input type="text" class="form-control " value="{$privilege.count}" required>
+                    <img src="{$privilege.image}" class="show_img" width="100" alt="">
+                    <img src="{$privilege.previewImage}" class="show_img" width="100" alt="">
+                </div>
+                {/volist}
+
+                {elseif condition="$list['type'] == 2"}
+
+                {volist name="$list['val']" id="level"}
+                <div class="form-group">
+                    等级：<input type="text" class="form-control " value="{$level.level}" required>
+                    经验：<input type="text" class="form-control " value="{$level.count}" required>
+                </div>
+                {/volist}
+
+                {/if}
+                <input type="hidden" value="/admin/addGift" name="master_url">
+                <input type="hidden" value="{$token}" name="token">
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            <button type="button" class="btn btn-primary" onclick="add_info()">保存</button>
+        </div>
+    </div>
+</div>
+<div id="outerdiv"  style="position:fixed;top:0;left:0;background:rgba(0,0,0,0.7);z-index:2;width:100%;height:100%;display:none;">
+    <div id="innerdiv" style="position:absolute;">
+        <img id="max_img" style="border:5px solid #fff;" src=""/>
+    </div>
+</div>
+</body>
+<input type="hidden" value="{$token}" name="token" id="token">
+<input type="hidden" value="/admin/ossAttireFile" name="master_url" id="master_url">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script>
+    //清除缓存
+    $("#clearCache").on('click',function(){
+        var master_url = "/admin/clearCache";
+        var token = $("#token").val();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/clearCache",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data:{master_url:master_url,token:token,type:'level_conf'},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 500);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    })
+
+    //搜索
+    $("#privilege").click(function () {
+        window.location.href = "/admin/levelConf?token=" + $('#token').val() + '&master_url=/admin/levelConf&key=privilege'
+    })
+    $("#level").click(function () {
+        window.location.href = "/admin/levelConf?token=" + $('#token').val() + '&master_url=/admin/levelConf&key=level'
+    })
+
+
+    $('.show_img').click(function () {
+        var _this = $(this);//将当前的min_img元素作为_this传入函数
+        imgShow("#outerdiv", "#innerdiv", "#max_img", _this);
+    })
+
+    function imgShow(outerdiv, innerdiv, max_img, _this) {
+        $('#divLevel').hide();
+        var src = _this.attr("src");//获取当前点击的min_img元素中的src属性
+        $("#max_img").attr("src", src);//设置#max_img元素的src属性
+
+        /*获取当前点击图片的真实大小，并显示弹出层及大图*/
+        $("<img/>").attr("src", src).load(function () {
+            var windowW = $(window).width();//获取当前窗口宽度
+            var windowH = $(window).height();//获取当前窗口高度
+            var realWidth = this.width;//获取图片真实宽度
+            var realHeight = this.height;//获取图片真实高度
+            var imgWidth, imgHeight;
+            var scale = 0.8;//缩放尺寸，当图片真实宽度和高度大于窗口宽度和高度时进行缩放
+
+            if (realHeight > windowH * scale) {
+                imgHeight = windowH * scale;
+                imgWidth = imgHeight / realHeight * realWidth;
+                if (imgWidth > windowW * scale) {
+                    imgWidth = windowW * scale;
+                }
+            } else if (realWidth > windowW * scale) {
+                imgWidth = windowW * scale;
+                imgHeight = imgWidth / realWidth * realHeight;
+            } else {
+                imgWidth = realWidth;
+                imgHeight = realHeight;
+            }
+            $("#max_img").css("width", imgWidth);//以最终的宽度对图片缩放
+
+            var w = (windowW - imgWidth) / 2;//计算图片与窗口左边距
+            var h = (windowH - imgHeight) / 2;//计算图片与窗口上边距
+            $(innerdiv).css({"top": h, "left": w});//设置#innerdiv的top和left属性
+            $(outerdiv).fadeIn("fast");//淡入显示#outerdiv及.pimg
+        });
+
+        $(outerdiv).click(function () {
+            $('#divLevel').show();
+            $(this).fadeOut("fast");
+        });
+    }
+</script>

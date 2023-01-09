@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="addModalLabel">金币抽奖</h4>
+            </div>
+
+            <div class="modal-body">
+                <button type="button" class="btn btn-outline btn-success" id="rules">
+                    <i class="glyphicon glyphicon-fire" aria-hidden="true"></i>规则
+                </button>
+                <button type="button" class="btn btn-outline btn-success" id="priceList">
+                    <i class="glyphicon glyphicon-fire" aria-hidden="true"></i>抽奖次数
+                </button>
+                <button type="button" class="btn btn-outline btn-success" id="lotterys">
+                    <i class="glyphicon glyphicon-fire" aria-hidden="true"></i>金币奖池
+                </button>
+                <button type="button" class="btn btn-outline btn-success" id="clearCache">
+                    <i class="glyphicon glyphicon-fire" aria-hidden="true"></i>清除缓存
+                </button>
+
+                <form id='add_form' method="post">
+                {if condition="$list['type'] == 1"}
+
+                <label class="control-label">规则:</label>
+                {volist name="list['val']" id="rules"}
+                <div class="form-group">
+                    <input type="text" class="form-control " name="color_weight" value="{$rules}" required>
+                </div>
+                {/volist}
+
+                {elseif condition="$list['type'] == 2"}
+
+                <label class="control-label">抽奖次数:</label>
+                {volist name="$list['val']" id="priceList"}
+                <div class="form-group">
+                    <input type="text" class="form-control " name="color_weight" value="{$priceList.num}" required>
+                    <input type="text" class="form-control " name="color_weight" value="{$priceList.assetId}" required>
+                    <input type="text" class="form-control " name="color_weight" value="{$priceList.count}" required>
+                </div>
+                {/volist}
+
+                {elseif condition="$list['type'] == 3"}
+
+                <label class="control-label">奖池:</label>
+                {volist name="$list['val']" id="lotterys"}
+                <div class="form-group">
+                    <p>第{$lotterys.id}格</p>
+                    <input type="text" class="form-control " name="color_weight" value="{$lotterys.weight}" required>
+                    <input type="text" class="form-control " name="color_weight" value="{$lotterys.name}" required>
+                    <input type="text" class="form-control " name="color_weight" value="{$lotterys.assetId}" required>
+                    <input type="text" class="form-control " name="color_weight" value="{$lotterys.count}" required>
+                    <img src="{$lotterys.img}" width="50" alt="">
+                </div>
+                {/volist}
+
+                {/if}
+                <input type="hidden" value="/admin/addGift" name="master_url">
+                <input type="hidden" value="{$token}" name="token">
+                </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            <button type="button" class="btn btn-primary" onclick="add_info()">保存</button>
+        </div>
+    </div>
+</div>
+</body>
+<input type="hidden" value="{$token}" name="token" id="token">
+<input type="hidden" value="/admin/ossAttireFile" name="master_url" id="master_url">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script>
+    //清除缓存
+    $("#clearCache").on('click',function(){
+        var master_url = "/admin/lottery_conf";
+        var token = $("#token").val();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/clearCache",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data:{master_url:master_url,token:token,type:'lottery_conf'},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 500);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    })
+    //搜索
+    $("#rules").click(function () {
+        window.location.href = "/admin/lotteryConf?token=" + $('#token').val() + '&master_url=/admin/lotteryConf&key=rules'
+    })
+    $("#priceList").click(function () {
+        window.location.href = "/admin/lotteryConf?token=" + $('#token').val() + '&master_url=/admin/lotteryConf&key=priceList'
+    })
+    $("#lotterys").click(function () {
+        window.location.href = "/admin/lotteryConf?token=" + $('#token').val() + '&master_url=/admin/lotteryConf&key=lotterys'
+    })
+</script>

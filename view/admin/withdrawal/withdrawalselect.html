@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/admin/layui/css/layui.css" media="all">
+    <script src="/admin/js/jquery.min.js"></script>
+    <style>
+        /*  数据自适应*/
+        .layui-table-cell {
+            height: auto;
+            white-space: normal;
+        }
+
+        th {
+            background-color: #2F4056; /* MediumSeaGreen */
+            color: #fff;
+            font-weight: bold
+        }
+
+    </style>
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+</head>
+<body>
+
+<div style="padding:5px;">
+    <div class="demoTable">
+    </div>
+
+    <table id="datatable" lay-filter="test"></table>
+</div>
+
+<script src="/admin/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+<script>
+
+
+    layui.use(['table', 'form', 'layer', 'laydate', 'jquery'], function () {
+
+        var $ = layui.jquery
+            , form = layui.form
+            , laydate = layui.laydate
+            , table = layui.table;
+
+        table.render({
+            elem: '#datatable'
+            , totalRow: true
+            , defaultToolbar: []
+            //, height: 420
+            , toolbar: '#adddialog' //开启头部工具栏，并为其绑定左侧模板
+            , url: '/admin/withdrawalpayaccount?master_url=/admin/withdrawalpayaccount&token={$token}&isRequest=1' //数据接口
+            , page: false //开启分页
+            , limit: Number.MAX_VALUE
+            , cols: [[ //表头
+                {field: '', type: 'radio', width: '10%'}
+                , {field: 'account', title: '支付宝账户', width: '90%'}
+            ]]
+            , id: 'tablereload'
+            //, limits: [20, 50, 100]
+            //, limit: 20 //每页默认显示的数量
+            //, cellMinWidth: 200
+            , where: {}
+            , done: function (res, curr, count) {
+            }
+        });
+
+
+        var $ = layui.$, active = {
+            reload: function () {
+                //执行重载
+                table.reload('tablereload', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    , where: getRequestParams()
+                });
+            }
+        };
+
+        $('.demoTable .layui-btn').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+
+        table.on('toolbar(test)', function (obj) {
+            let event = obj.event;
+            let data = obj.data;
+            let checkStatus = table.checkStatus(obj.config.id);
+
+            if (obj.event === 'unbinduser') {
+                if(!checkStatus.data){
+                    layer.msg("请先选择要配置的账号", {
+                        time: 1000, //1s后自动关闭
+                    });
+                    return false;
+                }
+                layer.confirm('您确定要设置此账户用来提现吗?', function(index){
+                    let requestbody = {account:(checkStatus.data)[0].account}
+                    $.post("/admin/withdrawalpayaccountupdate?master_url=/admin/withdrawalpayaccountupdate&token={$token}",requestbody, function (resp) {
+                        resp = eval("(" + resp + ")");
+                        layer.msg(resp.msg, {
+                            time: 1000, //1s后自动关闭
+                        }, function () {
+                            window.location.reload();
+                        });
+                    })
+                });
+            }
+
+        })
+    });
+
+
+</script>
+
+
+
+<script type="text/html" id="adddialog">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="unbinduser">修改配置</button></div>
+</script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Mua语音 - 运营后台</title>
+	<!--    全局css-->
+	{include file="../view/admin/common/cssHeader.html"}
+	<link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+	<link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+
+	<style>
+		.form-control:focus {
+			border-color: #66afe9;
+			outline: 0;
+			-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, 0.6);
+			box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, 0.6);
+		}
+
+		table {
+			table-layout: fixed;
+		}
+
+		td {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+	</style>
+
+</head>
+
+<body class="gray-bg">
+	<!--数据表格-->
+	<div class="wrapper wrapper-content animated fadeInRight">
+		<!-- Panel Other -->
+		<div class="ibox float-e-margins">
+			<div class="ibox-content">
+				<div class="row row-lg">
+					<div class="col-sm-12">
+						<!-- Example Events -->
+						<div class="example-wrap">
+							<div class="btn-group hidden-xs form-inline">
+								<div class="form-group">
+									<input class="form-control input-outline" type="text"
+										oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="请输入渠道ID"
+										value="{$promote_id}" id="promote_id">
+									<input class="form-control input-outline" type="text"
+										oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="请输入房间ID"
+										value="{$room_id}" id="room_id">
+								</div>
+								&#12288
+								<button type="button" class="btn btn-outline btn-success" style="float:right;"
+									id="search">
+									<i aria-hidden="true"></i>搜索
+								</button>
+							</div>
+							<div class="example">
+								<div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+									<button type="button" class="btn addRooms btn-outline btn-success" id="add">
+										<i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加推广房间
+									</button>
+									<button type="button" class="btn  btn-outline btn-success" id="shuaxin">
+										<i class="glyphicon glyphicon-plus" aria-hidden="true"></i>刷新
+									</button>
+									<!-- <button type="button" class="btn btn-outline btn-success"  id="daochu">
+                                    <i aria-hidden="true"></i>导出
+                                </button> -->
+								</div>
+								<div>
+									<table id="data_table" style="width:100%;">
+										<thead>
+											<tr>
+												<th class="text-center">推广码</th>
+												<th class="text-center" style="width:500px;">渠道推广地址</th>
+												<th class="text-center">推广渠道名称</th>
+												<th class="text-center">推广渠道ID</th>
+												<th class="text-center">房间名称</th>
+												<th class="text-center">房间ID</th>
+												<th class="text-center">创建时间</th>
+												<th class="text-center">修改时间</th>
+												<!-- <th class="text-center">操作</th> -->
+											</tr>
+										</thead>
+										<tbody>
+											{if condition="!empty($list)"}
+											{volist name="list" id="lists"}
+											<tr style="height: 40px;">
+												<td class="text-center id">{$lists.id}</td>
+												<td class="text-center land_url" ondblclick="copyContent(this)">
+													{$lists.land_url}</td>
+												<td class="text-center channel_name">{$lists.channel_name}</td>
+												<td class="text-center promote_id">{$lists.promote_id}</td>
+												<td class="text-center room_name">{$lists.room_name}</td>
+												<td class="text-center room_id">{$lists.room_id}</td>
+												<td class="text-center create_time">{$lists.create_time}</td>
+												<td class="text-center update_time">{$lists.update_time}</td>
+												<!-- <td class="text-center">
+                                            <div class="btn-group hidden-xs form-inline">
+                                                <button class="btn btn-success save" pid="{$lists.id}">编辑</button>
+                                            </div>
+                                        </td > -->
+											</tr>
+											{/volist}
+											{else}
+											<tr class="no-records-found">
+												<td colspan="7" class="text-center">没有找到匹配的记录</td>
+											</tr>
+											{/if}
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+						{if condition = "$page.total_page >1"}
+						<div id="Paginator" style="text-align: center">
+							<ul id="pageLimit"></ul>
+						</div>
+						{/if}
+						<!-- End Example Events -->
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- End Panel Other -->
+	</div>
+	<!--操作modal-->
+	<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true"
+							onclick="empty()">&times;</span>
+					</button>
+					<h4 class="modal-title" id="editModalLabel">添加</h4>
+				</div>
+				<div class="modal-body edit-append">
+
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+					<button type="button" class="btn btn-primary" onclick="edit_info()">保存</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="attireModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true"
+							onclick="empty()">&times;</span>
+					</button>
+					<h4 class="modal-title" id="attireModalLabel">编辑</h4>
+				</div>
+				<div class="modal-body attire-append">
+
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+					<button type="button" class="btn btn-primary" id="search2">修改</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<input id="copy_content" type="text" value="" style="position: absolute;top: 0;left: 0;opacity: 0;z-index: -10;" />
+	<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+	<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+	<input type="hidden" value="{$token}" name="token" id="token">
+	<input type="hidden" value="/admin/ossAttireFile" name="master_url" id="master_url">
+	<!-- 全局js -->
+	{include file="../view/admin/common/jsHeader.html"}
+	<script>
+		//修改框追加
+		$('.save').on('click', function () {
+			$(".attire-append").empty();
+			$(".edit-append").empty();
+			$(".attire-append").prepend(
+				"<form id='attire_form' method='post' >" +
+
+				"<div class='form-group'>" +
+				"<input type='text' class='form-control  ' id='save-name' name='promote_id[]' placeholder=\"推广渠道名称\" value='' required='required'>" +
+				"<input type='text' class='form-control' id='save-room-id' name='room_id[]' placeholder=\"推广房间号\" value='' oninput='getRoom()' required='required'>" +
+				"</div>" +
+
+				"<input type='hidden' value='' id='save-pid' name='id'>" +
+				"<input type='hidden' value='{$token}' name='token'>" +
+				"<input type='hidden' value='/admin/PromotionRoomAdd' id='master_url' name='master_url'>" +
+				" </form>"
+			);
+			$('#save-pid').val($(this).attr('pid'));
+			$("#save-name").val($(this).parents("tr").find(".promote_id").text());
+			$("#save-type option[value='" + $(this).parents("tr").find(".type").attr('typeval') + "']").attr(
+				"selected", "select");
+			$('#attireModal').modal('show');
+		});
+
+		//修改按钮
+		$('#search2').click(function () {
+			var attire_info = $("#attire_form").serializeArray();
+			$.ajax({
+				async: false, //表示请求是否异步处理
+				type: "post", //请求类型
+				url: "/admin/PromotionRoomSave", //请求的 URL地址
+				token: $("#token").val(),
+				dataType: "json", //返回的数据类型
+				data: attire_info,
+				success: function (rs) {
+					if (rs.code != 200) {
+						toastr.warning(rs.msg);
+						return false;
+					}
+					toastr.success(rs.msg);
+					setTimeout(location, 1000); //延迟5秒刷新页面
+				},
+				error: function (rs) {
+					toastr.warning('请求失败');
+				}
+			});
+
+			function location() {
+				window.location.href = window.location.href;
+			}
+			return false;
+
+		})
+
+		$('#pageLimit').bootstrapPaginator({
+			currentPage: $("#page").val(),
+			totalPages: $("#total_page").val(),
+			size: "normal",
+			bootstrapMajorVersion: 3,
+			alignment: "right",
+			numberOfPages: '5',
+			pageUrl: function (type, page, current) {
+				//是每个分页码变成一个超链接
+				return '?page=' + page + '&master_url=/admin/PromotionRoomList&token=' + $("#token").val() +
+					'&promote_id=' + $("#promote_id").val() + '&room_id=' + $("#room_id").val()
+			},
+			itemTexts: function (type, page, current) {
+				switch (type) {
+					case "first":
+						return "首页";
+					case "prev":
+						return "上一页";
+					case "next":
+						return "下一页";
+					case "last":
+						return "末页";
+					case "page":
+						return page;
+				}
+			}
+		});
+
+		//添加房间信息
+		$('.addRooms').on('click', function () {
+			$(".attire-append").empty();
+			$(".edit-append").empty();
+			$(".edit-append").prepend(
+				"<form id='edit_form' method='post' >" +
+				"<div class='form-group'>" +
+				"<input type='text' class='form-control' id='save-promote-id' name='promote_id[]' placeholder=\"渠道推广ID\" value='' oninput='getPromote()' required='required'>" +
+				"<div class='save-promote-id'></div>"+
+				"<input type='text' class='form-control' id='save-room-id' name='room_id[]' placeholder=\"推广房间号\" value='' oninput='getRoom()' required='required'>" +
+				// "<button id='addpriceinput' class='addpriceinput' type=\'button\' class=\'btn  btn-outline btn-success\' id=\'add_gift\'>"+
+				// " <i class=\'glyphicon glyphicon-plus\' aria-hidden=\'true\'></i>"+
+				// "</button>"+
+				"</div>" +
+
+				"<input type='hidden' value='{$token}' name='token'>" +
+				"<input type='hidden' value='/admin/PromotionRoomAdd' id='master_url' name='master_url'>" +
+				" </form>"
+			);
+			$('#editModal').modal('show');
+		});
+
+		function getPromote() {
+			let promote_id = $('#save-promote-id').val();
+			console.log(promote_id);
+			$.ajax({
+				async: false, //表示请求是否异步处理
+				type: "get", //请求类型
+				url: "/admin/getPromote", //请求的 URL地址
+				token: $("#token").val(),
+				dataType: "json", //返回的数据类型
+				data: {
+					"promote_id": promote_id,
+					"token": $("#token").val(),
+					"master_url": "/admin/getPromote"
+				},
+				success: function (rs) {
+					if (rs.code != 200) {
+						// toastr.warning(rs.msg);
+						return false;
+					}
+					console.log(111)
+					$('.save-promote-id').empty();
+					if (rs.data.promote_name == null) {
+						$('.save-promote-id').append("<p style='color:red'>无匹配,请核实渠道推广ID</p>");
+					} else {
+						$('.save-promote-id').append("<p>" + rs.data.promote_name + "</p>");
+					}
+					// toastr.success(rs.msg);
+				},
+				error: function (rs) {
+					// toastr.warning('请求失败');
+				}
+			});
+		}
+
+		function getRoom() {
+			var room_id = $('#save-room-id').val();
+			console.log(room_id);
+			$.ajax({
+				async: false, //表示请求是否异步处理
+				type: "get", //请求类型
+				url: "/admin/getRoom", //请求的 URL地址
+				dataType: "json", //返回的数据类型
+				data: {
+					"room_id": room_id,
+					"token": $("#token").val(),
+					"master_url": "/admin/getRoom"
+				},
+				success: function (rs) {
+					console.log(rs)
+					if (rs.code != 200) {
+						// toastr.warning(rs.msg);
+						return false;
+					}
+					$('#save-room-id').after("<p>" + rs.data.room_name + "</p>");
+					// toastr.success(rs.msg);
+				},
+				error: function (rs) {
+					// toastr.warning('请求失败');
+				}
+			});
+		}
+
+		//添加执行
+		function edit_info() {
+			var data = $("#edit_form").serializeArray();
+			$.ajax({
+				async: false, //表示请求是否异步处理
+				type: "post", //请求类型
+				url: "/admin/PromotionRoomAdd", //请求的 URL地址
+				token: $("#token").val(),
+				dataType: "json", //返回的数据类型
+				data: data,
+				success: function (rs) {
+					if (rs.code != 200) {
+						toastr.warning(rs.msg);
+						return false;
+					}
+					toastr.success(rs.msg);
+					setTimeout(location, 1000); //延迟5秒刷新页面
+
+				},
+				error: function (rs) {
+					toastr.warning('请求失败');
+				}
+			});
+
+			function location() {
+				window.location.href = window.location.href;
+			}
+
+			return false;
+		}
+
+		$('.del').click(function () {
+			var pid = $(this).attr('pid')
+			$.ajax({
+				async: false, //表示请求是否异步处理
+				type: "post", //请求类型
+				url: "/admin/DelPaoLiang", //请求的 URL地址
+				token: $("#token").val(),
+				dataType: "json", //返回的数据类型
+				data: {
+					token: $('#token').val(),
+					master_url: '/admin/DelPaoLiang',
+					id: pid
+				},
+				success: function (rs) {
+					if (rs.code != 200) {
+						toastr.warning(rs.msg);
+						return false;
+					}
+					toastr.success(rs.msg);
+					setTimeout(location, 1000); //延迟5秒刷新页面
+
+				},
+				error: function (rs) {
+					toastr.warning('请求失败');
+				}
+			});
+
+			function location() {
+				window.location.href = window.location.href;
+			}
+
+			return false;
+		})
+
+		$("#shuaxin").click(function () {
+			window.location.href = "/admin/PromotionRoomList?token=" + $('#token').val() +
+				'&master_url=/admin/PromotionRoomList';
+		})
+	</script>
+	<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+	<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+	<style>
+	</style>
+	<script>
+		$(document).on('click', '.RedpacketsDetail', function () {
+			var red_id = $(this).parent().parent().children('.redid').text();
+			window.location.href = "/admin/PromotionRoomList?token=" + $("#token").val() +
+				'&master_url=/admin/PromotionRoomList' + '&id=' + red_id;
+		})
+		$('body').on('hidden.bs.modal', '#selectRate', function () {
+			$("#member_tbody tr").remove();
+		});
+
+		$('#search').click(function () {
+			var stime = $('#datetimeStart').val();
+			var etime = $('#datetimeEnd').val();
+			var token = $('#token').val();
+			var page = $("#page").val();
+			var promote_id = $("#promote_id").val();
+			var room_id = $("#room_id").val();
+			if (stime > etime) {
+				toastr.warning('开始时间不能大于结束时间');
+				return false;
+			}
+			window.location.href = "/admin/PromotionRoomList?token=" + token +
+				'&master_url=/admin/PromotionRoomList&page=' + page + '&stime=' + stime + '&etime=' + etime +
+				'&promote_id=' + promote_id + '&room_id=' + room_id;
+		})
+
+		$('#daochu').click(function () {
+			var stime = $('#datetimeStart').val();
+			var etime = $('#datetimeEnd').val();
+			var token = $('#token').val();
+			var page = $("#page").val();
+			if (stime > etime) {
+				toastr.warning('开始时间不能大于结束时间');
+				return false;
+			}
+			window.location.href = "/admin/PromotionRoomList?token=" + token +
+				'&master_url=/admin/PromotionRoomList&page=' + page + '&stime=' + stime + '&etime=' + etime +
+				'&daochu=1';
+		})
+
+		$("#datetimeStart").datetimepicker({
+			weekStart: 1,
+			todayBtn: true,
+			todayHighlight: 1,
+			startView: 2,
+			forceParse: 0,
+			showMeridian: 1,
+			format: 'yyyy-mm-dd 00:00:00',
+			minView: '3',
+			language: 'zh-CN',
+			autoclose: true,
+			startDate: '-10y,-10m,-10d'
+		}).on("click", function () {
+			$("#datetimeStart").datetimepicker("setStartDate")
+		});
+
+		$("#datetimeEnd").datetimepicker({
+			weekStart: 1,
+			todayBtn: true,
+			todayHighlight: 1,
+			startView: 2,
+			forceParse: 0,
+			showMeridian: 1,
+			format: 'yyyy-mm-dd 23:59:59',
+			minView: '3',
+			language: 'zh-CN',
+			autoclose: true,
+			startDate: '-10y,-10m,-10d'
+		}).on("click", function () {
+			$("#datetimeEnd").datetimepicker("setEndDate")
+		});
+
+		function copyContent(ElementObj) {
+			//获取点击的值
+			var clickContent = ElementObj.innerText;
+			//获取要赋值的input的元素
+			var inputElement = document.getElementById("copy_content");
+			//给input框赋值
+			inputElement.value = clickContent;
+			//选中input框的内容
+			inputElement.select();
+			// 执行浏览器复制命令
+			document.execCommand("Copy");
+			//提示已复制
+			alert('已复制');
+		}
+	</script>

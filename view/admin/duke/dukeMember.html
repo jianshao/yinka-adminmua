@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="pull-right search form-inline">
+                            爵位:<select class="form-control" id="duke_id">
+                            <option value="" {if $duke_id == ''} selected="selected" {/if}>全部</option>
+                            {if condition="!empty($duke)"}
+                            {volist name="duke" id="list"}
+                            <option value="{$list.duke_id}" {if $list.duke_id == $duke_id} echo selected="selected" {/if}>{$list.duke_name}</option>
+                            {/volist}
+                            {/if}
+                        </select>
+                            <input class="form-control input-outline" type="text" value="{$uid}"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                   placeholder="用户Id"
+                                   id="user_id">
+                            <button type="button" class=" btn btn-primary" id="search">搜索</button>
+                        </div>
+                        <div class="example">
+                            <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                <button type="button" class="btn open btn-outline btn-success">
+                                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加
+                                </button>
+                            </div>
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">用户id</th>
+                                    <th class="text-center">用户昵称</th>
+                                    <th class="text-center">用户头像</th>
+                                    <th class="text-center">爵位等级</th>
+                                    <th class="text-center">爵位官阶</th>
+                                    <th class="text-center">svge</th>
+                                    <th class="text-center">爵位标签</th>
+                                    <th class="text-center">开始时间</th>
+                                    <th class="text-center">到期时间</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($data)"}
+                                {volist name="data" id="list"}
+                                <tr>
+                                    <td class="text-center duke_id">{$list.id}</td>
+                                    <td class="text-center duke_name">{$list.nickname}</td>
+                                    <td class="text-center duke_image"><img src="{$list.avatar}" style="width: 50px;"></td>
+                                    <td class="text-center duke_coin">{$list.duke_id}</td>
+                                    <td class="text-center duke_coin">{$list.duke_name}</td>
+                                    <td class="text-center"  style="text-align: center;width: 100px"><div src="{$list.special_effects}" loops="0" clearsAfterStop="true" style="width: 100px;height: 100px"></div></td>
+                                    <td class="text-center duke_image"><img src="{$list.duke_image}" style="width: 50px;"></td>
+                                    <td class="text-center duke_coin">{$list.create_time}</td>
+                                    <td class="text-center duke_coin">{$list.expires_time}</td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page >1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+
+<!--添加-->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+                </button>
+                <h4 class="modal-title" id="editModalLabel">添加</h4>
+            </div>
+            <div class="modal-body edit-append">
+                <form id='edit_form' method='post' >
+                    <div class='form-group'>
+                        <label class='control-label'>  爵位: </label>
+                        <select class="form-control" name="duke_id">
+                        {if condition="!empty($duke)"}
+                        {volist name="duke" id="list"}
+                        <option value="{$list.duke_id}" {if $list.duke_id == $duke_id} echo selected="selected" {/if}>{$list.duke_name}</option>
+                        {/volist}
+                        {/if}
+                    </select>
+                    </div>
+                    <div class='form-group'>
+                        <label class='control-label'>用户id:</label>
+                        <input type='text' class='form-control userid' oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="用户ID" name='uid' value='' required>
+                    </div>
+                    <div class="modal-body add-banner">
+                        <label class="control-label">结束时间：</label>
+                        <input type="text" value="{$end_time}" id="datetimeEnd" readonly name="duke_expires" class="form-control addimage">
+                        <input type="hidden" id="bid" value="">
+                    </div>
+
+                    <input type='hidden' value='{$token}' name='token'>
+                    <input type='hidden' value='/admin/dukeAdd' name='master_url'>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" >关闭</button>
+                <button type="button" class="btn btn-primary" id="edit_info">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$token}" id="token">
+<input type="hidden" value="/admin/avatarOssFile" name="master_url" id="master_url">
+<input type="hidden" value="/admin/prettyavatarOssFile" name="masters_url" id="masters_url">
+<script src="https://cdn.jsdelivr.net/npm/svgaplayerweb@2.3.1/build/svga.min.js"></script>
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<script>
+    //分页
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/dukeMember&token=' + $("#token").val() + '&user_id=' + $("#user_id").val()+'&duke_id=' + $("#duke_id").val()
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+    });
+
+    $('#search').click(function () {
+        var user_id = $("#user_id").val();
+        var duke_id = $("#duke_id").val();
+        var token = $('#token').val();
+        window.location.href = "/admin/dukeMember?token=" + token + '&master_url=/admin/dukeMember&page=1&user_id=' + user_id+'&duke_id=' + duke_id;
+    })
+
+    //添加装扮信息
+    $('.open').on('click',function(){
+        $('#editModal').modal('show');
+    });
+    //添加执行
+    $('#edit_info').on('click',function() {
+        var edit_info = $("#edit_form").serializeArray();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "get",    //请求类型
+            url: "/admin/dukeMemberAdd",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data: edit_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+    })
+    $("#datetimeEnd").datetimepicker({
+        weekStart: 1,
+        todayBtn: true,
+        todayHighlight: 1,
+        startView: 2,
+        forceParse: 0,
+        showMeridian: 1,
+        format: 'yyyy-mm-dd HH:ii:ss',
+        minView: '3',
+        language: 'zh-CN',
+        autoclose: true,
+        startDate: '-10y,-10m,-10d'
+    }).on("click", function () {
+        $("#datetimeEnd").datetimepicker("setEndDate")
+    });
+</script>
+
+</body>
+
+</html>

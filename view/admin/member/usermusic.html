@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+    <style>
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+    </style>
+
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        {if condition="in_array('/admin/musicList',$user_role_menu)"}
+                        <div class="pull-right search form-inline">
+                            状态:<select class="form-control" id="isstatus">
+                                <option value="3">全部&#12288&#12288</option>
+                                <option value="1" {if $status == 1} echo selected="selected" {/if}>通过</option>
+                                <option value="2" {if $status == 2} echo selected="selected" {/if}>未通过</option>
+                            </select>
+                            &#12288
+                            <input class="form-control input-outline" type="text" value="{$search_id}"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                   placeholder="用户Id"
+                                   id="search_id">
+                            <input class="form-control input-outline" type="text" value="{$songName}"
+                                   placeholder="歌曲名"
+                                   id="songName">
+                            <button type="button" class=" btn btn-primary" id="search">搜索</button>
+                        </div>
+                        {/if}
+                        <div class="example">
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center" >用户ID</th>
+                                    <th class="text-center" >歌手</th>
+                                    <th class="text-center" >歌曲名</th>
+                                    <th class="text-center" width="25%">地址</th>
+                                    <th class="text-center" >音乐类型</th>
+                                    <th class="text-center" >上传时间</th>
+                                    <th class="text-center" >审核时间</th>
+                                    <th class="text-center" >操作描述</th>
+                                    <th class="text-center" >状态</th>
+                                    <th class="text-center" width="10%">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($list)"}
+                                {volist name="list" id="lists"}
+                                <tr>
+                                    <input type="hidden" id="id" value="{$lists.id}">
+                                    <td class="text-center">{$lists.user_id}</td>
+                                    <td class="text-center">{$lists.songer}</td>
+                                    <td class="text-center" id="song_name">{$lists.song_name}</td>
+                                    <td class="text-center">
+                                    <audio src="{$lists.song_url}" controls="controls" style="width:300px;"></audio>
+                                    </td>
+                                    <td class="text-center">{$lists.type}</td>
+                                    <td class="text-center">{$lists.create_time}</td>
+                                    <td class="text-center">{$lists.examine_time}</td>
+                                    <td class="text-center">{$lists.desc}</td>
+                                    <td class="text-center">{$lists.status}</td>
+                                    <td style="width: 20px;" class="text-center">
+                                        {if condition="$lists.status eq '未审核'"}
+                                        {if condition="in_array('/admin/musicYes',$user_role_menu)"}
+                                        <button class=" btn btn-primary audit_yes">通过</button>
+                                        {/if}
+                                        {if condition="in_array('/admin/musicNo',$user_role_menu)"}
+                                        <button class="btn btn-danger audit_no">拒绝</button>
+                                        {/if}
+                                        {elseif condition="$lists.status eq '通过'"}
+                                            <button class=" btn btn-primary btn-danger del" delId="{$lists.id}">删除</button>
+                                        {else/}
+                                            <button class=" btn btn-primary audit_yes"  disabled="disabled">已拒绝</button>
+                                        {/if}
+                                        <br>
+
+                                    </td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="7" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page > 1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+<!--通过审核-->
+<div class="modal fade" id="audit_yes">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>通过审核</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <i class="glyphicon glyphicon-question-sign" id="audit_yes_msg"></i>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger" data-btn-danger="modal" onclick="music_yes()">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--不通过审核-->
+<div class="modal fade" id="audit_no">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>拒绝通过审核</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <i class="glyphicon glyphicon-question-sign" id="audit_no_msg"></i>
+                <br>
+                <label class="control-label">描述：</label>
+                <textarea class="form-control" name="notice_content" id="desc" placeholder="内容最多输入5000字" onkeyup="this.value=this.value.substring(0, 5000)" maxlength="5000"  rows="10"></textarea>
+                <span id="text-count" value=""></span>0/5000
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger" data-btn-danger="modal" onclick="music_no()">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{include file="../view/admin/common/userItem.html"}
+<input type="hidden" value="{$token}" id="token">
+<input type="hidden" value="" id="to_id">
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$user_role_menu_input}" id="user_role_menu">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<script>
+
+    $('.del').click(function () {
+        if(confirm("确定删除该条数据?")){
+            $.ajax({
+                async: false,    //表示请求是否异步处理
+                type: "post",    //请求类型
+                url: "/admin/delMusic",//请求的 URL地址
+                dataType: "json",//返回的数据类型
+                data: {id: $(this).attr('delId'), master_url: '/admin/delMusic', token: $('#token').val()},
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 500);   //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+            //刷新页面
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        }
+    })
+
+    // 获取所有audios
+    var audios = document.getElementsByTagName("audio");
+    // 暂停函数
+    function pauseAll() {
+        var self = this;
+        [].forEach.call(audios, function (i) {
+            // 将audios中其他的audio全部暂停
+            i !== self && i.pause();
+        })
+    }
+    // 给play事件绑定暂停函数
+    [].forEach.call(audios, function (i) {
+        i.addEventListener("play", pauseAll.bind(i));
+    })
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/musicList&token=' + $("#token").val() + '&user_id=' + $("#search_id").val()+'&status='+$("#isstatus").val()+'&song_name='+$("#songName").val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+        /*   onPageClicked:function (event, originalEvent, type, page) {
+               location.href = "?page="+page;
+           }*/
+    });
+    //搜索
+    $("#search").click(function () {
+        var user_id = $("#search_id").val();
+        if (isNaN(user_id)) {
+            toastr.warning('请输入正确的Id');
+            return false;
+        }
+        var token = $('#token').val();
+        var status = $("#isstatus").val();
+        window.location.href = "/admin/musicList?token=" + token + '&master_url=/admin/musicList&page=1&user_id=' + user_id + '&status=' + status+'&song_name='+$("#songName").val();
+    })
+    //通过审核
+    $(".audit_yes").click(function () {
+        var id = $(this).parents("tr").find("#id").val();
+        $("#to_id").val(id);
+        var content = $(this).parents("tr").find("#song_name").text();
+        $('#audit_yes').modal('show')
+        $("#audit_yes_msg").html(' 确定审核通过此条音乐吗：' + content )
+    })
+
+    function music_yes() {
+        var music_id = $("#to_id").val();
+        var master_url = '/admin/musicYes'
+        var token = $('#token').val()
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/musicYes",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {music_id: music_id, master_url: master_url, token: token},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 500);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        //刷新页面
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+
+    //未通过审核
+    $(".audit_no").click(function () {
+        var id = $(this).parents("tr").find("#id").val();
+        $("#to_id").val(id);
+        var content = $(this).parents("tr").find("#song_name").text();
+        $('#audit_no').modal('show')
+        $("#audit_no_msg").html(' 确定拒绝通过此条音乐吗：' + content )
+    })
+
+    function music_no() {
+        var music_id = $("#to_id").val();
+        var master_url = '/admin/musicNo'
+        var token = $('#token').val()
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/musicNo",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {music_id: music_id, master_url: master_url, token: token,desc:$('#desc').val()},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 500);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        //刷新页面
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+
+
+    $("#datetimeStart").datetimepicker({
+        weekStart: 1,
+        todayBtn: true,
+        todayHighlight: 1,
+        startView: 2,
+        forceParse: 0,
+        showMeridian: 1,
+        format: 'yyyy-mm-dd',
+        minView: '3',
+        language: 'zh-CN',
+        autoclose: true,
+        startDate: '-10y,-10m,-10d',
+    }).on("click", function () {
+        $("#datetimeStart").datetimepicker("setStartDate")
+    });
+    $("#datetimeEnd").datetimepicker({
+        weekStart: 1,
+        todayBtn: true,
+        todayHighlight: 1,
+        startView: 2,
+        forceParse: 0,
+        showMeridian: 1,
+        format: 'yyyy-mm-dd ',
+        minView: '3',
+        language: 'zh-CN',
+        autoclose: true,
+        startDate: '-10y,-10m,-10d'
+    }).on("click", function () {
+        $("#datetimeEnd").datetimepicker("setEndDate")
+    });
+
+
+
+
+
+
+
+
+
+  
+</script>
+</body>
+</html>

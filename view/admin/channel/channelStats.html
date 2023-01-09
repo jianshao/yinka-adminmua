@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/time/daterangepicker.css">
+    <style>
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        #demo {
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+        }
+
+        .btn-default {
+            background-color: #fff;
+            border: 1px solid #828080;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: #08c;
+            border: 1px solid #08c;
+            border-radius: 3px;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            background-color: #357ebd;
+        }
+
+    </style>
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="btn-group hidden-xs form-inline">
+                            <div class="form-group">
+                                注册时间查询：
+                                <input type="text" value="{$demo}" id="demo" readonly class="form_datetime form-control input-outline" style="width:190px;">
+                            </div>
+                            &#12288
+
+                            {if condition="$channel_level==0"}
+                            一级渠道：<select class="form-control" id="level_1" style="width: 200px;">
+                                <option value="">--请选择--</option>
+                                {volist name="channel_one" id="channel_one"}
+                                <option value="{$channel_one.id}"{if $level_1== $channel_one.id} echo selected="selected" {/if}>{$channel_one.channel_name}</option>
+                                {/volist}
+                            </select>
+                            &#12288
+                            {/if}
+
+                            {if condition="$channel_level==1 || $channel_level==0"}
+                            二级渠道：<select class="form-control" id="level_2" style="width: 200px;">
+                                <option value="">--请选择--</option>
+                                {volist name="channel_two" id="channel_two"}
+                                <option value="{$channel_two.id}"{if $level_2== $channel_two.id} echo selected="selected" {/if}>{$channel_two.channel_name}</option>
+                                {/volist}
+                            </select>
+                            &#12288
+                            {/if}
+
+                            {if condition="$channel_level != 3"}
+                            三级渠道：<select class="form-control" id="level_3" style="width: 200px;">
+                                <option value="">--请选择--</option>
+                                {volist name="channel_sub" id="channel_sub"}
+                                <option value="{$channel_sub.id}"{if $level_3== $channel_sub.id} echo selected="selected" {/if}>{$channel_sub.channel_name}</option>
+                                {/volist}
+                            </select>
+                            &#12288
+                            {/if}
+                            <button type="button" class="btn btn-outline btn-success" style="float:right;" id="daochu">
+                                <i aria-hidden="true"></i>导出
+                            </button>
+                            &#12288
+                            <button type="button" class="btn btn-outline btn-success" style="float:right;" id="search">
+                                <i aria-hidden="true"></i>搜索
+                            </button>
+
+                        </div>
+                        <div class="example">
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <h2>新增累计充值人数：{$reg_pay_count}&emsp; &emsp; 新增累计充值金额：{$reg_pay_amount}&emsp; &emsp;新增充值人数：{$total_reg_pay_count}&emsp; &emsp;新增当日充值金额：{$total_reg_pay_amount}&emsp; &emsp;新增注册至今充值人数：{$history_reg_pay_count}&emsp; &emsp;新增注册至今充值金额：{$history_reg_pay_amount}</h2>
+                                <tr>
+                                    <th class="text-center">统计日期</th>
+                                    <th class="text-center">一级渠道</th>
+                                    <th class="text-center level_2_th">二级渠道</th>
+                                    <th class="text-center level_3_th">三级渠道</th>
+                                    <th class="text-center level_3_th">登录账号</th>
+                                    <th class="text-center level_3_th">注册账号</th>
+                                    <th class="text-center level_3_th">充值人数</th>
+                                    <th class="text-center level_3_th">充值金额</th>
+                                    <th class="text-center level_3_th">直送</th>
+                                    <th class="text-center level_3_th">包送</th>
+                                    <th class="text-center level_3_th">新增累计直送</th>
+                                    <th class="text-center level_3_th">新增累计包送</th>
+                                    <th class="text-center level_3_th">新增充值人数</th>
+                                    <th class="text-center level_3_th">新增值金额</th>
+                                    <th class="text-center level_3_th">新增累计充值人数</th>
+                                    <th class="text-center level_3_th">新增累计充值金额</th>
+                                    <th class="text-center level_3_th">充值率</th>
+                                    <th class="text-center level_3_th">新增充值率</th>
+                                    <th class="text-center level_3_th">充值ARPU</th>
+                                    <th class="text-center level_3_th">新增充值ARPU</th>
+                                    <th class="text-center level_3_th">登录ARPU</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($data)"}
+                                {volist name="data" id="data"}
+                                <tr>
+                                    <td class="text-center id_td" id="id">{$data.time}</td>
+                                    <td class="text-center channel_one_td">{$data.channel_one}</td>
+                                    <td class="text-center channel_two_td">{$data.channel_two}</td>
+                                    <td class="text-center channel_three_td">{$data.channel_three}</td>
+                                    <td class="text-center channel_three_td">{$data.today_login_count}</td>
+                                    <td class="text-center channel_three_td" onclick="payUser('<?php echo json_encode($data['reg_login_users'])?>')">{$data.reg_login_count}</td>
+                                    <td class="text-center channel_three_td" onclick="payUser('<?php echo json_encode($data['today_pay_users'])?>')">{$data.today_pay_count}</td>
+                                    <td class="text-center channel_three_td">{$data.today_pay_amount}</td><!--消费金额-->
+                                    <td class="text-center channel_three_td">{$data.today_panel_amount}</td>
+                                    <td class="text-center channel_three_td">{$data.today_bag_amount}</td>
+                                    <td class="text-center channel_three_td">{$data.reg_panel_amount}</td>
+                                    <td class="text-center channel_three_td">{$data.reg_bag_amount}</td>
+                                    <td class="text-center channel_three_td" onclick="payUser('<?php echo json_encode($data['total_reg_pay_users'])?>')">{$data.total_reg_pay_count}</td>
+                                    <td class="text-center channel_three_td">{$data.total_reg_pay_amount}</td> <!--新消费金额-->
+                                    <td class="text-center channel_three_td" onclick="payUser('<?php echo json_encode($data['reg_pay_users'])?>')">{$data.reg_pay_count}</td>
+                                    <td class="text-center channel_three_td">{$data.reg_pay_amount}</td> <!--新消费金额-->
+                                    <td class="text-center channel_three_td">{$data.today_consume_rate}%</td>
+                                    <td class="text-center channel_three_td">{$data.reg_consume_rate}%</td>
+                                    <td class="text-center channel_three_td">{$data.today_pay_arpu}</td>
+                                    <td class="text-center channel_three_td">{$data.reg_pay_arpu}</td>
+                                    <td class="text-center channel_three_td">{$data.login_arpu}</td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="9" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page >1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+<!--                     End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+<!--操作modal-->
+<div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="detailModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+                </button>
+                <h4 class="modal-title" id="detailModalLabel">用户列表</h4>
+            </div>
+            <div class="modal-body detail-append">
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" value="{$token}" id="token">
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+
+{include file="../view/admin/common/jsHeader.html"}
+<script src="/admin/js/fileinput/fileinput.js" type="text/javascript"></script>
+<script src="/admin/js/fileinput/zh.js" type="text/javascript"></script>
+<script src="/admin/js/plugins/toastr/toastr.min.js"></script>
+<script src="/time/moment.min.js"></script>
+<script src="/time/daterangepicker.min.js"></script>
+<script src="/admin/js/date-select.js"></script>
+<script>
+    $('#daochu').click(function () {
+        var demo = $('#demo').val();
+        var token = $('#token').val();
+        window.location.href = "/admin/channelStats?token=" + token + '&master_url=/admin/channelStats&demo=' + demo + '&level_1=' + $('#level_1').val() + '&level_2=' + $('#level_2').val() + '&level=' + $('#level').val() +'&level_3=' + $('#level_3').val() + '&daochu='+1;
+    })
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            var demo = $('#demo').val();
+            return '?page=' + page + '&master_url=/admin/channelStats&token=' + $("#token").val() + '&master_url=/admin/channelStats&page=' + page + '&demo=' + demo + '&level_3=' + $('#level_3').val() + '&level_1=' + $('#level_1').val() + '&level_2=' + $('#level_2').val() + '&level=' + $('#level').val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+    });
+
+    $('#search').click(function () {
+        var demo = $('#demo').val();
+        var token = $('#token').val();
+        var page = $("#page").val();
+        window.location.href = "/admin/channelStats?token=" + token + '&master_url=/admin/channelStats' + '&demo=' + demo + '&level_3=' + $('#level_3').val() + '&level_1=' + $('#level_1').val() + '&level_2=' + $('#level_2').val() + '&level=' + $('#level').val();
+    })
+
+    function payUser(uids){
+        console.log(JSON.parse(uids))
+        var str = '';
+        $.each(JSON.parse(uids),function(key,uid){
+            str += '<tr><td class="text-center">' + uid + '</td></tr>'
+            });
+        $(".detail-append").empty();
+        $(".detail-append").prepend("<table class='table table-hover table-responsive' id='data_table' style='word-wrap: break-word; word-break: break-all;'>" +
+                    "<thead>" +
+                        "<tr>" +
+                            "<th class='text-center'>用户ID</th>" +
+                        "</tr>" +
+                    "</thead>" +
+                    "<tbody>" +
+                        str +
+                    "<tbody>" +
+                "<table>")
+        $('#detailModal').modal('show');
+    }
+</script>
+</body>
+</html>

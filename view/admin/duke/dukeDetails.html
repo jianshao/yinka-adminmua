@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="example">
+                            <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                <button type="button" class="btn open btn-outline btn-success">
+                                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>编辑
+                                </button>
+                            </div>
+                            <h2>{$data['duke_name']}</h2>
+                            <dl>
+                                <dd><h3>气泡：</h3></dd>
+                                <dd>
+                                {if condition="!empty($data['bubble_box'])"}
+                                {volist name="data['bubble_box']" id="list"}
+                                <dd><img src="{$list}" style="width: 100px;">
+                                {/volist}
+                                {/if}
+                                </dd>
+                            </dl>
+                            <dl>
+                                <dd><h3>座驾：</h3></dd>
+                                <dd>
+                                {if condition="!empty($data['car'])"}
+                                {volist name="data['car']" id="list"}
+                                <img src="{$list}" style="width: 100px;">
+                                {/volist}
+                                {/if}
+                                </dd>
+                            </dl>
+                            <dl>
+                                <dd><h3>头像框：</h3></dd>
+                                <dd>
+                                {if condition="!empty($data['headframe'])"}
+                                {volist name="data['headframe']" id="list"}
+                                <img src="{$list}" style="width: 100px;">
+                                {/volist}
+                                {/if}
+                                </dd>
+                            </dl>
+                            <dl>
+                                <dd><h3>特权礼物：</h3></dd>
+                                <dd>
+                                {if condition="!empty($data['privilege_gift'])"}
+                                {volist name="data['privilege_gift']" id="list"}
+                                <img src="{$list}" style="width: 100px;">
+                                {/volist}
+                                {/if}
+                                </dd>
+                            </dl>
+                            <dl>
+                                <dd><h3>卖位光圈：</h3></dd>
+                                <dd>
+                                {if condition="!empty($data['wheat_aperture'])"}
+                                {volist name="data['wheat_aperture']" id="list"}
+                                <img src="{$list}" style="width: 100px;">
+                                {/volist}
+                                {/if}
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+<!--添加-->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+                </button>
+                <h4 class="modal-title" id="editModalLabel">添加</h4>
+            </div>
+            <div class="modal-body edit-append">
+                <form id='edit_form' method='post' >
+                    <div class='form-group'>
+                        <label class='control-label'>  气泡框： </label>
+                        {if condition="!empty($dataLste['bubble_box'])"}
+                        {volist name="dataLste['bubble_box']" id="dataLste1"}
+                        <input type='text' class='form-control bubble_box' name='bubble_box[]'  value='{$dataLste1}' required='required'>
+                        {/volist}
+                        {else}
+                        <input type='text' class='form-control bubble_box' name='bubble_box[]'  value='' required='required'>
+                        {/if}
+                        <button id='bubbleBoxInput' class='addpriceinput' type='button' class='btn  btn-outline btn-success'>
+                            <i class='glyphicon glyphicon-plus' aria-hidden='true'></i>
+                        </button>
+                        <button  class='delpriceinput' type='button' class='btn  btn-outline btn-success'>
+                            <i class='glyphicon' aria-hidden='true'>-</i>
+                        </button>
+                    </div>
+                    <div class='form-group'>
+                        <label class='control-label'>  座驾： </label>
+                        {if condition="!empty($dataLste['car'])"}
+                        {volist name="dataLste['car']" id="dataLste2"}
+                        <input type='text' class='form-control price' name='car[]'  value='{$dataLste2}' required='required'>
+                        {/volist}
+                        {else}
+                        <input type='text' class='form-control price' name='car[]'  value='' required='required'>
+                        {/if}
+                        <button id='carinput' class='addpriceinput' type='button' class='btn  btn-outline btn-success'>
+                            <i class='glyphicon glyphicon-plus' aria-hidden='true'></i>
+                        </button>
+                        <button  class='delpriceinput' type='button' class='btn  btn-outline btn-success'>
+                            <i class='glyphicon' aria-hidden='true'>-</i>
+                        </button>
+                    </div>
+                    <div class='form-group'>
+                        <label class='control-label'>  头像框： </label>
+                        {if condition="!empty($dataLste['headframe'])"}
+                        {volist name="dataLste['headframe']" id="dataLste3"}
+                        <input type='text' class='form-control price' name='headframe[]'  value='{$dataLste3}' required='required'>
+                        {/volist}
+                        {else}
+                        <input type='text' class='form-control price' name='headframe[]'  value='' required='required'>
+                        {/if}
+                        <button id='headframeinput' class='addpriceinput' type='button' class='btn  btn-outline btn-success'>
+                            <i class='glyphicon glyphicon-plus' aria-hidden='true'></i>
+                        </button>
+                        <button  class='delpriceinput' type='button' class='btn  btn-outline btn-success'>
+                            <i class='glyphicon' aria-hidden='true'>-</i>
+                        </button>
+                    </div>
+
+                    <div class='form-group'>
+                        <label class='control-label'>  特权礼物： </label>
+                        {if condition="!empty($dataLste['privilege_gift'])"}
+                        {volist name="dataLste['privilege_gift']" id="dataLste4"}
+                        <input type='text' class='form-control price' name='privilege_gift[]'  value='{$dataLste4}' required='required'>
+                        {/volist}
+                        {else}
+                        <input type='text' class='form-control price' name='privilege_gift[]'  value='' required='required'>
+                        {/if}
+                        <button id='privilegegiftinput' class='addpriceinput' type='button' class='btn  btn-outline btn-success'>
+                            <i class='glyphicon glyphicon-plus' aria-hidden='true'></i>
+                        </button>
+                        <button  class='delpriceinput' type='button' class='btn  btn-outline btn-success'>
+                            <i class='glyphicon' aria-hidden='true'>-</i>
+                        </button>
+                    </div>
+                    <div class='form-group'>
+                        <label class='control-label'>  麦位： </label>
+                        {if condition="!empty($dataLste['wheat_aperture'])"}
+                        {volist name="dataLste['wheat_aperture']" id="dataLste5"}
+                        <input type='text' class='form-control price' name='wheat_aperture[]'  value='{$dataLste5}' required='required'>
+                        {/volist}
+                        {else}
+                        <input type='text' class='form-control price' name='wheat_aperture[]'  value='' required='required'>
+                        {/if}
+                        <button id='wheatapertureinput' class='addpriceinput' type='button' class='btn  btn-outline btn-success'>
+                            <i class='glyphicon glyphicon-plus' aria-hidden='true'></i>
+                        </button>
+                        <button  class='delpriceinput' type='button' class='btn  btn-outline btn-success'>
+                            <i class='glyphicon' aria-hidden='true'>-</i>
+                        </button>
+                    </div>
+                    <input type='hidden' value='{$token}' name='token'>
+                    <input type='hidden' value='/admin/dukeAdd' name='master_url'>
+                    <input type='hidden' value="{$data['duke_id']}" name='duke_id'>
+                    <input type='hidden' value="1" name='type'>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" >关闭</button>
+                <button type="button" class="btn btn-primary" id="save_info">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$token}" id="token">
+<input type="hidden" value="/admin/avatarOssFile" name="master_url" id="master_url">
+<input type="hidden" value="/admin/prettyavatarOssFile" name="masters_url" id="masters_url">
+<script src="https://cdn.jsdelivr.net/npm/svgaplayerweb@2.3.1/build/svga.min.js"></script>
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script>
+    //添加装扮信息
+    $('.open').on('click',function(){
+        $('#editModal').modal('show');
+    });
+
+    //追加框
+    $(document).on("click",".addpriceinput",function(){
+        var inputname = $(this).prev().attr('name')
+        $(this).before(
+            "<input type='text' class='form-control day' name='"+inputname+"'  value='' required='required'>"
+        );
+    });
+    $(document).on("click",".delpriceinput",function(){
+        var inputname = $(this).prev().prev().attr('name')
+        var len = $("input[name='"+inputname+"']").length
+        if(len<=1){
+            toastr.warning('元素不可少于一个');
+        }else{
+            $(this).prev().prev().remove();
+        }
+    });
+
+    //编辑执行
+    $('#save_info').on('click',function(){
+        var edit_info = $("#edit_form").serializeArray();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/dukeSave",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data: edit_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(function(){
+                    location.replace(location.href);
+                },1000);
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+    })
+</script>
+
+</body>
+</html>
+

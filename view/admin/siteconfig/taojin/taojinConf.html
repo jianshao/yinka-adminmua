@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+<div class="modal fade" id="boxModel" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="saveBoxModel">编辑</h4>
+            </div>
+            <div class="modal-body">
+                <form id='save_box_form' method="post">
+                    <div class="form-group">
+                        <label class='control-label'>规则地址:</label>
+                        <input type="text" class="form-control" placeholder="规则地址" value="{$list.energyInfo.rule}" name="rule" required>
+                    </div>
+                    <div class="form-group">
+                        <label class='control-label'>提示1:</label>
+                        <input type="text" class="form-control" placeholder="提示1" value="{$list.energyInfo.commontoast}" name="commontoast" required>
+                    </div>
+                    <div class="form-group">
+                        <label class='control-label'>提示2:</label>
+                        <input type="text" class="form-control" placeholder="提示2" value="{$list.energyInfo.lacktoast}" name="lacktoast" required>
+                    </div>
+                    <div class="form-group">
+                        <label class='control-label'>活动开始日期:</label>
+                        <input type="text" class="form-control start_time" placeholder="活动开始日期" value="{$time.start_time}" name="start_time" required>
+                    </div>
+                    <div class="form-group">
+                        <label class='control-label'>活动结束日期:</label>
+                        <input type="text" class="form-control end_time" placeholder="活动结束日期" value="{$time.end_time}" name="end_time" required>
+                    </div>
+                    <input type="hidden" value="/admin/addBox" name="master_url">
+                    <input type="hidden" value="{$token}" name="token">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="save_box_info()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="example">
+                            <div class="example">
+                                <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                    <button type="button" class="btn btn-outline btn-success" id="clearCache">
+                                        <i class="glyphicon glyphicon-fire" aria-hidden="true"></i>清除缓存
+                                    </button>
+                                    <button type="button" class="btn btn-outline btn-success" id="update-taojin_conf">
+                                        <i class="glyphicon glyphicon-fire" aria-hidden="true"></i>修改配置
+                                    </button>
+                                </div>
+                                <div class="pull-right search form-inline">
+                                    类型:<select class="form-control" id="gameId">
+                                    <option value="1" {if $gameId == 1} echo selected="selected" {/if}>沙之城</option>
+                                    <option value="2" {if $gameId == 2} echo selected="selected" {/if}>海之城</option>
+                                    <option value="3" {if $gameId == 3} echo selected="selected" {/if}>雪之城</option>
+                                    </select>
+
+                                    <button type="button" class=" btn btn-primary" id="search">搜索</button>
+
+                                </div>
+                                <table class="table table-hover table-responsive" id="data_table" style="word-wrap: break-word; word-break: break-all;">
+                                    <thead>
+                                    <tr>
+                                        <th class="text-center">名称</th>
+                                        <th class="text-center">体力</th>
+                                        <th class="text-center">状态</th>
+                                        <th class="text-center">奖励</th>
+                                        <th class="text-center">背景</th>
+                                        <th class="text-center">封面</th>
+                                        <th class="text-center">地图</th>
+                                        <th class="text-center">覆盖</th>
+                                        <th class="text-center">覆盖</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {if condition="!empty($list.list)"}
+                                    {volist name="list.list" id="list"}
+                                    <tr>
+                                        <input type="hidden" value="{$list.gameId}">
+                                        <td style="width: 20px;" class="text-center" >{$list.name}</td>
+                                        <td style="width: 20px;" class="text-center" >{$list.energy}</td>
+                                        <td style="width: 20px;" class="text-center" >{$list.gameId}</td>
+                                        <td style="width: 20px;" class="text-center" ><img src="{$list.image}" width="50px" alt="" class="show_img"></td>
+                                        <td style="width: 20px;" class="text-center" ><img src="{$list.bgmap}" width="50px" alt="" class="show_img"></td>
+                                        <td style="width: 20px;" class="text-center" ><img src="{$list.cover}" width="50px" alt="" class="show_img"></td>
+                                        <td style="width: 20px;" class="text-center" ><img src="{$list.map}" width="50px" alt="" class="show_img"></td>
+                                        <td style="width: 20px;" class="text-center" ><img src="{$list.covermap}" width="50px" alt="" class="show_img"></td>
+                                        <td style="width: 20px;" class="text-center" >
+                                            <button id="{$list.gameId}" class="btn save btn-success" style="background-color: rgb(72,119,194);border-color: rgb(72,119,194);">编辑奖池</button>
+                                            <button gameid="{$list.gameId}" class="btn game_proportion btn-success" style="background-color: rgb(69,69,102);border-color: rgb(69,69,102);">编辑奖池比例</button>
+                                            <button gameid="{$list.gameId}" class="btn save-image btn-success" style="background-color: rgb(74,74,74);border-color: rgb(74,74,74);">上传图片</button>
+                                        </td>
+
+                                    </tr>
+                                    {/volist}
+                                    {else}
+                                    <tr class="no-records-found">
+                                        <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                    </tr>
+                                    {/if}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- End Example Events -->
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!-- End Panel Other -->
+    </div>
+</div>
+<!--编辑图片-->
+<div class="modal fade" id="uploadFileModal" tabindex="-1" role="dialog" aria-labelledby="uploadFileModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="upload-file-name">图片编辑</h4>
+            </div>
+            <div class="modal-body">
+                <form id='uploads_files' method="post" enctype="multipart/form-data">
+                    <input type="hidden" id="id" name="id" value="">
+                    <input type="hidden" name="master_url" value="/admin/gameConfImg">
+                    <input type="hidden" name="token" value="{$token}">
+                    <div class="form-group">
+                        <label class="control-label">奖励[PNG]</label>
+                        <input type="file" class="form-control gift_tags" imagename="image" id="image" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">背景[PNG]</label>
+                        <input type="file" class="form-control gift_tags" imagename="bgmap" id="bgmap" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">封面[PNG]:</label>
+                        <input type="file" class="form-control gift_tags" imagename="cover"  id="cover" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">地图[PNG]:</label>
+                        <input type="file" class="form-control gift_tags" imagename="map" id="map" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">覆盖[PNG]:</label>
+                        <input type="file" class="form-control gift_tags" imagename="covermap" id="covermap" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="add_imgs()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<input type="hidden" value="{$token}" name="token" id="token">
+<div id="outerdiv"
+     style="position:fixed;top:0;left:0;background:rgba(0,0,0,0.7);z-index:2;width:100%;height:100%;display:none;">
+    <div id="innerdiv" style="position:absolute;">
+        <img id="max_img" style="border:5px solid #fff;" src=""/>
+    </div>
+</div>
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script>
+    //图片上传
+    $(document).on("change",".gift_tags",function(){
+        var $this = $(this)
+        if($this[0].files[0]){
+            var animationType = $this[0].files[0].name.split('.');
+            if (animationType[1] != "bmp"&&animationType[1] != "png"&&animationType[1] != "gif" && animationType[1]!="jpg" && animationType[1]!="jpeg" && animationType[1] != "svga") {
+                toastr.warning("不支持文件");
+                return false;
+            }
+        }
+        var imagename = $(this).attr('imagename');
+        var $this = $(this);
+        var formData = new FormData();
+        formData.append("token", $("#token").val());
+        formData.append("master_url", '/admin/giftConfAdd');
+        formData.append("image", $this[0].files[0]);
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            cache: false,
+            processData: false,
+            contentType: false,
+            type: "post",    //请求类型
+            url: "/admin/ossAttireFile",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: formData,
+            success: function (rs) {
+                if (rs.status !== 1) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                $this.parent().append("<input type='hidden' name="+imagename+"  value="+rs.image+">");
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+    });
+
+    function add_imgs(){
+        if($("#gifts_id").val() == ""){
+            toastr.warning('未获得礼物ID');
+            return false;
+        }
+        var formData = $("#uploads_files").serializeArray();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/gameConfImg",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data:formData,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+
+    //添加或更改图片
+    $('.save-image').on('click',function(){
+        $("#id").val($(this).attr('gameid'));
+        $('#uploadFileModal').modal('show');
+    })
+
+    $('#update-taojin_conf').on('click',function () {
+        $('#boxModel').modal('show');
+    })
+    //清除缓存
+    $("#clearCache").on('click',function(){
+        var master_url = "/admin/clearCache";
+        var token = $("#token").val();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/clearCache",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data:{master_url:master_url,token:token,type:'taojin_conf'},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 500);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    })
+
+    $('.save').click(function () {
+        window.location.href = "/admin/taojinContent?token=" + $('#token').val() + '&master_url=/admin/taojinContent&gameId='+$(this).attr('id')+'&classification='+'diceReward';
+    })
+    $('.game_proportion').click(function () {
+        window.location.href = "/admin/taojinContent?token=" + $('#token').val() + '&master_url=/admin/taojinContent&gameId='+$(this).attr('gameid')+'&classification='+'proportion';
+    })
+    $('.show_img').click(function () {
+        var _this = $(this);//将当前的min_img元素作为_this传入函数
+        imgShow("#outerdiv", "#innerdiv", "#max_img", _this);
+    })
+
+    //搜索
+    $("#search").click(function () {
+        window.location.href = "/admin/vipConf?token=" + $('#token').val() + '&master_url=/admin/vipConf&gameId=' + $("#gameId").val()
+    })
+
+    function imgShow(outerdiv, innerdiv, max_img, _this) {
+        var src = _this.attr("src");//获取当前点击的min_img元素中的src属性
+        $("#max_img").attr("src", src);//设置#max_img元素的src属性
+
+        /*获取当前点击图片的真实大小，并显示弹出层及大图*/
+        $("<img/>").attr("src", src).load(function () {
+            var windowW = $(window).width();//获取当前窗口宽度
+            var windowH = $(window).height();//获取当前窗口高度
+            var realWidth = this.width;//获取图片真实宽度
+            var realHeight = this.height;//获取图片真实高度
+            var imgWidth, imgHeight;
+            var scale = 0.8;//缩放尺寸，当图片真实宽度和高度大于窗口宽度和高度时进行缩放
+
+            if (realHeight > windowH * scale) {
+                imgHeight = windowH * scale;
+                imgWidth = imgHeight / realHeight * realWidth;
+                if (imgWidth > windowW * scale) {
+                    imgWidth = windowW * scale;
+                }
+            } else if (realWidth > windowW * scale) {
+                imgWidth = windowW * scale;
+                imgHeight = imgWidth / realWidth * realHeight;
+            } else {
+                imgWidth = realWidth;
+                imgHeight = realHeight;
+            }
+            $("#max_img").css("width", imgWidth);//以最终的宽度对图片缩放
+
+            var w = (windowW - imgWidth) / 2;//计算图片与窗口左边距
+            var h = (windowH - imgHeight) / 2;//计算图片与窗口上边距
+            $(innerdiv).css({"top": h, "left": w});//设置#innerdiv的top和left属性
+            $(outerdiv).fadeIn("fast");//淡入显示#outerdiv及.pimg
+        });
+
+        $(outerdiv).click(function () {
+            $(this).fadeOut("fast");
+        });
+    }
+
+    function save_box_info(){
+        var save_box_form = $("#save_box_form").serializeArray();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/saveTaoJinForm",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: save_box_form,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+</script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<script src="/admin/js/laydate/laydate.js"></script>
+<script>
+    //执行一个laydate实例
+        laydate.render({
+        elem: '.start_time',
+        type: 'datetime'
+    });
+
+    laydate.render({
+        elem: '.end_time',
+        type: 'datetime'
+    });
+
+    /**获取近N小时*/
+    function getRecentDay(hour,second){
+        var today = new Date();
+        var start=new Date(today.toLocaleDateString()).getTime() + 1000*60*60*hour - second;
+
+        console.log(formatDate(start))
+        return formatDate(start);
+    }
+
+    function formatDate(time){
+        date = new Date(time);
+        var y = date.getFullYear();
+        var m = date.getMonth() + 1;//注意这个“+1”
+        m = m < 10 ? ('0' + m) : m;
+        var d = date.getDate();
+        d = d < 10 ? ('0' + d) : d;
+        var h = date.getHours();
+        h=h < 10 ? ('0' + h) : h;
+        var minute = date.getMinutes();
+        minute = minute < 10 ? ('0' + minute) : minute;
+        var second=date.getSeconds();
+        second=second < 10 ? ('0' + second) : second;
+        return y + '-' + m + '-' + d+' '+h+':'+minute+':'+second;
+    }
+</script>

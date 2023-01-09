@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Mua语音 - 运营后台</title>
+	<!--    全局css-->
+	{include file="../view/admin/common/cssHeader.html"}
+	<link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+	<link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+    <link rel="canonical" href="https://icons.bootcss.com/icons/x-circle-fill/">
+    <link rel="stylesheet" href="/assets/css/docs.css">
+	<style>
+        .form-control:focus {
+            border-color: #66afe9;
+            outline: 0;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, 0.6);
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, 0.6);
+        }
+
+		table {
+			table-layout: fixed;
+		}
+
+		.tag-item {
+			display: inline-block;
+			margin: 1% 0.5%;
+		}
+
+        .tag-color {
+            background-color:#2f6f0b;
+		}
+
+        .tag-color-a {
+            background-color:red;
+		}
+
+        .tag-color-b {
+            background-color:#f7a54a;
+		}
+
+        .tag-color-c {
+            background-color:#18a689;
+		}
+
+        .tag-del {
+			display: none;
+		}
+
+		.emotion-list {
+			padding: 10px 20px;
+		}
+
+        .click_scale {
+            transition: 0.3s all;
+            &:active {
+                transform: scale(0.9);
+            }
+        }
+
+		td {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+	</style>
+
+</head>
+
+<body class="gray-bg">
+	<!--数据表格-->
+	<div class="wrapper wrapper-content animated fadeInRight">
+		<!-- Panel Other -->
+		<div class="ibox float-e-margins">
+			<div class="ibox-content">
+				<div class="row row-lg">
+                    <div class="example-wrap">
+                        <div class="btn-group hidden-xs form-inline" style="margin: 20px 20px;font-size: 16px;height: 40px;">
+                            <label class="btn-group" for="" style="margin: 0 20px 0 60px;">审核员账号:</label>
+                            <div class="btn-group form-inline">{$admin_info['username']}</div>
+                            <label class="btn-group" for="" style="margin: 0 20px 0 60px;">待审工单量:</label>
+                            <div class="btn-group form-inline">{$audit_info['unaudit_count']}</div>
+                            <label class="btn-group" for="" style="margin: 0 20px 0 60px;">已审工单量:</label>
+                            <div class="btn-group form-inline">{$audit_info['audit_count']}</div>
+                        </div>
+                    </div>
+                    <div class="example-wrap">
+                        <div class="form-group">
+                            <div style="display: inline-block; width: 88%;">
+                                <!-- <button type="button" class="btn btn-outline btn-success" id="start-audit">
+                                    <i class="glyphicon" aria-hidden="true"></i>开始审核
+                                </button> -->
+                            </div>
+                            <div style="display: inline-block;">
+                                <button type="button" class="btn btn-outline btn-success" id="tag-add">
+                                    <i class="glyphicon" aria-hidden="true"></i>配置标签
+                                </button>
+                                <button type="button" class="btn  btn-outline btn-success" id="tag-del">
+                                    <i class="glyphicon" aria-hidden="true"></i>删除标签
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="example-wrap">
+                        <div style="float: left;padding: 20px 0;width: 50%;">
+                            <div class="modal-dialog" style="margin: 0px;width: 100%;" role="document">
+                                <div class="example-wrap">
+                                    <!-- 导航 -->
+                                    <ul class="nav nav-tabs" role="tablist">
+                                        <li role="presentation" {if condition="isset($report_info['from_type']) && $report_info['from_type'] == 1"} class="active" {/if}><a href="#report_user_chat" aria-controls="report_user_chat" role="tab">
+                                                <h4 class="modal-title" id="attireModalLabel">用户私聊</h4>
+                                            </a></li>
+                                        <li role="presentation" {if condition="isset($report_info['from_type']) && $report_info['from_type'] == 2"} class="active" {/if}><a href="#report_user_profile" aria-controls="report_user_profile" role="tab">
+                                                <h4 class="modal-title" id="attireModalLabel">用户资料</h4>
+                                            </a></li>
+                                        <li role="presentation" {if condition="isset($report_info['from_type']) && $report_info['from_type'] == 3"} class="active" {/if}><a href="#report_room_info" aria-controls="report_room_info" role="tab">
+                                                <h4 class="modal-title" id="attireModalLabel">房间资料</h4>
+                                            </a></li>
+                                        <li role="presentation" {if condition="isset($report_info['from_type']) && $report_info['from_type'] == 4"} class="active" {/if}><a href="#report_room_user" aria-controls="report_room_user" role="tab">
+                                                <h4 class="modal-title" id="attireModalLabel">房间内用户违规</h4>
+                                            </a></li>
+                                        <li role="presentation" {if condition="isset($report_info['from_type']) && $report_info['from_type'] == 5"} class="active" {/if}><a href="#report_forum" aria-controls="report_forum" role="tab">
+                                                <h4 class="modal-title" id="attireModalLabel">动态</h4>
+                                            </a></li>
+                                        <li role="presentation" {if condition="isset($report_info['from_type']) && $report_info['from_type'] == 6"} class="active" {/if}><a href="#report_forum_reply" aria-controls="report_forum_reply" role="tab">
+                                                <h4 class="modal-title" id="attireModalLabel">动态评论</h4>
+                                            </a></li>
+                                    </ul>
+                                    <!-- 带显示效果的内容 -->
+                                    <div class="tab-content">
+                                        <div role="tabpanel" class="tab-pane fade {if condition="isset($report_info['from_type']) && $report_info['from_type'] == 1"} in active {/if}" id="report_user_chat">
+                                            <div class="modal-content" style="text-align:center ;">
+                                                {if condition="isset($report_info['from_type']) && $report_info['from_type'] == 1"}
+                                                    <div class="modal-body">
+                                                        <button class="btn  btn-outline btn-success J_menuItem" href="/admin/checkimMsgDetail?master_url=/admin/checkimMsgDetail&token={$token}&from_uid={$report_info['report_uid']}&to_uid={$report_info['reported_uid']}" title="用户聊天记录">查看双方聊天记录</button>
+
+                                                        <!-- <button type='button' class='btn btn-outline btn-success chat-log'>
+                                                        </button> -->
+                                                    </div>
+                                                {else}
+                                                    <div class='commontop-right-list'>
+                                                        <label >没有找到匹配的记录</label>
+                                                    </div>
+                                                {/if} 
+                                            </div>
+                                        </div>
+                                        <div role="tabpanel" class="tab-pane fade {if condition="isset($report_info['from_type']) && $report_info['from_type'] == 2"} in active {/if}" id="report_user_profile">
+                                            <div class="modal-content">
+                                                <div class="modal-body" style="height:800px;">
+                                                    {if condition="isset($report_info['from_type']) && $report_info['from_type'] == 2"}
+                                                        <div class="commontop-right-list">
+                                                            <label class="commontop-right-list-labell">被举报者头像:</label>
+                                                            <div class="commontop-right-list-divv avatar" style="width: 36%;margin-right: 2rem;"><img class="show_img" src="{$report_info['reported_user_info']['avatar']}" style="width:50px;height:50px" alt="用户头像"></div>
+                                                            <div class="commontop-right-list-divv" style="float: right;"><input class="checkbox" autocomplete="off" type="checkbox" edit="user_avatar"></div>
+                                                        </div>
+                                                        <div class="commontop-right-list">
+                                                            <label class="commontop-right-list-labell">被举报者昵称:</label>
+                                                            <div class="commontop-right-list-divv nickname" style="width: 36%;margin-right: 2rem;">{$report_info['reported_user_info']['nickname']}</div>
+                                                            <div class="commontop-right-list-divv" style="float: right;"><input class="checkbox" autocomplete="off" type="checkbox" edit="user_nickname"></div>
+                                                        </div>
+                                                        <div class="commontop-right-list">
+                                                            <label class="commontop-right-list-labell">被举报者个性签名:</label>
+                                                            <div class="commontop-right-list-divv intro" style="width: 36%;margin-right: 2rem;">{$report_info['reported_user_info']['intro']}</div>
+                                                            <div class="commontop-right-list-divv" style="float: right;"><input class="checkbox" autocomplete="off" type="checkbox" edit="user_intro"></div>
+                                                        </div>
+                                                        <div class="commontop-right-list">
+                                                            <label class="commontop-right-list-labell">被举报者语音个人介绍:</label>
+                                                            {if condition="!empty($report_info['reported_user_info']['voice_url'])"}
+                                                                <div class="commontop-right-list-divv voice_url" style="width: 36%;margin-right: 2rem;">
+                                                                    {if condition="$report_info['reported_user_info']['voice_type'] == 1"}
+                                                                    <audio src="{$report_info['reported_user_info']['voice_url']}" controls="controls" style="width:210px;height:25px"></audio>
+                                                                    {else}
+                                                                        <input type="button" value="播放" id="playId"/>
+                                                                        <input type="button" value="停止" id="stopId"/>
+                                                                    {/if}
+                                                                </div>
+                                                                <div class="commontop-right-list-divv" style="float: right;">
+                                                                    <input class="checkbox" autocomplete="off" type="checkbox" edit="user_voice_url">
+                                                                </div>
+                                                            {/if}
+                                                        </div>
+                                                        <div class="commontop-right-list">
+                                                            <label class="commontop-right-list-labell">被举报者相册背景图:</label>
+                                                            <div class="commontop-right-list-divv album" style="width: 36%;margin-right: 2rem;">
+                                                                {if condition="isset($report_info['reported_user_info']['album']) && !empty($report_info['reported_user_info']['album'])"}
+                                                                    {volist name="$report_info['reported_user_info']['album']" id='image'}
+                                                                    <div class="commontop-right-list">
+                                                                    <div class="commontop-right-list-divv album" style="width: 36%;margin-right: 2rem;"><img class="show_img" src="{$image}" style="width:50px;height:50px" alt="用户相册"></div>
+                                                                    <div class="commontop-right-list-divv" style="float: right;"><input class="checkbox" autocomplete="off" type="checkbox" edit="user_album_{$key}"></div>
+                                                                    </div>
+                                                                    {/volist}
+                                                                {/if}
+                                                            </div>
+                                                        </div>
+                                                        <!-- <div class="commontop-right-list">
+                                                            <label class="commontop-right-list-labell">靓号：</label>
+                                                            <div class="commontop-right-list-divv pretty_id">1700782</div>
+                                                        </div>
+                                                        <div class="commontop-right-list">
+                                                            <label class="commontop-right-list-labell">昵称：</label>
+                                                            <div class="commontop-right-list-divv nickname">🦒优雅的雁蓉🌾</div>
+                                                        </div>
+                                                        <div class="commontop-right-list">
+                                                            <label class="commontop-right-list-labell">手机号：</label>
+                                                            <div class="commontop-right-list-divv username">18665544444</div>
+                                                        </div>
+                                                        <div class="commontop-right-list">
+                                                            <label class="commontop-right-list-labell">个性签名：</label>
+                                                            <div class="commontop-right-list-divv intro"></div>
+                                                        </div>
+                                                        <div class="commontop-right-list">
+                                                            <label class="commontop-right-list-labell">性别：</label>
+                                                            <div class="commontop-right-list-labell sex">女</div>
+                                                        </div>
+                                                        <div class="commontop-right-list">
+                                                            <label class="commontop-right-list-labell">最后登录时间：</label>
+                                                            <div class="commontop-right-list-labell login_time">2022-04-24 18:15:58</div>
+                                                        </div> -->
+                                
+                                                        <!-- <div class="commontop-right-list">
+                                                            <label class="commontop-right-list-labell">最后离线时间：</label>
+                                                            <div class="commontop-right-list-labell leavetime"></div>
+                                                        </div>
+                            
+                                                        <div class="commontop-right-list">
+                                                            <label class="commontop-right-list-labell">注册时间：</label>
+                                                            <div class="commontop-right-list-divv register_time">2022-04-24 18:15:57</div>
+                                                        </div>
+                                                        <div class="commontop-right-list">
+                                                            <label class="commontop-right-list-labell">IP地址：</label>
+                                                            <div class="commontop-right-list-divv login_ip">111.206.85.226</div>
+                                                        </div>
+                                                        <div class="commontop-right-list">
+                                                            <label class="commontop-right-list-labell">注册设备唯一标识：</label>
+                                                            <div class="commontop-right-list-divv imei">&nbsp;</div>
+                                                        </div>
+                                                        <div class="commontop-right-list">
+                                                            <label class="commontop-right-list-labell">注册设备id：</label>
+                                                            <div class="commontop-right-list-divv deviceid">86E651CC31F52974A612414EB8D4D294B3388E11</div>
+                                                        </div>
+                                                        <div class="commontop-right-list">
+                                                            <label class="commontop-right-list-labell">所属工会：</label>
+                                                            <div class="commontop-right-list-divv guild">&nbsp;</div>
+                                                        </div>
+                                                        <div class="commontop-right-list">
+                                                            <label class="commontop-right-list-labell">邀请码：</label>
+                                                            <div class="commontop-right-list-divv  invitcode">0</div>
+                                                        </div> -->
+                                                    {else}
+                                                        <div class='commontop-right-list' style="text-align:center ;">
+                                                            <label >没有找到匹配的记录</label>
+                                                        </div>
+                                                    {/if}                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div role="tabpanel" class="tab-pane fade {if condition="isset($report_info['from_type']) && $report_info['from_type'] == 3"} in active {/if}" id="report_room_info">
+                                            <div class="modal-content">
+                                                <div class="modal-body" style="height: 250px;">
+                                                    {if condition="isset($report_info['from_type']) && $report_info['from_type'] == 3 && !empty($report_info['room_info'])"}
+                                                        <div class='commontop-right-list'>
+                                                            <label class="commontop-right-list-labell">封面图：</label>
+                                                            <div class="commontop-right-list-divv background_image" style="width: 36%;margin-right: 2rem;">                                                            
+                                                                <img class="show_img" src="{$report_info['reported_user_info']['avatar']}" style="width:50px;height:50px" alt="">
+                                                            </div>
+                                                            <div class="commontop-right-list-divv" style="float: right;"><input class="checkbox" autocomplete="off" type="checkbox" edit="user_avatar"></div>
+                                                        </div>
+                                                        <div class='commontop-right-list'>
+                                                            <label class="commontop-right-list-labell">房间名称：</label>
+                                                            <div class="commontop-right-list-divv room_name" style="width: 36%;margin-right: 2rem;">{$report_info['room_info']['room_name']}</div>
+                                                            <div class="commontop-right-list-divv" style="float: right;"><input class="checkbox" autocomplete="off" type="checkbox" edit="room_name"></div>
+                                                        </div>
+                                                        <div class='commontop-right-list'>
+                                                            <label class="commontop-right-list-labell">房间ID：</label>
+                                                            <div class="commontop-right-list-divv room_id" style="width: 36%;margin-right: 2rem;">{$report_info['room_info']['room_id']}</div>
+                                                        </div>
+                                                        <div class='commontop-right-list'>
+                                                            <label class="commontop-right-list-labell">房间公告：</label>
+                                                            <div class="commontop-right-list-divv room_desc" style="width: 36%;margin-right: 2rem;">{$report_info['room_info']['room_desc']}</div>
+                                                            <div class="commontop-right-list-divv" style="float: right;"><input class="checkbox" autocomplete="off" type="checkbox" edit="room_desc">&emsp;</div>
+                                                        </div>
+                                                        <div class='commontop-right-list'>
+                                                            <label class="commontop-right-list-labell">欢迎语：</label>
+                                                            <div class="commontop-right-list-divv room_welcomes" style="width: 36%;margin-right: 2rem;">{$report_info['room_info']['room_welcomes']}</div>
+                                                            <div class="commontop-right-list-divv" style="float: right;"><input class="checkbox" autocomplete="off" type="checkbox" edit="room_welcomes"> </div>
+                                                        </div>
+                                                    {else}
+                                                        <div class='commontop-right-list' style="text-align:center ;">
+                                                            <label >没有找到匹配的记录</label>
+                                                        </div>
+                                                    {/if}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div role="tabpanel" class="tab-pane fade {if condition="isset($report_info['from_type']) && $report_info['from_type'] == 4"} in active {/if}" id="report_room_user">
+                                            <div class="modal-content">
+                                                <div class="modal-body" style="height: 250px;">
+                                                    {if condition="isset($report_info['from_type']) && $report_info['from_type'] == 4"}
+                                                        <div class='commontop-right-list'>
+                                                            <label class="commontop-right-list-labell">被举报用户房间麦上音频：</label>
+                                                            <span class="commontop-right-list-divv audio_url">
+                                                                {if condition="!empty($report_info['audio_url']) and $report_info['audio_status'] eq 1"}
+                                                                <audio src="{$report_info['audio_url']}" controls="controls" style="width:210px;height:25px"></audio>
+                                                                {else}
+                                                                <span>音频{$report_info['audio_status_desc']}</span>
+                                                                {/if}
+                                                            </span>
+                                                        </div>
+                                                        <div class='commontop-right-list' style="text-align:center ;">
+                                                            <button class="btn  btn-outline btn-success J_menuItem" href="/admin/roomMsgList?master_url=/admin/roomMsgList&token={$token}&uid={$report_info['reported_uid']}&room_id={$report_info['reported_id']}" title="查看房间公屏信息">查看房间公屏信息</button>
+                                                        </div>
+                                                    {else}
+                                                        <div class='commontop-right-list' style="text-align:center ;">
+                                                            <label >没有找到匹配的记录</label>
+                                                        </div>
+                                                    {/if}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div role="tabpanel" class="tab-pane fade {if condition="isset($report_info['from_type']) && $report_info['from_type'] == 5"} in active {/if}" id="report_forum">
+                                            <div class="modal-content">
+                                                <div class="modal-body" style="height: 250px;">
+                                                    {if condition="isset($report_info['from_type']) && $report_info['from_type'] == 5"}
+                                                        <div class="commontop-right-list">
+                                                            <label class="commontop-right-list-labell">动态内容:</label>
+                                                            <div class="commontop-right-list-divv id">{$report_info['forum_info']['content']}</div>
+                                                        </div>
+                                                        <div class="commontop-right-list">
+                                                            <label class="commontop-right-list-labell">动态图片:</label>
+                                                            <div class="commontop-right-list-divv id">
+                                                                {if condition="isset($report_info['forum_info']['images']) && !empty($report_info['forum_info']['images'])"}
+                                                                    {volist name="$report_info['forum_info']['images']" id='image'}
+                                                                    <img class="show_img" src="{$image}" style="width:50px;height:50px">
+                                                                    {/volist}
+                                                                {/if}
+                                                            </div>
+                                                        </div>
+                                                        <div class='commontop-right-list' style="text-align:center ;">
+                                                            <!-- <button type='button' class='btn btn-outline btn-success room_log'>
+                                                                查看完整动态
+                                                            </button> -->
+                                                            <button class="btn btn-outline btn-success J_menuItem" href="/admin/getForumList?master_url=/admin/getForumList&token={$token}&uid={$report_info['reported_uid']}&forum_id={$report_info['reported_id']}" title="动态列表">查看完整动态</button>
+                                                        </div>
+                                                    {else}
+                                                        <div class='commontop-right-list' style="text-align:center ;">
+                                                            <label >没有找到匹配的记录</label>
+                                                        </div>
+                                                    {/if}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div role="tabpanel" class="tab-pane fade {if condition="isset($report_info['from_type']) && $report_info['from_type'] == 6"} in active {/if}" id="report_forum_reply">
+                                            <div class="modal-content">
+                                                <div class="modal-body" style="height: 250px;">
+                                                    {if condition="isset($report_info['from_type']) && $report_info['from_type'] == 6"}
+                                                        <div class="commontop-right-list">
+                                                            <label class="commontop-right-list-labell">动态内容:</label>
+                                                            <div class="commontop-right-list-divv id">{$report_info['forum_reply_info']['forum_info']['content']}</div>
+                                                        </div>
+                                                        <div class="commontop-right-list">
+                                                            <label class="commontop-right-list-labell">动态图片:</label>
+                                                            <div class="commontop-right-list-divv images">
+                                                                {if condition="isset($report_info['forum_reply_info']['forum_info']['images']) && !empty($report_info['forum_reply_info']['forum_info']['images'])"}
+                                                                    {volist name="$report_info['forum_reply_info']['forum_info']['images']" id='image'}
+                                                                    <img class="show_img" src="{$image}" style="width:50px;height:50px">
+                                                                    {/volist}
+                                                                {/if}
+                                                            </div>
+                                                        </div>
+                                                        <div class="commontop-right-list">
+                                                            <label class="commontop-right-list-labell">动态评论:</label>
+                                                            <div class="commontop-right-list-divv id">{$report_info['forum_reply_info']['content']}</div>
+                                                        </div>
+                                                        <div class='commontop-right-list' style="text-align:center ;">
+                                                            <!-- <button type='button' class='btn btn-outline btn-success room_log'>
+                                                                查看完整动态
+                                                            </button> -->
+                                                            <button class="btn btn-outline btn-success J_menuItem" href="/admin/getForumList?master_url=/admin/getForumList&token={$token}&forum_id={$report_info['forum_reply_info']['forum_id']}" title="查看完整动态">查看完整动态</button>
+                                                        </div>
+                                                    {else}
+                                                        <div class='commontop-right-list' style="text-align:center ;">
+                                                            <label >没有找到匹配的记录</label>
+                                                        </div>
+                                                    {/if}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="float: left;padding: 20px 0;width: 22%;">
+                            <div class="report-user-info" style="height: 50%;">
+                                <div style="text-align: center;font-size: 16px;">
+                                    <label class="">被举报者用户信息</label>
+                                </div>
+                                <div class="commom-right-top-box">
+                                    <div class="commontop-right-list">
+                                        <label class="commontop-right-list-labell">用户头像：</label>
+                                        <div class="commontop-right-list-divv avatar"> <img class="show_img" src="{$report_info['reported_user_info']['avatar'] ?? ''}" style="width: 50px;"></div>
+                                    </div>
+                                    <div class="commontop-right-list">
+                                        <label class="commontop-right-list-labell">昵称：</label>
+                                        <div class="commontop-right-list-divv nickname">{$report_info['reported_user_info']['id'] ?? ''}</div>
+                                    </div>
+                                    <div class="commontop-right-list">
+                                        <label class="commontop-right-list-labell">用户ID：</label>
+                                        <div class="commontop-right-list-divv uid">{$report_info['reported_user_info']['id'] ?? ''}</div>
+                                    </div>
+                                    <div class="commontop-right-list">
+                                        <label class="commontop-right-list-labell">举报类型：</label>
+                                        <div class="commontop-right-list-divv uid">{$report_info['type'] ?? ''}</div>
+                                    </div>
+                                    <div class="commontop-right-list">
+                                        <label class="commontop-right-list-labell">举报描述：</label>
+                                        <div class="commontop-right-list-divv uid">{$report_info['content'] ?? ''}</div>
+                                    </div>
+                                    <div class="commontop-right-list">
+                                        <label class="commontop-right-list-labell">上传截图：</label>
+                                        {if condition="isset($report_info['images']) && !empty($report_info['images'])"}
+                                            <div class="commontop-right-list-divv report_img" style="width: 70%;"> 
+                                                {volist name="$report_info['images']" id="image"}
+                                                    <img class="show_img" src="{$image}" style="width:50px;height:50px">
+                                                {/volist}
+                                            </div>
+                                        {/if}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="report-user-info" style="height: 50%;">
+                                <div style="text-align: center;font-size: 16px;">
+                                    <label class="">举报者用户信息</label>
+                                </div>
+                                <div class="commom-right-top-box">
+                                    <div class="commontop-right-list">
+                                        <label class="commontop-right-list-labell">用户头像：</label>
+                                        <div class="commontop-right-list-divv avatar"> <img class="show_img" src="{$report_info['report_user_info']['avatar'] ?? ''}" style="width: 50px;"></div>
+                                    </div>
+                                    <div class="commontop-right-list">
+                                        <label class="commontop-right-list-labell">昵称：</label>
+                                        <div class="commontop-right-list-divv nickname">{$report_info['report_user_info']['id'] ?? ''}</div>
+                                    </div>
+                                    <div class="commontop-right-list">
+                                        <label class="commontop-right-list-labell">用户ID：</label>
+                                        <div class="commontop-right-list-divv uid">{$report_info['report_user_info']['id'] ?? ''}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tag-list" style="float: left;padding: 20px 0;width: 28%;">
+                            <div class="modal-body tag-buttons" style="color:#FFFFFF;font-size: 14px">
+                                {if condition="!empty($report_tag_list)"}
+                                    {volist name="report_tag_list" id="tag_list" key="level_id"}
+                                    <div class="level-{$key}" style="display:block;">
+                                        {volist name="tag_list" id="tag"}
+                                            <div style="display:inline-block">
+                                                <div style="position: relative;">
+                                                    <div class="tag-item tag-del" style="top:-12px;position: absolute;left:-10px;cursor: pointer;">✖️</div>
+                                                    <div  style="margin: 10px 5px;">
+                                                        <input type="hidden" value="{$tag.tag_id}" name="tag_id">
+                                                        <button tag-id="{$tag.tag_id}" class="btn tag-name {if $level_id==1}tag-color-a{elseif $level_id==2}tag-color-b{else}tag-color-c{/if}">{$tag.title}</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {/volist}
+                                    </div>
+                                    {/volist}
+                                {/if}
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-danger exec-punish" data-dismiss="modal">处罚</button>
+                                <button type="button" class="btn btn-primary no-punish" data-dismiss="modal">无问题</button>
+                                <button type="button" class="btn btn-warning set-punish" data-dismiss="modal">自定义处罚</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+		</div>
+	</div>
+	<!-- End Panel Other -->
+	</div>
+	<!--操作modal-->
+	<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+					</button>
+					<h4 class="modal-title" id="addModalLabel">添加</h4>
+				</div>
+				<div class="modal-body add-append">
+
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+					<button type="button" class="btn btn-primary" onclick="addInfo()">保存</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+					</button>
+					<h4 class="modal-title" id="editModalLabel">编辑</h4>
+				</div>
+				<div class="modal-body edit-append">
+
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+					<button type="button" class="btn btn-primary" id="save">修改</button>
+				</div>
+			</div>
+		</div>
+	</div>
+    <div class="modal fade" id="punishModal" tabindex="-1" role="dialog" aria-labelledby="punishModalLabel">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+					</button>
+					<h4 class="modal-title" id="punishModalLabel">自定义处罚</h4>
+				</div>
+				<div class="modal-body punish-append">
+
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+					<button type="button" class="btn btn-primary" onclick="reportPunish()">保存</button>
+				</div>
+			</div>
+		</div>
+	</div>
+    <div id="outerdiv" style="position:fixed;top:0;left:0;background:rgba(0,0,0,0.7);z-index:100000;width:100%;height:100%;display:none;">
+        <div id="innerdiv" style="position:absolute;">
+            <img id="max_img" style="border:5px solid #fff;" src=""/>
+        </div>
+    </div>
+	{include file="../view/admin/common/confirm.html"}
+	<input type='hidden' value='0' id='edit_id'>
+	<input type='hidden' value="{$admin_info['id']}" id='admin_id'>
+	<input type="hidden" value="{$token}" name="token" id="token">
+	<input type="hidden" value="{$report_info['id'] ?? 0}" name="report_id" id="report_id">
+	<!-- 全局js -->
+    <script src="/admin/js/jquery.min.js?v=2.1.4"></script>
+    <script src="/admin/js/bootstrap.min.js?v=3.3.6"></script>
+    <script src="/admin/js/voice-2.0.js"></script>
+    <script src="/admin/js/audio.min.js"></script>
+    <script src="/admin/js/plugins/toastr/toastr.min.js"></script>\
+    <script src="/admin/js/plugins/pagination/bootstrap-paginator.js"></script>
+	<script>
+        $('.J_menuItem').on('click', function () {
+            parent.childMenu(this)
+        });
+
+        RongIMLib.RongIMVoice.init();
+
+        $('#playId').on('click', function () {
+            RongIMLib.RongIMVoice.play("<?php echo $report_info['reported_user_info']['voice_url'] ?? '';?>");
+        });
+
+        $('#stopId').on('click', function () {
+            RongIMLib.RongIMVoice.stop();
+
+        });
+
+        $('#start-audit').click(function (e) {
+			$.ajax({
+				async: false, //表示请求是否异步处理
+				type: "post", //请求类型
+				url: "/admin/reportStartAudit", //请求的 URL地址
+				token: $("#token").val(),
+				dataType: "json", //返回的数据类型
+				data: {
+                    token: $("#token").val(),
+                    master_url: "/admin/reportStartAudit",
+                    admin_id: $("#admin_id").val(),
+                },
+				success: function (rs) {
+					if (rs.code != 200) {
+						toastr.warning(rs.desc);
+						return false;
+					}
+					toastr.success(rs.desc);
+					setTimeout(window.location.href=window.location.href, 1000); //延迟5秒刷新页面
+
+				},
+				error: function (rs) {
+					toastr.warning('请求失败');
+				}
+			});
+            return false;
+        });
+
+        $(document).on("click", "#tag-del", function () {
+			$(this).parents('.ibox-content').find('.tag-list .tag-item').removeClass('tag-del');
+		});
+
+        $(document).on("click", ".checkbox", function () {
+            if (typeof($(this).attr('checked')) == 'undefined') {
+                $(this).attr('checked','checked');
+            } else {
+                $(this).removeAttr('checked');
+            }
+		});
+
+		//添加
+		$('#tag-add').on('click', function () {
+            $(this).parents('.ibox-content').find('.tag-list .tag-item').addClass('tag-del');
+			$(".add-append").empty();
+			$(".add-append").prepend(
+				"<form id='add_form' method='post' >" +
+
+				"<div class='form-group'>" +
+				"<label class='control-label'>选择处罚等级</label>" +
+				"<select class='form-control punish_level' name='punish_level'>" +
+				"<option value='1'  selected='selected'>A级</option>" +
+				"<option value='2'>B级</option>" +
+				"<option value='3'>C级</option>" +
+				"</select>" +
+				"</div>" +
+
+                "<div class='form-group'>" +
+				"<label class='control-label'>" + "标签名称:" + "</label>" +
+				"<input type='text' class='form-control title' name='title' value='' required>  " +
+				"</div>" +
+
+                "<div class='form-group'>" +
+				"<label class='control-label'>" + "举报者话术配置:" + "</label>" +
+				"<input type='text' class='form-control report_content' name='report_content' value='' required>  " +
+				"</div>" +
+
+                "<div class='form-group'>" +
+				"<label class='control-label'>" + "被举报者话术配置:" + "</label>" +
+				"<input type='text' class='form-control reported_content' name='reported_content' value='' required>  " +
+				"</div>" +
+
+				"<input type='hidden' value='{$token}' name='token'>" +
+				"<input type='hidden' value='/admin/reportTagAdd' id='master_url' name='master_url'>" +
+				" </form>"
+			);
+			$('#addModal').modal('show');
+		});
+
+        //自定义处罚
+		$('.tag-name').on('click', function () {
+            $(this).parents('.tag-buttons').find('.btn').removeAttr('style');
+            $(this).attr('style', 'background-color:#2f6f0b;');
+        });
+
+        var punish_info = JSON.parse('<?php echo json_encode($report_info['punish_info'])?>');
+        console.log(punish_info);
+
+        $(document).on('change', '.set-level', function () {
+            $('.punish_id').empty();
+
+            var punish_level = $(this).val();
+            console.log(punish_info[punish_level])
+            var punish_selection = '';
+            if (typeof(punish_info[punish_level]) != 'undefined') {
+                $.each(punish_info[punish_level], function (punish_id, title) {
+                    punish_selection += "<option value='" + punish_id + "' >" + title + "</option>";
+                });
+                $('.punish_id').prepend(punish_selection)
+            }
+        });
+
+        //处罚
+		$('.exec-punish').on('click', function () {
+            var formData = new FormData();
+            var tag_id = $(this).parents('.tag-list').find("button[style]").attr('tag-id');
+            console.log('exet-punish:tag_id', tag_id)
+            if (typeof(tag_id) == 'undefined') {
+                alert('请选择处罚标签');return false;
+            } 
+            var report_id = $("#report_id").val();
+            console.log('exet-punish:report_id', report_id)
+
+            var edit_list = $(this).parents('.example-wrap').find(".checkbox");
+            console.log(edit_list);
+
+            var edit_types = {};
+            $.each(edit_list, function (index, item) {
+                console.log($(this).attr('checked'));
+                if ($(this).attr('checked') == 'checked') {
+                    edit_types[index] = $(this).attr('edit');
+                }
+            });
+            console.log(edit_types);
+
+			$.ajax({
+				async: false, //表示请求是否异步处理
+				type: "post", //请求类型
+				url: "/admin/execPunish", //请求的 URL地址
+				token: $("#token").val(),
+				dataType: "json", //返回的数据类型
+				data: {
+                    token: $("#token").val(),
+                    master_url: '/admin/execPunish',
+                    report_id: report_id,
+                    report_tag_id: tag_id ,
+                    edit_obj: JSON.stringify(edit_types)
+                },
+				success: function (rs) {
+					if (rs.code != 200) {
+						toastr.warning(rs.desc);
+						return false;
+					}
+					toastr.success(rs.desc);
+
+					setTimeout(window.location.href=window.location.href, 1000); //延迟5秒刷新页面
+
+				},
+				error: function (rs) {
+					toastr.warning('请求失败');
+				}
+			});
+
+            return false;
+        });
+
+        //不处罚
+        $('.no-punish').on('click', function () {
+            var formData = new FormData();
+            formData.append("token", $("#token").val());
+            formData.append("master_url", '/admin/noPunish');
+            var report_id = $("#report_id").val();
+            console.log('exet-punish:report_id', report_id)
+            
+			$.ajax({
+				async: false, //表示请求是否异步处理
+				type: "post", //请求类型
+				url: "/admin/noPunish", //请求的 URL地址
+				token: $("#token").val(),
+				dataType: "json", //返回的数据类型
+				data: {
+                    token: $("#token").val(),
+                    master_url: '/admin/noPunish',
+                    report_id: report_id
+                },
+				success: function (rs) {
+					if (rs.code != 200) {
+						toastr.warning(rs.desc);
+						return false;
+					}
+					toastr.success(rs.desc);
+
+					setTimeout(window.location.href=window.location.href, 1000); //延迟5秒刷新页面
+
+				},
+				error: function (rs) {
+					toastr.warning('请求失败');
+				}
+			});
+
+            return false;
+        });
+
+		$('.set-punish').on('click', function () {
+            $(this).parents('.tag-list').find('.btn').removeAttr('style');
+			$(".punish-append").empty();
+			$(".punish-append").prepend(
+				"<form id='punish_form' method='post'>" +
+
+                "<div class='form-group'>" +
+				"<label class='control-label'>" + "输入处罚原因:" + "</label>" +
+				"<input type='text' class='form-control reason' name='reason' value='' required>" +
+				"</div>" +
+
+				"<div class='form-group'>" +
+				"<label class='control-label'>选择处罚等级</label>" +
+				"<select class='form-control set-level' name='punish_level'>" +
+				"<option value=''>----请选择----</option>" +
+				"<option value='1'>A级</option>" +
+				"<option value='2'>B级</option>" +
+				"<option value='3'>C级</option>" +
+				"</select>" +
+				"</div>" +
+
+                "<div class='form-group'>" +
+				"<label class='control-label'>" + "选择处罚措施:" + "</label>" +
+				"<select class='form-control punish_id' name='punish_id'>" +
+                "</select>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+				"<label class='control-label'>" + "举报者话术配置:" + "</label>" +
+				"<input type='text' class='form-control report_content' name='report_content' value='' required>  " +
+				"</div>" +
+
+                "<div class='form-group'>" +
+				"<label class='control-label'>" + "被举报者话术配置:" + "</label>" +
+				"<input type='text' class='form-control reported_content' name='reported_content' value='' required>  " +
+				"</div>" +
+
+				"<input type='hidden' value='{$token}' name='token'>" +
+				"<input type='hidden' value='{$report_info['id'] ?? 0}' name='report_id'>" +
+				"<input type='hidden' value='/admin/reportPunish' id='master_url' name='master_url'>" +
+				" </form>"
+			);
+			$('#punishModal').modal('show');
+		});
+
+        //自定义惩罚
+		function reportPunish() {
+			var data = $("#punish_form").serializeArray();
+
+            var edit_list = $(document).find(".example-wrap .checkbox");
+            var edit_types = {};
+            $.each(edit_list, function (index, item) {
+                if ($(this).attr('checked') == 'checked') {
+                    edit_types[index] = $(this).attr('edit');
+                }
+            });
+            console.log(edit_types);
+            console.log(data);
+            console.log(typeof(data));
+            
+            var len = data.length;
+
+            var edit_obj = {"name":"edit_obj", "value" : JSON.stringify(edit_types)}
+            data[len] = edit_obj;
+            console.log(data);
+
+            //todo 获取信息获选按钮的信息
+			$.ajax({
+				async: false, //表示请求是否异步处理
+				type: "post", //请求类型
+				url: "/admin/reportPunish", //请求的 URL地址
+				token: $("#token").val(),
+				dataType: "json", //返回的数据类型
+				data: data,
+				success: function (rs) {
+					if (rs.code != 200) {
+						toastr.warning(rs.desc);
+						return false;
+					}
+					toastr.success(rs.desc);
+
+					setTimeout(window.location.href=window.location.href, 1000); //延迟5秒刷新页面
+
+				},
+				error: function (rs) {
+					toastr.warning('请求失败');
+				}
+			});
+			return false;
+		}
+        
+		//添加执行
+		function addInfo() {
+			var data = $("#add_form").serializeArray();
+			$.ajax({
+				async: false, //表示请求是否异步处理
+				type: "post", //请求类型
+				url: "/admin/reportTagAdd", //请求的 URL地址
+				token: $("#token").val(),
+				dataType: "json", //返回的数据类型
+				data: data,
+				success: function (rs) {
+					if (rs.code != 200) {
+						toastr.warning(rs.desc);
+						return false;
+					}
+					toastr.success(rs.desc);
+					setTimeout(window.location.href=window.location.href, 1000); //延迟5秒刷新页面
+
+				},
+				error: function (rs) {
+					toastr.warning('请求失败');
+				}
+			});
+
+			return false;
+		}
+
+
+
+        $('.tag-item').click(function () {
+
+			var edit_id = $(this).parent().find("input[name='tag_id']").val();
+
+            console.log(edit_id)
+			$(".confirm-append").empty();
+			$(".confirm-append").prepend('<p id="delcfmMsg">您确认删除吗？</p>')
+			$("#edit_id").attr('value', edit_id);
+			$('#confirmModal').modal('show');
+        });
+
+		$('#second-confirm').click(function () {
+
+			$.ajax({
+				async: false, //表示请求是否异步处理
+				type: "post", //请求类型
+				url: "/admin/reportTagDel", //请求的 URL地址
+				token: $("#token").val(),
+				dataType: "json", //返回的数据类型
+				data: {
+					token: $('#token').val(),
+					master_url: '/admin/reportTagDel',
+					id: $("#edit_id").attr('value'),
+					action: 'delete',
+				},
+				success: function (rs) {
+					if (rs.code != 200) {
+						toastr.warning(rs.desc);
+						return false;
+					}
+					toastr.success(rs.desc);
+
+					$("#edit_id").attr('value', 0);
+					setTimeout(window.location.href=window.location.href, 1000); //延迟5秒刷新页面
+				},
+				error: function (rs) {
+					toastr.warning('请求失败');
+				}
+			});
+
+
+			return false;
+		})
+
+    $('.show_img').click(function () {
+        var _this = $(this);//将当前的min_img元素作为_this传入函数
+        imgShow("#outerdiv", "#innerdiv", "#max_img", _this);
+    })
+
+    function imgShow(outerdiv, innerdiv, max_img, _this) {
+        var src = _this.attr("src");//获取当前点击的min_img元素中的src属性
+        $("#max_img").attr("src", src);//设置#max_img元素的src属性
+
+        /*获取当前点击图片的真实大小，并显示弹出层及大图*/
+        $("<img/>").attr("src", src).load(function () {
+            var windowW = $(window).width();//获取当前窗口宽度
+            var windowH = $(window).height();//获取当前窗口高度
+            var realWidth = this.width;//获取图片真实宽度
+            var realHeight = this.height;//获取图片真实高度
+            var imgWidth, imgHeight;
+            var scale = 0.8;//缩放尺寸，当图片真实宽度和高度大于窗口宽度和高度时进行缩放
+
+            if (realHeight > windowH * scale) {
+                imgHeight = windowH * scale;
+                imgWidth = imgHeight / realHeight * realWidth;
+                if (imgWidth > windowW * scale) {
+                    imgWidth = windowW * scale;
+                }
+            } else if (realWidth > windowW * scale) {
+                imgWidth = windowW * scale;
+                imgHeight = imgWidth / realWidth * realHeight;
+            } else {
+                imgWidth = realWidth;
+                imgHeight = realHeight;
+            }
+            $("#max_img").css("width", imgWidth);//以最终的宽度对图片缩放
+
+            var w = (windowW - imgWidth) / 2;//计算图片与窗口左边距
+            var h = (windowH - imgHeight) / 2;//计算图片与窗口上边距
+            $(innerdiv).css({"top": h, "left": w});//设置#innerdiv的top和left属性
+            $(outerdiv).fadeIn("fast");//淡入显示#outerdiv及.pimg
+        });
+
+        $(outerdiv).click(function () {
+            $(this).fadeOut("fast");
+        });
+    }
+	</script>
+	<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+	<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+	<script>
+		$("#datetimeStart").datetimepicker({
+			weekStart: 1,
+			todayBtn: true,
+			todayHighlight: 1,
+			startView: 2,
+			forceParse: 0,
+			showMeridian: 1,
+			format: 'yyyy-mm-dd 00:00:00',
+			minView: '3',
+			language: 'zh-CN',
+			autoclose: true,
+			startDate: '-10y,-10m,-10d'
+		}).on("click", function () {
+			$("#datetimeStart").datetimepicker("setStartDate")
+		});
+		$("#datetimeEnd").datetimepicker({
+			weekStart: 1,
+			todayBtn: true,
+			todayHighlight: 1,
+			startView: 2,
+			forceParse: 0,
+			showMeridian: 1,
+			format: 'yyyy-mm-dd 23:59:59',
+			minView: '3',
+			language: 'zh-CN',
+			autoclose: true,
+			startDate: '-10y,-10m,-10d'
+		}).on("click", function () {
+			$("#datetimeEnd").datetimepicker("setEndDate")
+		});
+	</script>

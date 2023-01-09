@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        {if condition="in_array('/admin/memberLoss',$user_role_menu)"}
+                        <div class="pull-right search form-inline">
+                            <label><input type="radio" name="time" class="time" value="0" {if $time == 0} echo checked="checked" {/if}>28h-48h</label>
+                            <label><input type="radio" name="time" class="time" value="1" {if $time == 1} echo checked="checked" {/if}>5天-15天</label>
+                            <label><input type="radio" name="time" class="time" value="2" {if $time == 2} echo checked="checked" {/if}>15天-30天</label>
+<!--                            <label><input type="radio" name="time" class="time" value="3" {if $time == 3} echo checked="checked" {/if}>30天</label>-->
+                            用户类型:<select class="form-control" id="type">
+                            <option value="0" {if $type == 0} echo selected="selected" {/if}>全部用户</option>
+                            <option value="1" {if $type == 1} echo selected="selected" {/if}>消费用户</option>
+                            <option value="2" {if $type == 2} echo selected="selected" {/if}>普通用户</option>
+                            </select>
+                            <input class="form-control input-outline" type="text" value="{$uid}" oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="用户Id" id="uid">
+                            <button type="button" class=" btn btn-primary" id="search">搜索</button>
+                            <button type="button" class=" btn btn-primary" id="daochu">导出</button>
+                        </div>
+                        {/if}
+                        <div class="example">
+                            <h2>总人数：{$count}</h2>
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">id</th>
+                                    <th class="text-center">最后登录</th>
+                                    <th class="text-center">用户类型</th>
+                                    <th class="text-center">充值金额</th>
+                                    <th class="text-center">豆总收入</th>
+                                    <th class="text-center">消费M豆</th>
+                                    <th class="text-center">剩余M豆</th>
+                                    <th class="text-center">手机号</th>
+                                    <th class="text-center">工会ID</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($data)"}
+                                {volist name="data" id="list"}
+                                <tr>
+                                    <td class="text-center">{$list.id}</td>
+                                    <td class="text-center">{$list.ctime}</td>
+                                    <td class="text-center">{$list.type}</td>
+                                    <td class="text-center">{$list.rmb}</td>
+                                    <td class="text-center">{$list.totalcoin}</td>
+                                    <td class="text-center">{$list.freecoin}</td>
+                                    <td class="text-center">{$list.totalcoin - $list.freecoin}</td>
+                                    <td class="text-center" id='nickname'>{$list.username}</td>
+                                    <td class="text-center">{$list.guild_id}</td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page >1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+
+{include file="../view/admin/common/userItem.html"}
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$token}" id="token">
+<input type="hidden" value="{$user_role_menu_input}" id="user_role_menu">
+<input type="hidden" value="/admin/avatarOssFile" name="master_url" id="master_url">
+<input type="hidden" value="/admin/prettyavatarOssFile" name="masters_url" id="masters_url">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<style>
+</style>
+<script>
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/memberLoss&token=' + $("#token").val() + '&uid=' + $('#uid').val() +'&type=' + $('#type').val() +'&time=' + $('.time').val() + $("input[type='radio']:checked").val()
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+        /*   onPageClicked:function (event, originalEvent, type, page) {
+               location.href = "?page="+page;
+           }*/
+    });
+
+    $('#search').click(function () {
+        window.location.href = "/admin/memberLoss?token=" + $("#token").val() + '&master_url=/admin/memberLoss&page=1&uid=' + $('#uid').val() +'&type=' + $('#type').val() +'&time=' + $("input[type='radio']:checked").val()
+    })
+    $('#daochu').click(function () {
+        window.location.href = "/admin/memberLoss?token=" + $("#token").val() + '&master_url=/admin/memberLoss&page=1&uid=' + $('#uid').val() +'&type=' + $('#type').val() +'&time=' + $("input[type='radio']:checked").val()+'&daochu='+1
+    })
+
+
+
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/time/daterangepicker.css">
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="example">
+                            <div class="btn-group hidden-xs form-inline">
+                                <div class="form-group">
+                                    <input type="text" value="{$demo}" id="demo" readonly class="form_datetime form-control input-outline" style="width:190px;">
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" value="{$uid}" id="uid" placeholder="用户ID"  class="form_datetime form-control input-outline">
+                                </div>
+                                <select class="form-control" id="boxId">
+                                    <option value="" >全部</option>
+                                    <option value="1" {if $boxId == 1} echo selected="selected" {/if}>莫提斯</option>
+                                    <option value="2" {if $boxId == 2} echo selected="selected" {/if}>宙斯</option>
+                                    <option value="3" {if $boxId == 3} echo selected="selected" {/if}>盖亚</option>
+                                </select>
+                                &#12288
+
+                                <button type="button" class="btn btn-outline btn-success" style="float:right;" id="daochu">
+                                    <i aria-hidden="true"></i>导出
+                                </button>
+                                &#12288
+                                <button type="button" class="btn btn-outline btn-success" style="float:right;" id="search">
+                                    <i aria-hidden="true"></i>搜索
+                                </button>
+                            </div>
+                            <div class="example">
+                                <table class="table table-hover table-responsive" id="data_table" style="word-wrap: break-word; word-break: break-all;">
+                                    <thead>
+                                    <!-- <tr>
+                                        <th class="text-center"></th>
+                                        <th class="text-center"></th>
+                                        <th class="text-center"><th>
+                                    </tr> -->
+                                    <tr>
+                                        <th class="text-center">用户Id</th>
+                                        <th class="text-center">用户昵称</th>
+                                        <th class="text-center">宝箱</th>
+                                        <th class="text-center">礼物名称</th>
+                                        <th class="text-center">礼物ID</th>
+                                        <th class="text-center">时间</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {if condition="!empty($data)"}
+                                    {volist name="data" id="list"}
+                                    <tr>
+                                        <td class="text-center created_time" >{$list.uid}</td>
+                                        <td class="text-center nickname" >{$list.nickname}</td>
+                                        <td class="text-center uid" >{$list.box_name}</td>
+                                        <td class="text-center name" >{$list.gift_name}</td>
+                                        <td class="text-center name" >{$list.gift_id}</td>
+                                        <td class="text-center asset_id" >{$list.time}</td>
+                                    </tr>
+                                    {/volist}
+                                    {else}
+                                    <tr class="no-records-found">
+                                        <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                    </tr>
+                                    {/if}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {if condition = "$page.total_page >1"}
+                        <div id="Paginator" style="text-align: center">
+                            <ul id="pageLimit"></ul>
+                        </div>
+                        {/if}
+                        <!-- End Example Events -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Panel Other -->
+    </div>
+</div>
+<input type="hidden" value="{$token}" name="token" id="token">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<script src="/admin/js/fileinput/fileinput.js" type="text/javascript"></script>
+<script src="/admin/js/fileinput/zh.js" type="text/javascript"></script>
+<script src="/admin/js/plugins/toastr/toastr.min.js"></script>
+<script src="/time/moment.min.js"></script>
+<script src="/time/daterangepicker.min.js"></script>
+<script src="/admin/js/date-select.js"></script>
+<script>
+    $('#search').on('click',function () {
+        window.location.href = "/admin/specialGiftLog?token=" + $('#token').val() + '&master_url=/admin/specialGiftLog&demo='+$('#demo').val()+'&uid='+$('#uid').val()+'&boxId='+$('#boxId').val();
+    })
+    $('#daochu').on('click',function () {
+        window.location.href = "/admin/specialGiftLog?token=" + $('#token').val() + '&master_url=/admin/specialGiftLog&demo='+$('#demo').val()+'&uid='+$('#uid').val()+'&boxId='+$('#boxId').val() + '&daochu=1';
+    })
+
+    //分页
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/specialGiftLog&token='+ $("#token").val()+'&demo='+$('#demo').val()+'&uid='+$('#uid').val()+'&boxId='+$('#boxId').val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+    });
+</script>
+</body>
+</html>
+
+

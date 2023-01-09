@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>番茄派对</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            text-align: center;
+        }
+
+        .box {
+            width: 100%;
+            height: 100%;
+            margin: 0 auto;
+        }
+
+        .top-box {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 70px;
+            margin: 0 auto;
+        }
+
+        .bom-box {
+            width: 100%;
+            height: 100%;
+            margin-top: 70px;
+        }
+
+        .img {
+            height: 100%;
+            float: left;
+        }
+
+
+    </style>
+</head>
+<body>
+
+
+<input type="hidden" value="{$get}" id="gets">
+<div class="box">
+    <div class="top-box">
+        <img class="img open-app" style="width: 46%" src="/web/images/shareIosApp.png">
+
+        <a href="https://apps.apple.com/cn/app/id1519244375">
+            <img class="img down-load" style="width: 26.6%;" src="/web/images/shareIosDown.png">
+        </a>
+        <img class="img open-now" style="width: 27%;border-left: 1px solid #ffffff" src="/web/images/shareIosOpen.png"
+             id="openBtn">
+    </div>
+    <div class="bom-box">
+        <img class="img" style="width: 100%;" src="/web/images/shareAndroidBody.png">
+    </div>
+</div>
+
+<!--<a href="" id="openBtn">点击打开Mua</a>-->
+<!--<a href="https://apps.apple.com/cn/app/id1460085317" id="downBtn">点击下载Mua</a>-->
+
+<!--<p style="color: blue;">努力加载中</p>-->
+<input type="hidden" value="{$get}" id='get'>
+<script src="/admin/js/jquery.min.js"></script>
+<script type="text/javascript" src="https://fqparty.com/web/js/jquery-3.5.1.js"></script>
+<script>
+    $(function () {
+        $('#openBtn').click(function(){
+            var get = $("#get").val();
+            // 判断系统
+            var o = null;
+            var u = navigator.userAgent, app = navigator.appVersion;
+            var isIOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端
+
+            if (isIOS) {
+                //这个是ios操作系统
+                var ver = (navigator.appVersion).match(/OS (\d+)_(\d+)_?(\d+)?/);
+                ver = parseInt(ver[1], 10);
+                //ios9以上，打开的时候用a标签来跳转
+                if (ver > 9) {
+                    var url = 'fqparty://fanqie' + get
+                    window.location.href = url;//ios提供唤起地址
+                    return;
+                } else {
+                    //ios9以下,打开的时候用iframe
+                    // alert("ios9以下");
+                    openOrDownload('fqparty://fanqie' + get);//需要iOS的src参数
+                }
+            }
+        })
+    })
+</script>
+<script>
+    //     $(document).ready(function () {
+    //         var get = $('#get').val();
+    //         var downloader,
+    //             scheme = 'mua://xinyue' + get,  // 需要打开的app scheme 地址
+    //             iosDownload = 'https://apps.apple.com/cn/app/id1460085317';  // 如果打开scheme失效的app下载地址
+    //         var u = navigator.userAgent;
+    //         var isIOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端
+    //
+    //         window.location.href = scheme;  // 尝试打开 scheme
+    // // 给 id 为 openBtn 的按钮添加点击事件处理函数
+    //         document.getElementById('openBtn').onclick = function () {
+    // //             alert(1);
+    //             // 设置3秒的定时下载任务，3秒之后下载app
+    //             downloader = setTimeout(function () {
+    //                 if (isIOS) {
+    //                     window.location.href = iosDownload;
+    //                 }
+    //             }, 3000);
+    //         };
+    //
+    //         document.addEventListener('visibilitychange webkitvisibilitychange', function () {
+    //             // 如果页面隐藏，推测打开scheme成功，清除下载任务
+    //             if (document.hidden || document.webkitHidden) {
+    //                 clearTimeout(downloader);
+    //             }
+    //         });
+    //         window.addEventListener('pagehide', function () {
+    //             clearTimeout(downloader);
+    //         });
+    //
+    //     })
+    // $(document).load(function () {
+    $(document).ready(function () {
+        deepLink();
+
+        function deepLink() {
+            var get = $("#get").val();
+            // 判断系统
+            var o = null;
+            var u = navigator.userAgent, app = navigator.appVersion;
+            var isIOS = !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/); //ios终端
+
+            if (isIOS) {
+                //这个是ios操作系统
+                var ver = (navigator.appVersion).match(/OS (\d+)_(\d+)_?(\d+)?/);
+                ver = parseInt(ver[1], 10);
+                //ios9以上，打开的时候用a标签来跳转
+                if (ver > 9) {
+                    var url = 'fqparty://fanqie' + get
+                    //var url = 'mua://xinyue' + get
+                    window.location.href = url;//ios提供唤起地址
+                    // o = setTimeout(function () {
+                    //     window.location.href = "https://apps.apple.com/cn/app/id1460085317";//iOS下载地址
+                    // }, 300)
+                    return;
+                } else {
+                    //ios9以下,打开的时候用iframe
+                    // alert("ios9以下");
+                    openOrDownload('fqparty://fanqie' + get);//需要iOS的src参数
+                }
+            }
+
+        }
+
+        //ios9以下,打开的时候用iframe
+        function openOrDownload(src) {
+            var ifr = document.createElement('iframe');
+            ifr.src = src;//ios提供的地址
+            ifr.style.display = 'none';
+            document.body.appendChild(ifr);
+        }
+
+        /**
+         * 兼容safari 唤醒APP后仍跳转下载页面的问题
+         */
+        window.addEventListener("pageshow", function (evt) {
+            clearTimeout(o);
+        }, false);
+
+        window.addEventListener("pagehide", function (evt) {
+            clearTimeout(o);
+        }, false);
+        //未安装的实现方式
+        var ifr = document.createElement('iframe');
+        var o = setTimeout(function () {
+            document.body.removeChild(ifr);
+            document.hasFocus() && (window.location = 'https://apps.apple.com/cn/app/id1519244375')
+        }, 1000);
+
+        var hidden,
+            visibilityChange;
+        if (typeof document.hidden !== "undefined") {
+            hidden = document.hidden;
+            visibilityChange = "visibilitychange";
+        } else if (typeof document.mozHidden !== "undefined") {
+            hidden = document.mozHidden;
+            visibilityChange = "mozvisibilitychange";
+        } else if (typeof document.msHidden !== "undefined") {
+            hidden = document.msHidden;
+            visibilityChange = "msvisibilitychange";
+        } else if (typeof document.webkitHidden !== "undefined") {
+            hidden = document.webkitHidden;
+            visibilityChange = "webkitvisibilitychange";
+        } else {
+            hidden = false;
+        }
+
+        document.addEventListener(visibilityChange,
+            function () {
+                clearTimeout(o);
+            },
+            !1)
+    })
+</script>
+</body>
+</html>

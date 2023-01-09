@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/admin/layui/css/layui.css" media="all">
+    <script src="/admin/js/jquery.min.js"></script>
+    <style>
+        .layui-table-cell {
+            height: auto;
+            overflow: visible;
+            text-overflow: inherit;
+            white-space: normal;
+        }
+    </style>
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+</head>
+<body>
+
+<div style="padding:5px;">
+    <div class="demoTable">
+        <form class="layui-form" onsubmit="return false;" id="myform">
+            <div class="layui-inline">
+                <input class="layui-input" name="ccuserid" id="ccuserid" style="width:200px" placeholder="茶茶用户ID">
+            </div>
+
+            <button class="layui-btn" data-type="reload">搜索</button>
+        </form>
+    </div>
+
+    <blockquote class="layui-elem-quote" style="margin-bottom:0px">
+        <button class="layui-btn layui-btn-warm" id="total_count" ></button>
+    </blockquote>
+
+    <table id="datatable" lay-filter="test"></table>
+</div>
+
+<script src="/admin/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+<script>
+    layui.use(['table', 'form', 'layer', 'laydate', 'jquery'], function () {
+
+        var $ = layui.jquery
+            , form = layui.form
+            , laydate = layui.laydate
+            , table = layui.table;
+
+        //日期
+        laydate.render({
+            elem: '#date_b'
+        });
+
+        laydate.render({
+            elem: '#date_e'
+        });
+
+
+        table.render({
+            elem: '#datatable'
+            , totalRow: true
+            ,  defaultToolbar:''
+            //, height: 420
+            , toolbar: '#addTemplate' //开启头部工具栏，并为其绑定左侧模板
+            , url: '/admin/teablackuserList?master_url=/admin/teablackuserList&token={$token}&isRequest=1' //数据接口
+            , page: false //开启分页
+            , limit: Number.MAX_VALUE
+            , cols: [[ //表头
+                {field: 'id', title: 'ID', width: '10%',templet:'#zizeng'}
+                , {field: 'reason', title: '屏蔽理由', width:'30%'}
+                , {field: 'ccuserid', title: '茶茶用户id', width:'10%'}
+                , {field: 'ccmobile', title: '茶茶手机号', width:'10%'}
+                , {field: 'yluserid', title: '音恋用户id',width:'10%'}
+                , {field: 'ischarge', title: '音恋是否充值',width:'10%'}
+                , {field: 'holdtime', title: '拦截时间', width:'20%'}
+            ]]
+            , id: 'tablereload'
+        /*    , limits: [20, 50, 100]
+            , limit: 20 //每页默认显示的数量*/
+            , where: {}
+            , done: function(res, curr, count){
+                $("#total_count").html("黑名单总量:" + res['hz']['total_count']);
+            }
+        });
+
+
+        var $ = layui.$, active = {
+            reload: function () {
+                var s_origin_id = $('#s_origin_id');
+                //执行重载
+                table.reload('tablereload', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    , where: {
+                        ccuserid: $('#ccuserid').val()
+                    }
+                });
+            }
+        };
+
+        $('.demoTable .layui-btn').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+
+    });
+
+
+</script>
+
+<script type="text/html" id="zizeng">
+    {{d.LAY_TABLE_INDEX+1}}
+</script>
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/time/daterangepicker.css">
+
+    <style>
+
+        .form-control:focus {
+            border-color: #66afe9;
+            outline: 0;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
+            box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
+        }
+
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+    </style>
+
+</head>
+<body class="gray-bg">
+<div class="ibox-content">
+    <div class="row row-lg">
+    <div class="modal-dialog" role="document">
+        <div class="col-sm-12">
+            <div class="example-wrap">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                </button>
+                <h4 class="modal-title" id="attireModalLabel">瓜分</h4>
+            </div>
+            <div class="modal-body attire-append">
+                {if condition="!empty($list)"}
+                <form id='edit_form' method='post' >
+                <div class='form-group'>
+                <label class='control-label'>活动时间:</label>
+                <input type='text' class='form-control timeSelector' name='start_time'  value='{$list.start_time}' required='required'>
+                <input type='text' class='form-control timeSelector' name='end_time'  value='{$list.end_time}' required='required'>
+                </div>
+
+                <div class='form-group'>
+                <label class='control-label'>番茄豆额度:</label>
+                <input type='text' class='form-control' name='init_pool_value'  value='{$list.init_pool_value / 100}' required='required'>
+                </div>
+
+                <div class='form-group'>
+                <label class='control-label'>比例:</label>
+                <input type='text' class='form-control' name='rate'  value='{$list.rate}' required='required'>
+                </div>
+
+                <div class='form-group'>
+                <label class='control-label'>开奖时间:</label>
+				<div class='form-group'>
+					{volist name="list.partition_time" id="partition_time"}
+					<input type='text' class='form-control timeSelector' name='partition_time[]'  value='{$partition_time}' required='required'>
+					{/volist}
+				</div>
+                <button class='addpriceinput' type='button' class='btn  btn-outline btn-success'>
+                    <i class='glyphicon glyphicon-plus' aria-hidden='true'></i>
+                </button>
+				<button class='delpriceinput' type='button' class='btn  btn-outline btn-success'>
+					<i class='glyphicon glyphicon-minus' aria-hidden='true'></i>
+				</button>
+                </div>
+
+                <div class='form-group'>
+                <label class='control-label'>瓜分比例:</label>
+                {volist name="list.partition_rate" id="partition_rate"}
+                <input type='text' class='form-control' name='partition_rate[]'  value='{$partition_rate}' required='required'>
+                {/volist}
+                </div>
+
+                {else}
+                <div class="no-records-found">
+                    <td colspan="7" class="text-center">没有找到匹配的记录</td>
+                </div>
+                </form>
+                {/if}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="save">修改</button>
+            </div>
+        </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+<!--操作modal-->
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$token}" name="token" id="token">
+<input type="hidden" value="/admin/shavePointsSave" name="master_url" id="master_url">
+
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+
+<script>
+	$(document).on('focus', '.timeSelector', function () {
+		$(this).datetimepicker({
+        weekStart: 1,
+        todayBtn: true,
+        todayHighlight: 1,
+        startView: 2,
+        forceParse: 0,
+        showMeridian: 1,
+        format: 'yyyy-mm-dd',
+        minView: '3',
+        language: 'zh-CN',
+        autoclose: true,
+        startDate: '-10y,-10m,-10d',
+    }).on("click", function () {
+        $("#datetimeStart").datetimepicker("setStartDate")
+    });
+		
+	});
+
+    $('#save').click(function () {
+        var edit_info = $("#edit_form").serializeArray();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/shavePointsSave",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data: edit_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    })
+
+	$('.addpriceinput').on('click', function () {
+		$(this).parent().find('.form-group').append(
+			"<input type='text' class='form-control timeSelector' name='partition_time[]'  value='' required='required'>"
+		);
+	});
+
+	$('.delpriceinput').on('click', function () {
+		$(this).parent().find('.form-group').children(':last-child').remove();
+	});
+</script>
+</body>
+</html>

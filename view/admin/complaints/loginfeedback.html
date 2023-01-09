@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/admin/layui/css/layui.css" media="all">
+    <script src="/admin/js/jquery.min.js"></script>
+    <style>
+        .layui-table-cell {
+            height: auto;
+            overflow: visible;
+            text-overflow: inherit;
+        }
+
+
+    </style>
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+</head>
+<body>
+
+<script type="text/html" id="toolbarDemo">
+</script>
+
+
+<div style="padding:5px;">
+    <div class="demoTable">
+        <form class="layui-form" onsubmit="return false;" id="myform">
+            <div class="layui-input-inline">
+                <input type="text" name="date" id="date_b" lay-verify="date" placeholder="日期开始" autocomplete="off"
+                       class="layui-input" value="{$date_b}">
+            </div>
+            <div class="layui-input-inline">
+                <input type="text" name="date" id="date_e" lay-verify="date" placeholder="日期结束" autocomplete="off"
+                       class="layui-input" value="{$date_e}">
+            </div>
+
+            <div class="layui-inline">
+                <input class="layui-input" name="phone" id="phone" style="width:150px" placeholder="手机号">
+            </div>
+
+
+            <button class="layui-btn" data-type="reload"><i class="layui-icon layui-icon-search"></i></button>
+        </form>
+    </div>
+
+    <table id="datatable" lay-filter="test"></table>
+</div>
+
+<script src="/admin/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+<script>
+
+
+    layui.use(['table', 'form', 'layer', 'laydate', 'jquery'], function () {
+
+        var $ = layui.jquery
+            , form = layui.form
+            , laydate = layui.laydate
+            , table = layui.table;
+
+        //日期
+        laydate.render({
+            elem: '#date_b'
+        });
+
+        laydate.render({
+            elem: '#date_e'
+        });
+
+
+        table.render({
+            elem: '#datatable'
+            , totalRow: true
+            //, height: 420
+            ,toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+            ,defaultToolbar: ['exports', { //自定义头部工具栏右侧图标。如无需自定义，去除该参数即可
+                title: '提示'
+                ,layEvent: 'LAYTABLE_TIPS'
+                ,icon: 'layui-icon-tips'
+            }]
+            , url: '/admin/loginfeedbackList?master_url=/admin/loginfeedbackList&token={$token}&isRequest=1' //数据接口
+            , page: true //开启分页
+            , cols: [[ //表头
+                {field: 'id', title: 'ID', width: "5%"}
+                , {field: 'account', title: '用户账号', width: "10%"}
+                , {field: 'phone', title: '手机号', width:"10%"}
+                , {field: 'problem_part', title: '反馈问题',event: 'viewmessage',width:"35%"}
+                , {field: 'mode', title: '登录方式', width: "10%"}
+                , {field: 'addtime', title: '创建时间',width: "10%"}
+                , {field: 'record_part', title: '跟进记录',width: "15%",event: 'viewreadme'}
+                , {field: 'action', toolbar:'#addrecord',title: '新增跟进',width: "5%"}
+            ]]
+            , id: 'tablereload'
+            , limits: [20, 50, 500,2000,5000,10000]
+            , limit: 20 //每页默认显示的数量
+            , cellMinWidth: 200
+            , where: {}
+            , done: function (res, curr, count) {
+            }
+        });
+
+
+        var $ = layui.$, active = {
+            reload: function () {
+                //执行重载
+                table.reload('tablereload', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    , where: {
+                        date_b: $("#date_b").val()
+                        , date_e: $("#date_e").val()
+                        , phone: $("#phone").val()
+                    }
+                });
+            }
+        };
+
+        $('.demoTable .layui-btn').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+
+        table.on('tool(test)', function (obj) {
+            let event = obj.event;
+            let data = obj.data;
+            if (event === "viewmessage") {
+                this.index = layer.tips('<div style="padding: 10px; font-size: 14px; color: #eee;">' + data.problem + '</div>', this, {
+                    time: -1
+                    , maxWidth: 280
+                    , tips: [3, '#3A3D49']
+                })
+            }
+
+            if (event === "viewreadme") {
+                this.index = layer.tips('<div style="padding: 10px; font-size: 14px; color: #eee;">' + data.record + '</div>', this, {
+                    time: -1
+                    , maxWidth: 300
+                    , tips: [3, '#3A3D49']
+                })
+            }
+
+            $(this).on('mouseleave', function () {
+                layer.close(this.index);
+            })
+
+            if (obj.event === 'editrecord') {
+                //页面层-自定义
+                $("#sendform")[0].reset();
+                layer.open({
+                    type: 1,
+                    title: "新增跟进记录",
+                    //closeBtn: true,
+                    shift: 2,
+                    area: ['600px', '300px'],
+                    shadeClose: true,
+                    content: $("#add-content"),
+                    success: function (layero, index) {
+                        var body = $("body");
+                        body.find("#id").val(data.id);
+                    },
+                    yes: function () {
+                    }
+                });
+            }
+        })
+
+        //监听提交
+        form.on('submit(myform)', function (data) {
+            var fields = $(data.form).serialize();
+            $.post("/admin/loginFeedbackUpdate?master_url=/admin/loginFeedbackUpdate&token={$token}", fields, function (resp) {
+                if (resp != 1) {
+                    layer.msg("操作失败", {
+                        time: 20000, //20s后自动关闭
+                        btn: ['ok'],
+                        btnAlign: 'c',
+                    }, function () {
+                        window.location.reload();
+                    });
+                } else {
+                    window.location.reload();
+                }
+
+            })
+            return false;
+        });
+
+    });
+</script>
+
+<script type="text/html" id="addrecord">
+    <a class="layui-btn layui-btn-xs" lay-event="editrecord">新增</a>
+</script>
+
+
+<div id="add-content" style="display: none;">
+    <form class="layui-form" id="sendform" action="" style="padding:10px;">
+        <div class="layui-form-item" style="margin-top:20px;">
+            <input type="hidden" id="id" name="id">
+            <label class="layui-form-label">内容</label>
+            <div class="layui-input-block">
+                <textarea id="readme"  name="readme" placeholder="请输入跟进内容" class="layui-textarea"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit="" lay-filter="myform">立即提交</button>
+                <button type="reset" class="layui-btn layui-btn-primary" id="closeBtn">重置</button>
+            </div>
+        </div>
+    </form>
+
+
+
+</body>
+</html>

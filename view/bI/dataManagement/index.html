@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    <link href="/admin/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            text-align: center
+        }
+
+        div {
+            display: inline;
+        }
+    </style>
+</head>
+<body class="gray-bg">
+<div class="row">
+    <div class="col-sm-12">
+        <div style="display: flex; align-items: center;">
+            <div class="input-group date col-md-2 datetimeStart" data-date="" data-link-field="strtime">
+                <input class="form-control" size="16" type="text" value="{$strtime}" readonly>
+                <span class="input-group-addon">
+                                        <span class="glyphicon glyphicon-remove"></span>
+                                    </span>
+                <span class="input-group-addon">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </span>
+            </div>
+            <input type="hidden" id="strtime" value="{$strtime}"/>
+            ~
+            <div class="input-group date datetimeEnd col-md-2" data-date="" data-link-field="endtime">
+                <input class="form-control" size="16" type="text" value="{$endtime}" readonly>
+                <span class="input-group-addon"><span
+                        class="glyphicon glyphicon-remove"></span></span>
+                <span class="input-group-addon"><span
+                        class="glyphicon glyphicon-calendar"></span></span>
+            </div>
+            <input type="hidden" id="endtime" value="{$endtime}"/>
+            <button type="button" class="btn btn-outline btn-success" style="float:left;" id="search">
+                <i aria-hidden="true"></i>搜索
+            </button>
+        </div>
+        <br>
+        <table class="table table-hover table-responsive" id="data_table">
+            <thead>
+            <tr>
+                <th class="text-center">日期</th>
+                <th class="text-center">日活</th>
+                <th class="text-center">新增</th>
+                <th class="text-center">次留1日</th>
+                <th class="text-center">次留3日</th>
+                <th class="text-center">次留7日</th>
+                <th class="text-center">新增留存</th>
+                <th class="text-center">充值总金额</th>
+                <th class="text-center">充值人数</th>
+                <th class="text-center">充值率</th>
+                <th class="text-center">ARPU</th>
+                <th class="text-center">ARPPU</th>
+
+            </tr>
+            </thead>
+            <tbody>
+            {if condition="!empty($list)"}
+            {volist name="list" id="data"}
+            <tr>
+                <td class="text-center">{$data.riq}</td>
+                <td class="text-center">{$data.rih}</td>
+                <td class="text-center">{$data.xinz}</td>
+                <td class="text-center">{$data.cirlc/100}%</td>
+                <td class="text-center">{$data.sanrlc/100}%</td>
+                <td class="text-center">{$data.qirlc/100}%</td>
+                <td class="text-center">{$data.xzlc/100}%</td>
+                <td class="text-center">{$data.czzje}</td>
+                <td class="text-center">{$data.czrs}</td>
+                <td class="text-center">{$data.czl/100}%</td>
+                <td class="text-center">{$data.arpu/100}</td>
+                <td class="text-center">{$data.arppu/100}</td>
+            </tr>
+            {/volist}
+            {else}
+            <tr class="no-records-found">
+                <td colspan="11" class="text-center">没有找到匹配的记录</td>
+            </tr>
+            {/if}
+            </tbody>
+        </table>
+    </div>
+</div>
+{if condition = "$page.total_page >1"}
+<div id="Paginator">
+    <ul id="pageLimit"></ul>
+</div>
+{/if}
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$token}" id="token">
+<script src="/admin/js/jquery.min.js"></script>
+<script src="/admin/js/bootstrap.min.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<script src="/admin/js/plugins/pagination/bootstrap-paginator.js"></script>
+<script src="/admin/js/plugins/toastr/toastr.min.js"></script>
+<script>
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&token=' + $("#token").val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+    });
+    $('#search').click(function () {
+        var strtime = $('#strtime').val();
+        var endtime = $('#endtime').val();
+        if (strtime.split[0] > endtime.split[0]) {
+            toastr.warning('开始时间必须小于结束时间');
+            return false;
+        }
+        var token = $('#token').val();
+        window.location.href = "?token=" + token + '&strtime=' + strtime + '&endtime=' + endtime;
+    })
+    $('.datetimeStart').datetimepicker({
+        language: 'zh-CN',
+        weekStart: 1,
+        todayBtn: 1,
+        autoclose: 1,
+        todayHighlight: 1,
+        startView: 2,
+        minView: 2,
+        forceParse: 0,
+        autoclose: true,
+        format: 'yyyy-mm-dd',
+    })
+
+    $(".datetimeEnd").datetimepicker({
+        weekStart: 1,
+        todayBtn: 1,
+        todayHighlight: 1,
+        startView: 2,
+        forceParse: 0,
+        format: 'yyyy-mm-dd',
+        minView: 2,
+        language: 'zh-CN',
+        autoclose: true,
+    })
+
+</script>
+
+</body>
+
+</html>

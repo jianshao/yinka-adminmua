@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/time/daterangepicker.css">
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+
+        <div class="ibox-content">
+
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="example">
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">ID</th>
+                                    <th class="text-center">任务类型</th>
+                                    <th class="text-center">任务描述</th>
+                                    <th class="text-center">奖励装扮</th>
+                                    <th class="text-center">奖励礼物</th>
+                                    <th class="text-center">奖励M豆</th>
+                                    <th class="text-center">奖励金币</th>
+                                    <th class="text-center">活跃值</th>
+                                    <th class="text-center">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($data)"}
+                                {volist name="$data" id="data"}
+                                <tr>
+                                    <td class="text-center id">{$data.id}</td>
+                                    <td class="text-center task_desc">{$data.task_desc}</td>
+                                    <td class="text-center task_name">{$data.task_name}</td>
+                                    <td class="text-center attire">{$data.attire}</td>
+                                    <td class="text-center gift">{$data.gift}</td>
+                                    <td class="text-center coin">{$data.coin}</td>
+                                    <td class="text-center gold_coin">{$data.gold_coin}</td>
+                                    <td class="text-center active_degree">{$data.active_degree}</td>
+                                    <td class="text-center">
+                                        <button class=" btn btn-primary audit_yes update" >编辑</button>
+                                    </td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="9" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+                {if condition = "$page.total_page >1"}
+                <div id="Paginator" style="text-align: center">
+                    <ul id="pageLimit"></ul>
+                </div>
+                {/if}
+                <!-- End Example Events -->
+            </div>
+            <div class="modal fade" id="attireModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+                            </button>
+                            <h4 class="modal-title" id="attireModalLabel">编辑装扮信息</h4>
+                        </div>
+                        <div class="modal-body attire-append">
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal" >关闭</button>
+                            <button type="button" class="btn btn-primary" id="search2">修改</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Panel Other -->
+</div>
+<!--操作modal-->
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$token}" name="token" id="token">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<script>
+    //修改框追加输入框
+    $('.update').on('click',function(){
+        $(".attire-append").empty();
+        var attireType_id = $(this).attr('attireType_id')
+        var attireType_pid = $(this).attr('attireType_pid')
+        var get_type = $(this).attr('get_type')
+        var master_url = $('#master_url').val()
+        $(".attire-append").prepend(
+            "<form id='form' method='post' >"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>" + "装扮： "+"</label>"+
+            "<input type='text' readonly  class='form-control attireStr' name=''  value='' required='required'>"+
+            "<button id='addpriceinput' class='attireAdd' type=\'button\' class=\'btn  btn-outline btn-success\' id=\'add_gift\'>"+
+            " 追加输入框<i class=\'glyphicon glyphicon-plus\' aria-hidden=\'true\'></i>"+
+            "</button>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>" + "礼物： "+"</label>"+
+            "<input type='text' readonly  class='form-control giftStr' name=''  value='' required='required'>"+
+            "<button id='addpriceinput' class='giftAdd' type=\'button\' class=\'btn  btn-outline btn-success\' id=\'add_gift\'>"+
+            " 追加输入框<i class=\'glyphicon glyphicon-plus\' aria-hidden=\'true\'></i>"+
+            "</button>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"M豆:"+"</label>" +
+            "<input type='text' oninput=\"this.value = this.value.replace(/[^0-9]/g, '');\" class='form-control coin' name='coin'  value='' required='required'>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"金币:"+"</label>" +
+            "<input type='text' oninput=\"this.value = this.value.replace(/[^0-9]/g, '');\" class='form-control gold_coin' name='gold_coin'  value='' required='required'>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"活跃值:"+"</label>" +
+            "<input type='text' oninput=\"this.value = this.value.replace(/[^0-9]/g, '');\" class='form-control active_degree' name='active_degree'  value='' required='required'>"+
+            "</div>"+
+
+
+            "<input type='hidden' value='{$token}' name='token'>"+
+            "<input type='hidden' value='/admin/ListNewTask' id='master_url' name='master_url'>"+
+            "<input type='hidden' value='' id='id' name='id'>"+
+            " </form>"
+        );
+
+
+        $(".coin").val($(this).parents("tr").find(".coin").text());
+        $("#id").val($(this).parents("tr").find(".id").text());
+        $(".gold_coin").val($(this).parents("tr").find(".gold_coin").text());
+        $(".active_degree").val($(this).parents("tr").find(".active_degree").text());
+        $(".attireStr").val($(this).parents("tr").find(".attire").text());
+        $(".giftStr").val($(this).parents("tr").find(".gift").text());
+
+
+        $('#attireModal').modal('show');
+    });
+    
+    //修改按钮
+    $('#search2').click(function () {
+        var form = $("#form").serializeArray();
+
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/NewTaskSave",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data: form,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+
+    })
+    
+
+
+
+    //追加输入框装扮框
+    $(document).on("click",".attireAdd",function(){
+        $(this).parent().append(
+            "<div class='form-group'>"+
+
+            "<label class='control-label'>" + "装扮ID： "+"</label>"+
+            "<input type='text' oninput=\"this.value = this.value.replace(/[^0-9]/g, '');\" class='form-control attire' name='attire[]'  value='' required='required'>"+
+            "<label class='control-label'>" + "数量： "+"</label>"+
+            "<input type='text' oninput=\"this.value = this.value.replace(/[^0-9]/g, '');\" class='form-control attirenum' name='attirenum[]'  value='' required='required'>"+
+            "<label class='control-label'>" + "权重： "+"</label>"+
+            "<input type='text' oninput=\"this.value = this.value.replace(/[^0-9]/g, '');\" class='form-control a_rand_num' name='a_rand_num[]'  value='' required='required'>"+
+            "<button id='' class='attireAdd' type=\'button\' class=\'btn  btn-outline btn-success\' id=\'add_gift\'>"+
+            " <i class=\'glyphicon glyphicon-plus\' aria-hidden=\'true\'></i>"+
+            "</button>"+
+
+            "</div>"
+        );
+    });
+    //追加输入框礼物框
+    $(document).on("click",".giftAdd",function(){
+        $(this).parent().append(
+            "<div class='form-group'>"+
+
+            "<label class='control-label'>" + "礼物ID： "+"</label>"+
+            "<input type='text' oninput=\"this.value = this.value.replace(/[^0-9]/g, '');\" class='form-control gift' name='gift[]'  value='' required='required'>"+
+            "<label class='control-label'>" + "数量： "+"</label>"+
+            "<input type='text' oninput=\"this.value = this.value.replace(/[^0-9]/g, '');\" class='form-control giftnum' name='giftnum[]'  value='' required='required'>"+
+            "<label class='control-label'>" + "权重： "+"</label>"+
+            "<input type='text' oninput=\"this.value = this.value.replace(/[^0-9]/g, '');\" class='form-control g_rand_num' name='g_rand_num[]'  value='' required='required'>"+
+            "<button id='' class='giftAdd' type=\'button\' class=\'btn  btn-outline btn-success\' id=\'add_gift\'>"+
+            " <i class=\'glyphicon glyphicon-plus\' aria-hidden=\'true\'></i>"+
+            "</button>"+
+
+            "</div>"
+        );
+    });
+</script>
+</body>
+
+</html>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/admin/layui/css/layui.css" media="all">
+    <script src="/admin/js/jquery.min.js"></script>
+    <script src="/admin/js/xm-select.js"></script>
+    <style>
+        .layui-table-cell {
+            height: auto;
+            overflow: visible;
+            text-overflow: inherit;
+            white-space: normal;
+        }
+    </style>
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+</head>
+<body>
+
+
+<div style="padding:5px;">
+    <div class="demoTable">
+        <form class="layui-form" onsubmit="return false;" id="myform">
+            <div class="layui-input-inline">
+                <input type="text" name="date" id="date_b" lay-verify="date" placeholder="日期开始" autocomplete="off"
+                       class="layui-input" value="{$date_b}">
+            </div>
+            <div class="layui-input-inline">
+                <input type="text" name="date" id="date_e" lay-verify="date" placeholder="日期结束" autocomplete="off"
+                       class="layui-input" value="{$date_e}">
+            </div>
+
+            <!--      <div class="layui-inline">
+                      <select name="modules" lay-verify="required" lay-search="" id="type">
+                          <option value="">类型</option>
+                          {volist name="typeList" id="list"}
+                          <option value="{$list}">{$list}</option>
+                          {/volist}
+                      </select>
+                  </div>-->
+
+
+            <div class="layui-input-inline">
+                <div id="typemul" class="xm-select-demo" style="width:200px;"></div>
+            </div>
+
+
+            <button class="layui-btn" data-type="reload">搜索</button>
+            <button type="button" class="layui-btn layui-btn-normal" onclick="exportdata()">导出</button>
+        </form>
+    </div>
+    <blockquote class="layui-elem-quote" style="margin-bottom:0px">
+        <button class="layui-btn layui-btn-warm" id="recall_charge_sum" onclick="getrecallcharge(this)">点击查看召回充值总金额
+        </button>
+        <button class="layui-btn layui-btn-primary layui-border-black" id="send_total"></button>
+        <button class="layui-btn layui-btn-primary layui-border-black" id="client_total"></button>
+        <button class="layui-btn layui-btn-primary layui-border-black" id="recall_total"></button>
+        <button class="layui-btn layui-btn-primary layui-border-black" id="success_total"></button>
+    </blockquote>
+    <table id="datatable" lay-filter="test"></table>
+</div>
+
+<script src="/admin/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+<script>
+
+
+    layui.use(['table', 'form', 'layer', 'laydate', 'jquery'], function () {
+
+        var $ = layui.jquery
+            , form = layui.form
+            , laydate = layui.laydate
+            , table = layui.table;
+
+        //日期
+        laydate.render({
+            elem: '#date_b'
+        });
+
+        laydate.render({
+            elem: '#date_e'
+        });
+
+
+        table.render({
+            elem: '#datatable'
+            , totalRow: true
+            //, height: 420
+            //, toolbar: '#addTemplate' //开启头部工具栏，并为其绑定左侧模板
+            , url: '/admin/memberRecallList?master_url=/admin/memberRecallList&token={$token}&isRequest=1' //数据接口
+            , page: true //开启分页
+            , cols: [[ //表头
+                {field: 'id', title: 'ID', width: 100}
+                , {field: 'user_id', title: '用户ID', width: 100}
+                , {field: 'register_time', title: '注册时间', width: 180}
+                , {field: 'origin_login_time', title: '召回前登陆时间', width: 180}
+                , {field: 'charge_status', title: '用户类型', templet: '#charge_status_format'}
+                , {field: 'amount', title: '充值豆'}
+                , {field: 'free_coin', title: '消费豆'}
+                , {field: 'coin_balance', title: '豆余额'}
+                , {field: 'mobile', title: '手机号'}
+                , {field: 'recall_login_status', title: '是否登录'}
+                , {field: 'type_mark', title: '召回方式'}
+                , {field: 'str_date', title: '触发时间'}
+                , {field: 'sns_confirm', title: '发送状态', templet: '#format_sns_confirm',hide:true}
+                , {field: 'recall_charge_sum', title: '召回后充值总额',hide:true}
+            ]]
+            , id: 'tablereload'
+            , limits: [20, 50, 100]
+            , limit: 20 //每页默认显示的数量
+            , where: {}
+            , done: function (res, curr, count) {
+                $("#send_total").html("发送量:" + res['hz']['send_total']);
+                $("#client_total").html("点击量:" + res['hz']['client_total']);
+                $("#recall_total").html("召回量:" + res['hz']['recall_total']);
+                $("#success_total").html("成功量:" + res['hz']['success_total']);
+                //$("#charge_sum").html("召回后充值总金额:" + res['hz']['charge_sum']);
+            }
+        });
+
+
+        var $ = layui.$, active = {
+            reload: function () {
+                var date_b = $('#date_b');
+                var date_e = $('#date_e');
+                var type = $('#type');
+                //执行重载
+                table.reload('tablereload', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    , where: {
+                        date_b: date_b.val(),
+                        date_e: date_e.val(),
+                        type: typemul.getValue('value').join(",")
+                    }
+                });
+            }
+        };
+
+        $('.demoTable .layui-btn').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+    });
+
+
+    var formatTypeList = JSON.parse('<?php echo json_encode($formatTypeList); ?>');
+    typemul = xmSelect.render({
+        el: '#typemul',
+        data: []
+    })
+
+    typemul.update({
+        data: formatTypeList
+    })
+
+</script>
+
+
+<script type="text/html" id="charge_status_format">
+    {{#  if(d.charge_status == 0 ){ }}
+    <span>普通</span>
+    {{#  } else { }}
+    <span style="color: #F581B1;">付费</span>
+    {{#  } }}
+</script>
+
+
+<script type="text/html" id="format_sns_confirm">
+    {{#  if(d.sns_confirm == 0 ){ }}
+    <span>未确认</span>
+    {{#  } else if(d.sns_confirm == 1) { }}
+    <span style="color: #F581B1;">已确认</span>
+    {{#  } }}
+</script>
+
+
+<script>
+    function getrecallcharge(this_x) {
+        var date_b = $("#date_b").val();
+        var date_e = $("#date_e").val();
+        var type =  typemul.getValue('value').join(",")
+        $(this_x).attr("class","layui-btn layui-btn-primary layui-border-orange");
+        $.get("/admin/memberRecallList?token={$token}&master_url=/admin/memberRecallList&viewcharge=1&date_b="+date_b+"&date_e="+date_e+"&type="+type, "", function (res) {
+            $(this_x).attr("class","layui-btn layui-btn-warm");
+            $("#recall_charge_sum").html("点击查看召回充值总金额:"+res)
+        })
+    }
+
+
+    function exportdata() {
+        var date_b = $('#date_b').val();
+        var date_e = $('#date_e').val();
+        var type =  typemul.getValue('value').join(",")
+        if(type == undefined){
+            type = '';
+        }
+        var params = "date_b=" + date_b + "&date_e=" + date_e + "&type=" +type +"&daochu=1&isRequest=1";
+        var host = "/admin/memberRecallList?master_url=/admin/memberRecallList&token={$token}&" + params;
+        window.location.href = host
+    }
+
+</script>
+
+
+</body>
+</html>

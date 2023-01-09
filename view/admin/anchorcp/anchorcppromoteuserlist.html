@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/admin/layui/css/layui.css" media="all">
+    <script src="/admin/js/jquery.min.js"></script>
+    <style>
+        /*  数据自适应*/
+        .layui-table-cell {
+            height: auto;
+            white-space: normal;
+        }
+
+        th {
+            background-color: #2F4056; /* MediumSeaGreen */
+            color: #fff;
+            font-weight: bold
+        }
+
+    </style>
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+</head>
+<body>
+
+<div style="padding:5px;">
+    <div class="demoTable">
+        <form class="layui-form" onsubmit="return false;" id="myform">
+
+            <div class="layui-inline">
+                <input class="layui-input" name="s_user_id" id="s_user_id" style="width:200px" placeholder="用户id">
+            </div>
+
+            <div class="layui-inline">
+                <select name="modules" lay-verify="required" lay-search="" id="s_status">
+                    <option value="-1">状态</option>
+                    <option value="0" {if $status==
+                    '0'} echo selected="selected" {/if}>已解绑</option>
+                    <option value="1" {if $status==
+                    '1'} echo selected="selected" {/if}>已绑定</option>
+                    <option value="2" {if $status==
+                    '2'} echo selected="selected" {/if}>已删除</option>
+                </select>
+            </div>
+
+            <button class="layui-btn" data-type="reload">搜索</button>
+
+            <button type="button" class="layui-btn layui-btn-primary" onclick="exportdata()">
+                <i class="layui-icon layui-icon-export">导出</i>
+            </button>
+        </form>
+    </div>
+
+    <table id="datatable" lay-filter="test"></table>
+</div>
+
+<script src="/admin/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+<script>
+
+
+    layui.use(['table', 'form', 'layer', 'laydate', 'jquery'], function () {
+
+        var $ = layui.jquery
+            , form = layui.form
+            , laydate = layui.laydate
+            , table = layui.table;
+
+        table.render({
+            elem: '#datatable'
+            , totalRow: true
+            , defaultToolbar: []
+            //, height: 420
+            , toolbar: '#adddialog' //开启头部工具栏，并为其绑定左侧模板
+            , url: '/admin/anchorcppromotelist?master_url=/admin/anchorcppromotelist&token={$token}&isRequest=1' //数据接口
+            , page: true //开启分页
+            , cols: [[ //表头
+                {field: '', type: 'radio', width: '3%'}
+                , {field: 'id', title: 'ID', width: '3%'}
+                , {field: 'anchor_nickname', title: '主播昵称', width: '8%'}
+                , {field: 'anchor_id', title: '主播ID', width: '6%',sort: true}
+                , {field: 'guild_id', title: '工会ID', width: '6%',sort: true}
+                , {field: 'guild_nickname', title: '工会名称', width: '8%'}
+                , {field: 'nickname', title: '用户昵称', width: '8%'}
+                , {field: 'user_id', title: '用户ID', width: '6%'}
+                , {
+                    field: 'direct_consume_sum',
+                    title: '消费累计豆',
+                    width: '8%',
+                    event: 'viewsendgift',
+                    templet: "#format_consume",
+                    sort: true
+                }
+                , {field: 'charge_sum', title: '累计充值豆', width: '8%', event: 'viewcharge', templet: '#format_charge',sort: true}
+                , {field: 'last_login_time', title: '最后登录', width: '11%',sort: true}
+                , {field: 'status', title: '状态', width: '8%'}
+                , {field: 'register_time', title: '注册时间', width: '11%', sort: true}
+                , {field: 'actionhandle', title: '操作', toolbar: '#editaction', width: '6%'}
+            ]]
+            , id: 'tablereload'
+            , limits: [20, 50, 100]
+            , limit: 20 //每页默认显示的数量
+            //, cellMinWidth: 200
+            , where: {}
+            , done: function (res, curr, count) {
+            }
+        });
+
+        table.on('sort(test)', function (obj) {
+            let where = getRequestParams()
+            where.sortfield = obj.field
+            where.sorttype = obj.type
+            table.reload('tablereload', {
+                initSort: obj
+                , where: where
+            });
+        });
+
+        var $ = layui.$, active = {
+            reload: function () {
+                //执行重载
+                table.reload('tablereload', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    , where: getRequestParams()
+                });
+            }
+        };
+
+        $('.demoTable .layui-btn').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+
+        table.on('tool(test)', function (obj) {
+            let event = obj.event;
+            let data = obj.data;
+            if (obj.event === 'deleteaction') {
+                layer.confirm('确认要删除嘛?', function (index) {
+                    let requestBody = {action: "deletebind", id: data.id}
+                    console.log(requestBody);
+                    $.post("/admin/anchorcppromoteabinduser?master_url=/admin/anchorcppromoteabinduser&token={$token}", requestBody, function (resp) {
+                        resp = eval("(" + resp + ")");
+                        layer.msg(resp.msg, {
+                            time: 1000, //1s后自动关闭
+                        }, function () {
+                            window.location.reload();
+                        });
+                    })
+                });
+            }
+
+            if (obj.event === 'viewsendgift') {
+                var w = ($(window).width() * 0.7);
+                var h = ($(window).height() - 50);
+                var promoteid = data.id
+                layer.open({
+                    resize: true,
+                    maxmin: true,
+                    title: '直刷详情',
+                    shadeClose: true,
+                    area: [w + 'px', h + 'px'],
+                    type: 2,
+                    content: "/admin/cpsendgiftdetail?token={$token}&master_url=/admin/cpsendgiftdetail&promoteid=" + promoteid,
+                });
+            }
+
+            if (obj.event === 'viewcharge') {
+                var w = ($(window).width() * 0.7);
+                var h = ($(window).height() - 50);
+                var user_id = data.user_id
+                layer.open({
+                    resize: true,
+                    maxmin: true,
+                    title: '充值详情',
+                    shadeClose: true,
+                    area: [w + 'px', h + 'px'],
+                    type: 2,
+                    content: "/admin/cpchargedetail?token={$token}&master_url=/admin/cpchargedetail&user_id=" + user_id,
+                });
+            }
+
+        })
+
+        table.on('toolbar(test)', function (obj) {
+            let event = obj.event;
+            let data = obj.data;
+            let checkStatus = table.checkStatus(obj.config.id);
+            if (obj.event === 'binduser') {
+                layer.open({
+                    type: 1,
+                    title: "绑定用户",
+                    shift: 2,
+                    area: ['500px', '300px'],
+                    shadeClose: true,
+                    content: $("#add-dialog"),
+                    success: function (layero, index) {
+                        form.render();
+                    },
+                    yes: function () {
+                    }
+                });
+            }
+
+            if (obj.event === 'unbinduser') {
+                if (!checkStatus.data.length) {
+                    layer.msg("请先选择要解绑的数据", {
+                        time: 1000, //1s后自动关闭
+                    });
+                    return false;
+                }
+                layer.confirm('确认要解除绑定吗?', function (index) {
+                    let requestbody = {action: "unbind", id: (checkStatus.data)[0].id}
+                    $.post("/admin/anchorcppromoteabinduser?master_url=/admin/anchorcppromoteabinduser&token={$token}", requestbody, function (resp) {
+                        resp = eval("(" + resp + ")");
+                        layer.msg(resp.msg, {
+                            time: 1000, //1s后自动关闭
+                        }, function () {
+                            window.location.reload();
+                        });
+                    })
+                });
+            }
+
+            //监听提交
+            form.on('submit(sendbuttion)', function (data) {
+                var fields = $(data.form).serialize();
+                $.post("/admin/anchorcppromoteabinduser?master_url=/admin/anchorcppromoteabinduser&token={$token}&action=addbind", fields, function (resp) {
+                    resp = eval("(" + resp + ")");
+                    layer.msg(resp.msg, {
+                        time: 1000, //1s后自动关闭
+                    }, function (index) {
+                        window.location.reload();
+                    });
+                })
+                return false;
+            });
+        })
+    });
+
+
+    function getRequestParams() {
+        return {
+            user_id: $('#s_user_id').val(),
+            status: $('#s_status').val(),
+        }
+    }
+
+    layui.use(['jquery'], function () {
+        $('.J_menuItem').on('click', function () {
+            parent.childMenu(this)
+        });
+    })
+
+</script>
+
+<script type="text/html" id="format_consume">
+    <span>{{d.direct_consume_sum}}</span>
+    {{#  if(d.consume_tip>0 ){ }}
+    <i class="layui-icon layui-icon-up" style="font-size: 10px; color: #1E9FFF;"></i>
+    {{#  } }}
+</script>
+
+
+<script type="text/html" id="format_charge">
+    <span>{{d.charge_sum}}</span>
+    {{#  if(d.charge_tip>0 ){ }}
+    <i class="layui-icon layui-icon-up" style="font-size: 10px; color: #1E9FFF;"></i>
+    {{#  } }}
+</script>
+
+
+<script type="text/html" id="adddialog">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="binduser">绑定用户</button>
+        <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="unbinduser">解除绑定</button>
+        <button class="layui-btn layui-btn-sm layui-btn-warm J_menuItem"
+                href="/admin/anchorcplist?master_url=/admin/anchorcplist&token={$token}" title="主播CP列表">主播CP列表
+        </button>
+    </div>
+</script>
+
+
+<div id="add-dialog" style="display: none;">
+    <form class="layui-form" action="" id="sendform">
+
+        <div class="layui-inline" style="margin: 10px 0px">
+            <label class="layui-form-label">用户ID</label>
+            <div class="layui-input-block">
+                <input type="text" id="user_id" name="user_id" required value="" lay-verify="required"
+                       placeholder="请输入用户ID" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+
+
+        <div class="layui-inline" style="margin: 10px 0px">
+            <label class="layui-form-label">主播ID</label>
+            <div class="layui-input-block">
+                <input type="text" id="anchor_id" name="anchor_id" required value="" lay-verify="required"
+                       placeholder="请输入主播ID" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-inline" style="margin: 10px 0px">
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit="" lay-filter="sendbuttion">立即提交</button>
+                    <button type="reset" class="layui-btn layui-btn-primary" id="closeBtn">重置</button>
+                </div>
+            </div>
+        </div>
+
+    </form>
+
+</div>
+
+<script>
+
+    function exportdata() {
+        let params = getRequestParams()
+        let buildUrl = "";
+        Object.keys(params).forEach(function (k) {
+            buildUrl += `&${k}=${params[k]}`
+        })
+        var host = "/admin/anchorcppromotelist?master_url=/admin/anchorcppromotelist&token={$token}&export=1&isRequest=1" + buildUrl;
+        window.location.href = host
+    }
+
+</script>
+
+
+<script type="text/html" id="editaction">
+    <a class="layui-btn layui-btn-xs layui-btn-danger layui-btn-radius " lay-event="deleteaction">
+        <i class="layui-icon-left layui-icon layui-icon-delete"></i>删除</a>
+</script>
+
+
+</body>
+</html>

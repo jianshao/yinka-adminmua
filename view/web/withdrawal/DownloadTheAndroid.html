@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<!-- saved from url=(0050)https://image.fqparty.com/download/ioslhh/ios.html -->
+<html lang="en" style="font-size: 53.3333px;"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="theme-color" content="#000000">
+    <title>乐嗨嗨语音</title>
+    <style>
+        html, body {
+            -webkit-touch-callout: none;
+            -ms-touch-action: none;
+            /* height: 100%; */
+            padding: 0;
+            border: 0;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        img {
+            position: inherit;
+            pointer-events: none; /*不响应点击事件*/
+            width: inherit;
+            height: auto; /*inherit*/
+        }
+
+        .container{
+            position: absolute;
+            width: 7.5rem;
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        .bg {
+            position: absolute;
+            width: 7.5rem;
+            left: 0;
+        }
+
+        .btn {
+            position: fixed;
+            width: 7.5rem;
+            height: 1.76rem;
+            bottom: 0;
+            background: linear-gradient(135deg, #EC4EF5 0%, #FF058A 100%);
+        }
+
+        .tips {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            display: none;
+        }
+
+        .tipsimg {
+            position: absolute;
+            width: 4.8rem;
+            height: 1.9rem;
+            right: 0;
+            top: 0;
+        }
+
+        .btnlabel {
+            position: absolute;
+            width: 2rem;
+            height: 0.72rem;
+            font-size: 0.50rem;
+            font-family: PingFangSC-Semibold, PingFang SC;
+            font-weight: 600;
+            color: #FFFFFF;
+            line-height: 0.72rem;
+            left: 50%;
+            top: 50%;
+            white-space:nowrap;
+            transform: translate(-50%, -50%);
+        }
+
+        ::-webkit-scrollbar {display:none; width:0; height: 0;}
+
+        input, textarea {
+            -webkit-user-select:auto;
+        }
+
+        /*除了输入框其他都禁止点透，部分设备不支持这种写法*/
+        *:not(input, textarea) {
+            -webkit-touch-callout:none;  /*系统默认菜单被禁用*/
+            -webkit-user-select:none; /*webkit浏览器*/
+            -khtml-user-select:none; /*早期浏览器*/
+            -moz-user-select:none;/*火狐*/
+            -ms-user-select:none; /*IE10*/
+            user-select:none;
+        }
+
+        /*部分浏览器必须放这才支持*/
+        div, img, button, label {
+            -webkit-touch-callout:none;  /*系统默认菜单被禁用*/
+            -webkit-user-select:none; /*webkit浏览器*/
+            -khtml-user-select:none; /*早期浏览器*/
+            -moz-user-select:none;/*火狐*/
+            -ms-user-select:none; /*IE10*/
+            user-select:none;
+        }
+    </style>
+</head>
+<body>
+<script>
+    //获取系统默认字体大小
+    //designWidth 设计稿的宽度
+    //rem2px 设计稿宽度下，1rem的宽度
+    //https://blog.csdn.net/u013778905/article/details/77972841
+
+    var ua = navigator.userAgent, isAndroid = /android/ig.test(ua), isIos = /iphone|ipod|ipad/ig.test(ua);
+    if(isAndroid){
+        function adapt(designWidth, rem2px){
+            var d = window.document.createElement('div');
+            d.style.width = '1rem';
+            d.style.display = "none";
+            var head = window.document.getElementsByTagName('head')[0];
+            head.appendChild(d);
+            var defaultFontSize = parseFloat(window.getComputedStyle(d, null).getPropertyValue('width'));
+            return defaultFontSize
+        };
+
+        (function (doc, win) {
+            var designWidth = 750;
+            var rem2px = 100;
+            var docEl = doc.documentElement,
+                defaultFontSize = adapt(designWidth, rem2px),
+                resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize',
+                recalc = function() {
+                    var clientWidth = win.innerWidth
+                        || doc.documentElement.clientWidth
+                        || doc.body.clientWidth;
+
+                    if (!clientWidth) return;
+                    docEl.style.fontSize = clientWidth / designWidth * rem2px / defaultFontSize * 100 + '%';
+                };
+            if (!doc.addEventListener) return;
+            win.addEventListener(resizeEvt, recalc, false);
+            doc.addEventListener('DOMContentLoaded', recalc, false);
+            //auto fixed
+            window.onresize = function(){
+                recalc();
+            }
+            recalc();
+        })(document, window);
+    }else{
+        (function (doc, win) {
+            var docEl = doc.documentElement,
+                resizeEvt = 'onorientationchange' in window ? 'onorientationchange' : 'resize',
+                recalc = function () {
+                    var clientWidth = docEl.clientWidth;
+                    if (!clientWidth) return;
+                    docEl.style.fontSize = 100 * (clientWidth / 750) + 'px';
+                };
+
+            if (!doc.addEventListener) return;
+            win.addEventListener(resizeEvt, recalc, false);
+            doc.addEventListener('DOMContentLoaded', recalc, false);
+            recalc();
+        })(document, window);
+    }
+</script>
+<div class="container">
+    <img class="bg" src="/web/images/bg-min.jpg" alt="">
+    <div class="btn" id="btn">
+        <div class="btnlabel">APP下载</div>
+    </div>
+
+    <script type="text/javascript">
+        document.getElementById("btn").onclick=function () {
+            var ua = navigator.userAgent;
+            if(ua.indexOf("MicroMessenger") > -1){
+                document.getElementById("tips").style.display = "block";
+            }else{
+                window.location.href = "http://file.fqparty.com/download/lehaihai/LHH_GW.apk";
+            }
+        };
+    </script>
+</div>
+<div class="tips" id="tips">
+    <img class="tipsimg" src="/web/images/men1.png" alt="">
+    <script type="text/javascript">
+        document.getElementById("tips").onclick=function () {
+            document.getElementById("tips").style.display = "none";
+        };
+    </script>
+</div>
+
+
+</body></html>

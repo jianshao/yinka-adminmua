@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <link rel="stylesheet" href="/admin/layui/css/layui.css" media="all">
+    <script src="/admin/js/jquery.min.js"></script>
+    <script src="/admin/js/BenzAMRRecorder.js"></script>
+
+    <style>
+
+       .layui-table-cell {
+            height: auto;
+            white-space: normal;
+        }
+
+
+        th {
+            background-color: #2F4056; /* MediumSeaGreen */
+            color: #fff;
+            font-weight: bold
+        }
+
+
+    </style>
+
+</head>
+
+<body>
+
+<div style="padding:5px;">
+    <div class="demoTable">
+        <form class="layui-form" onsubmit="return false;" id="myform">
+            <div class="layui-inline" style="width:100px">
+                <select name="modules" lay-verify="required" lay-search="" id="date_type">
+                    <option value="1"  {if condition="$date_type == 1"} selected {/if}>提审时间</option>
+                    <option value="2" {if condition="$date_type == 2"} selected {/if}>审核时间</option>
+                </select>
+            </div>
+
+            <div class="layui-input-inline">
+                <input type="text" name="date" id="date_b" lay-verify="date" placeholder="日期开始" autocomplete="off"
+                       class="layui-input" value="">
+            </div>
+            <div class="layui-input-inline">
+                <input type="text" name="date" id="date_e" lay-verify="date" placeholder="日期结束" autocomplete="off"
+                       class="layui-input" value="">
+            </div>
+
+            <div class="layui-inline">
+                <input class="layui-input" name="user_id" id="user_id" style="width:80px" placeholder="用户ID">
+            </div>
+
+            <div class="layui-inline">
+                <input class="layui-input" name="room_id" id="room_id" style="width:80px" placeholder="房间ID">
+            </div>
+
+
+            <div class="layui-inline">
+                <select name="modules" lay-verify="required" lay-search="" id="status">
+                    <option value="0">待审核</option>
+                    <option value="1">审核通过</option>
+                    <option value="2">审核拒绝</option>
+                </select>
+            </div>
+
+            <button class="layui-btn" data-type="reload">搜索</button>
+            <button type="button" class="layui-btn layui-btn-normal" onclick="exportdata()">导出</button>
+        </form>
+    </div>
+    <table id="datatable" lay-filter="test"></table>
+</div>
+
+<script src="/admin/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+<script>
+    layui.use(['table', 'form', 'layer', 'laydate', 'jquery'], function () {
+        var $ = layui.jquery
+            , form = layui.form
+            , laydate = layui.laydate
+            , table = layui.table;
+
+        //日期
+        laydate.render({
+            elem: '#date_b'
+        });
+
+        laydate.render({
+            elem: '#date_e'
+        });
+
+        table.render({
+            elem: '#datatable'
+            //, totalRow: true
+            //, height: 420
+            //, toolbar: '#addTemplate' //开启头部工具栏，并为其绑定左侧模板
+            , defaultToolbar: []
+            , toolbar: '#toolbar' //开启头部工具栏，并为其绑定左侧模板
+            , url: '/admin/userroomcheckList?master_url=/admin/userroomcheckList&token={$token}&isRequest=1' //数据接口
+            , page: true //开启分页
+            , cols: [[ //表头
+                {field: '', type: 'checkbox', width: '5%'}
+                ,{field: 'id', title: 'ID', width: '4%'}
+                , {field: 'user_id', title: '用户ID', width: '7%'}
+                , {field: 'lv_dengji', title: '用户等级', width: '7%'}
+                , {field: 'room_id', title: '房间ID', width: '7%'}
+                , {field: 'room_type', title: '房类型', width: '7%'}
+                , {field: 'action_info', title: '类型', width: '10%'}
+                , {field: 'status_info', title: '状态', width: '10%'}
+                , {field: 'content', title: '内容', templet: '#format_content', width: '14%'}
+                , {field: 'create_time', title: '提审时间', width: '10%'}
+                , {field: 'update_time', title: '审核时间', width: '10%'}
+                , {field: 'admin_user_name', title: '审核人', width: '10%'}
+                , {title: '日志', toolbar: '#actionbutton', width: '10%'}
+            ]]
+            , id: 'tablereload'
+            , limits: [20, 50, 100]
+            , limit: 20 //每页默认显示的数量
+            , where: {}
+            , done: function (res, curr, count) {
+            }
+        });
+
+
+        var $ = layui.$, active = {
+            reload: function () {
+                //执行重载
+                table.reload('tablereload', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    , where: getRequestParams()
+                });
+            }
+        };
+
+        $('.demoTable .layui-btn').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+
+         table.on('toolbar(test)', function (obj) {
+            let event = obj.event;
+            let data = obj.data;
+            let checkStatus = table.checkStatus(obj.config.id);
+            var selectdata = checkStatus.data;
+            let params=[];
+            selectdata.forEach(function(item,index){
+                params.push(item.id)
+            })
+            if(obj.event === 'agree'){
+                var lock = false;//用来锁定确认按钮，防止重复提交（默认未锁定）
+                if(!lock){
+                    lock = true;//锁定
+                    layer.confirm('确认要同意吗?',{
+                        btn: ['确定', '取消'],
+                        shade: false //不显示遮罩
+                    }, function(index){
+                        let ids = params.join(",");
+                        let requestBody = {status:"1",id:ids}
+                        $.post("/admin/memberInfoAgree?master_url=/admin/memberInfoAgree&token={$token}",requestBody, function (resp) {
+                            //resp = eval("(" + resp + ")");
+                            layer.msg(resp.desc, {
+                                time: 20000, //20s后自动关闭
+                                btn: ['确定']
+                            }, function () {
+                                window.location.reload();
+                            });
+                        })
+                    });
+
+                }
+            }
+
+            if(obj.event === 'refuse'){
+                var lock = false;//用来锁定确认按钮，防止重复提交（默认未锁定）
+                if(!lock){
+                    lock = true;//锁定
+                    layer.confirm('确认要拒绝吗?', function(index){
+                        let ids = params.join(",");
+                        let requestBody = {status:"2",id:ids}
+                        $.post("/admin/memberInfoAgree?master_url=/admin/memberInfoAgree&token={$token}",requestBody, function (resp) {
+                            layer.msg(resp.desc, {
+                                time: 20000, //20s后自动关闭
+                                btn: ['确定']
+                            }, function () {
+                                window.location.reload();
+                            });
+                        })
+                    });
+                }
+            }
+
+
+        })
+
+
+
+        table.on('tool(test)', function (obj) {
+            let event = obj.event;
+            let data = obj.data;
+            let ids = data.id
+
+            if(obj.event === 'agree_action'){
+                var lock = false;//用来锁定确认按钮，防止重复提交（默认未锁定）
+                if(!lock){
+                    lock = true;//锁定
+                    layer.confirm('确认要同意吗?',{
+                        btn: ['确定', '取消'],
+                        shade: false //不显示遮罩
+                    }, function(index){
+                        let requestBody = {status:"1",id:ids}
+                        $.post("/admin/memberInfoAgree?master_url=/admin/memberInfoAgree&token={$token}",requestBody, function (resp) {
+                            //resp = eval("(" + resp + ")");
+                            layer.msg(resp.desc, {
+                                time: 20000, //20s后自动关闭
+                                btn: ['确定']
+                            }, function () {
+                                window.location.reload();
+                            });
+                        })
+                    });
+
+                }
+            }
+
+            if(obj.event === 'refuse_action'){
+                var lock = false;//用来锁定确认按钮，防止重复提交（默认未锁定）
+                if(!lock){
+                    lock = true;//锁定
+                    layer.confirm('确认要拒绝吗?', function(index){
+                        let requestBody = {status:"2",id:ids}
+                        $.post("/admin/memberInfoAgree?master_url=/admin/memberInfoAgree&token={$token}",requestBody, function (resp) {
+                            layer.msg(resp.desc, {
+                                time: 20000, //20s后自动关闭
+                                btn: ['确定']
+                            }, function () {
+                                window.location.reload();
+                            });
+                        })
+                    });
+                }
+            }
+
+
+
+            if (event === "seeklog") {
+                parent.childMenu(this)
+            }
+
+
+            if (event === "viewusername") {
+                this.index = layer.tips('<div style="padding: 10px; font-size: 14px; color: #eee;">' + data.admin_user_name + '</div>', this, {
+                    time: -1
+                    , maxWidth: 280
+                    , tips: [3, '#3A3D49']
+                })
+            }
+
+
+        })
+
+
+        form.on('switch(person)', function (data) {
+            let is_open = data.elem.checked ? 1 : 0;
+            let requestBody = {type: 'person_room', is_open: is_open}
+            layer.confirm('确认要同意操作吗?', function (index) {
+                $.post("/admin/roomPersonCheck?master_url=/admin/roomPersonCheck&token={$token}", requestBody, function (resp) {
+                    resp = eval("(" + resp + ")");
+                    layer.msg(resp.msg, {
+                        time: 1000, //1s后自动关闭
+                    }, function () {
+                        window.location.reload();
+                    });
+                })
+            }, function () {
+                data.elem.checked = !data.elem.checked;
+                form.render();
+            });
+        });
+
+
+
+
+        form.on('switch(guild)', function (data) {
+            let is_open = data.elem.checked ? 1 : 0;
+            let requestBody = {type: 'guild_room', is_open: is_open}
+            layer.confirm('确认要同意操作吗?', function (index) {
+                $.post("/admin/roomPersonCheck?master_url=/admin/roomPersonCheck&token={$token}", requestBody, function (resp) {
+                    resp = eval("(" + resp + ")");
+                    layer.msg(resp.msg, {
+                        time: 1000, //1s后自动关闭
+                    }, function () {
+                        window.location.reload();
+                    });
+                })
+            }, function () {
+                data.elem.checked = !data.elem.checked;
+                form.render();
+            });
+        });
+
+    });
+</script>
+
+
+
+<script type="text/html" id="format_content">
+    {{#  if(d.action == 'avatar' || d.action=='wall' ){ }}
+        {{# layui.each(d.content, function(index, item){     }}
+        <img src="{{item}}" alt="" style="width: 30px;" class="img_small" onclick="showpreview(this)">
+        {{# });  }}
+    {{#  } else if(d.action == 'voice') { }}
+    <button id="amr-file-{{d.id}}" src="{{d.content}}" onclick="playArmFile(this)">点击播放</button>
+    {{#  } else{ }}
+    <span>{{d.content}}</span>
+    {{#  } }}
+</script>
+
+
+<script type="text/html" id="actionbutton">
+    <div class="layui-btn-group">
+
+        {{#  if(d.status == 0) { }}
+        <button type="button" lay-event="agree_action" class="layui-btn layui-btn-sm  layui-btn-normal">同意</button>
+        <button type="button" lay-event="refuse_action" class="layui-btn layui-btn-sm  layui-btn-warm" >拒绝</button>
+        {{#  } }}
+
+        {{#  if(d.status == 1) { }}
+   <!--     <span>同意</span>-->
+        {{#  } }}
+
+        {{#  if(d.status == 2) { }}
+        <!--<span>拒绝</span>-->
+        {{#  } }}
+        <button   type="button" class="layui-btn layui-btn-sm layui-btn-danger" lay-event="seeklog" title="信息审核日志"
+                href="/admin/memberAuditLog?master_url=/admin/memberAuditLog&token={$token}&user_id={{ d.user_id }}">日志
+        </button>
+
+    </div>
+</script>
+
+
+<script type="text/html" id="toolbar">
+    <div class="layui-row">
+        <div class="layui-col-xs6">
+            <div class="grid-demo grid-demo-bg1">
+                <div class="layui-btn-container">
+                    <button class="layui-btn layui-btn-sm" lay-event="agree">批量同意</button>
+                    <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="refuse">批量拒绝</button>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-xs6">
+            <div class="grid-demo">
+                <form class="layui-form">
+                    <div class="layui-form-item">
+                        <div class="layui-inline"> <label class="layui-form-label" style="width:150px;">个人房人工审核：</label>
+                            <div class="layui-input-inline" style="width:40px">
+                                <input type="checkbox" {if condition="$personroom_isopen == 1"}checked=""{/if} name="close"  lay-skin="switch" lay-text="ON|OFF"  lay-filter="person">
+                            </div>
+                        </div>
+
+                        <div class="layui-inline"> <label class="layui-form-label" style="width:150px;">工会房人工审核：</label>
+                            <div class="layui-input-inline" style="width:40px">
+                                <input type="checkbox" {if condition="$guildroom_isopen == 1"}checked=""{/if} name="close"  lay-skin="switch" lay-text="ON|OFF"  lay-filter="guild">
+                            </div>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+</script>
+
+
+
+
+<script>
+
+    function playArmFile(obj){
+        url = $(obj).attr('src');
+        var amr = new BenzAMRRecorder();
+        amr.initWithUrl(url).then(function() {
+            amr.play();
+        });0
+        amr.onEnded(function() {
+            console.log('播放完毕');
+        })
+    }
+
+
+    function showpreview(this_x){
+        layer.open({
+            type: 1,
+            title:'图片预览',
+            offset:  'auto',
+            area: ['800px', '500px'],
+            content: "<img src='"+this_x.src+"'>" //这里content是一个普通的String
+        });
+    }
+
+    function getRequestParams(){
+        return {
+              date_b: $("#date_b").val()
+            , date_e: $("#date_e").val()
+            , status: $('#status').val()
+            , date_type: $('#date_type').val()
+            , user_id: $('#user_id').val()
+            , room_id: $('#room_id').val()
+        }
+    }
+
+
+    function exportdata() {
+        let params = getRequestParams()
+        let buildUrl = "";
+        Object.keys(params).forEach(function(k){
+            buildUrl += `&${k}=${params[k]}`
+        })
+        var host = "/admin/userroomcheckList?master_url=/admin/userroomcheckList&token={$token}&export=1&isRequest=1"+buildUrl;
+        window.location.href = host
+    }
+
+    layui.use(['jquery'], function () {
+        $('.J_menuItem').on('click', function () {
+            parent.childMenu(this)
+        });
+    })
+
+</script>
+
+
+
+
+
+</body>

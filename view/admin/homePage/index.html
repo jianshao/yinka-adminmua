@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link rel="stylesheet" href="/admin/css/jquery.minicolors.css">
+
+    <style>
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+    </style>
+
+</head>
+<body class="gray-bg">
+
+<!--数据表格-->
+<div class="wrapper wrapper-content animated fadeInRight" >
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="example">
+                            <!--添加-->
+                            <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                <!-- <button type="button" class="btn add btn-outline btn-success" id="add">
+                                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加
+                                </button> -->
+                                <button type="button" class="btn btn-outline btn-success" id="clearCache">
+                                    <i class="glyphicon glyphicon-fire" aria-hidden="true"></i>配置上线
+                                </button>
+                            </div>
+
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">平台</th>
+                                    <th class="text-center">按钮类型</th>
+                                    <th class="text-center">按钮说明</th>
+                                    <th class="text-center">选中图标</th>
+                                    <th class="text-center">默认图标</th>
+                                    <th class="text-center">默认色值</th>
+                                    <th class="text-center">选中色值</th>
+                                    <th class="text-center">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($list)"}
+                                {volist name="list" id="item"}
+                                <tr>
+                                    <td class="text-center app" >{$item.app}</td>
+                                    <td class="text-center type_name" >{$item.type_name}</td>
+                                    <td class="text-center desc" >{$button_map[$item.type_name]}</td>
+                                    <td class="text-center click_icon"><img src="{$item.click_icon}" width="30"  heght="30"></td>
+                                    <td class="text-center default_icon"><img src="{$item.default_icon}" width="30"  heght="30"></td>
+									<td class="text-center default_font_color" color="{$item.default_font_color}">
+										<input type="hidden" id="hidden-input" class="color" value="{$item.default_font_color}">
+									</td>
+									<td class="text-center click_font_color" color="{$item.click_font_color}">
+										<input type="hidden" id="hidden-input" class="color" value="{$item.click_font_color}">
+									</td>
+									<td class="text-center">
+										<!-- <div class="btn-group hidden-xs form-inline">
+                                            <button class="btn btn-success del" id='<?php echo json_encode($item)?>'>删除</button>
+                                        </div> -->
+										<button class="btn update btn-success" info='<?php echo json_encode($item)?>'>编辑</button>
+									</td>
+									
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="7" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+<!--编辑信息-->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+                </button>
+                <h4 class="modal-title" id="editModalLabel">添加</h4>
+            </div>
+            <div class="modal-body add-append">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" >关闭</button>
+                <button type="button" class="btn btn-primary" onclick="edit_info()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+                </button>
+                <h4 class="modal-title" id="updateModalLabel">编辑信息</h4>
+            </div>
+            <div class="modal-body update-append">
+				<form id='update_form' method='post' >
+					<div class='form-group'>
+					<label class='control-label'>平台:</label>
+						<select class="form-control" id='app' name='app'>
+							<option value="yinlian" >音恋</option> 
+						</select>
+					</div>
+		
+					<div class='form-group'>
+					<label class='control-label'>名称（英文字符）:</label>
+					<input type='text' id='type_name' class='form-control type_name' name='type_name' value='' required>
+					</div>
+		
+					<div class='form-group'>
+					<label class='control-label'>说明:</label>
+					<input type='text' id='desc' class='form-control desc' name='desc' value='' required>
+					</div>
+		
+					<div class='form-group'>
+					<label class='control-label'>默认色值:</label>
+					<input type='text' id='default_font_color' class='form-control color default_font_color' name='default_font_color' value="" required>
+					</div>
+		
+					<div class='form-group'>
+					<label class='control-label'>选中色值:</label>
+					<input type='text' id='click_font_color' class='form-control color click_font_color' name='click_font_color' value="" required>
+					</div>
+					
+					<div class='form-group'>
+					<label class='control-label'>选中图标:</label>
+					<input type='file' class='form-control upload click_icon' id='click_icon' name='click_icon' value='' required>
+					</div>
+		
+					<div class='form-group'>
+					<label class='control-label'>默认图标:</label>
+					<input type='file' class='form-control upload default_icon'  id='default_icon' name='default_icon' value='' required>
+					</div>
+		
+					<div class='form-group'>
+					<label class='control-label'>选中动效(json文件):</label>
+					<input type='file' class='form-control upload click_lott'  id='click_lott' name='click_lott' value='' required>
+					</div>
+		
+					<div class='form-group'>
+					<label class='control-label'>默认动效(json文件):</label>
+					<input type='file' class='form-control upload default_lott'  id='default_lott' name='default_lott' value='' required>
+					</div>
+		
+					<input type='hidden' value="{$token}" name='token'>
+					<input type='hidden' class='id' name='id'>
+					<input type='hidden' value='/admin/homePage/save' id='master_url' name='master_url'>
+				</form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" >关闭</button>
+                <button type="button" class="btn btn-primary" id="confirm_update">修改</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--操作modal-->
+<input type="hidden" value="{$token}" name="token" id="token">
+<input type="hidden" value="/admin/homePage/show" name="master_url" id="master_url">
+
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script src="/admin/js/jquery.minicolors.min.js"></script>
+<script>
+    function add_imgs(){
+        if($("#gifts_id").val() == ""){
+            toastr.warning('未获得礼物ID');
+            return false;
+        }
+        if($('#gift_image')[0].files[0]){
+            var gift_imageType = $('#gift_image')[0].files[0].name.split('.');
+            if(gift_imageType[1] != 'png'){
+                toastr.warning('礼物图标请选择png格式文件');
+                return false;
+            }
+        }
+        if($('#animation')[0].files[0]){
+            var animationType = $('#animation')[0].files[0].name.split('.');
+            if(animationType[1]!='gif'){
+                toastr.warning('礼物动画请选择gif格式文件');
+                return false;
+            }
+        }
+
+        var formData = new FormData();
+        formData.append("id", $("#gifts_id").val());
+        formData.append("token", $("#token").val());
+        formData.append("master_url", $("#master_url").val());
+        formData.append("gift_image", $('#gift_image')[0].files[0]);
+        formData.append("animation", $('#animation')[0].files[0]);
+
+		$.ajax({
+            async: false,    //表示请求是否异步处理
+            cache: false,
+            processData: false,
+            contentType: false,
+            type: "post",    //请求类型
+            url: "/admin/ossEmoticonFile",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: formData,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+
+    //添加信息
+    $('.add').on('click',function(){
+        $(".add-append").empty();
+        $(".add-append").prepend(
+            "<form id='add_form' method='post' >"+
+
+            "<div class='form-group'>"+
+                "<select class=\"form-control\" id='app' name='app'>\n" +
+					"<option value=\"yinlian\" >音恋</option>\n" + 
+                "</select>" +
+			"</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"名称（英文字符）:"+"</label>"+
+            "<input type='text' id='type_name' class='form-control type_name' name='type_name' value='' required>"+
+            "</div>"+
+
+			"<div class='form-group'>"+
+            "<label class='control-label'>"+"说明:"+"</label>"+
+            "<input type='text' id='desc' class='form-control desc' name='desc' value='' required>"+
+            "</div>"+
+
+			"<div class='form-group'>"+
+			"<label class='control-label'>默认色值:</label>"+
+			"<input type='text' id='default_font_color' class='form-control color default_font_color' name='default_font_color' value='' required>"+
+			"</div>"+
+		
+			"<div class='form-group'>"+
+			"<label class='control-label'>选中色值:</label>"+
+			"<input type='text' id='click_font_color' class='form-control color click_font_color' name='click_font_color' value='' required>"+
+			"</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>选中图标:</label>"+
+            "<input type='file' class='form-control upload click_icon' id='click_icon' name='click_icon' value='' required>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>默认图标:</label>"+
+            "<input type='file' class='form-control upload default_icon'  id='default_icon' name='default_icon' value='' required>"+
+            "</div>"+
+
+			"<div class='form-group'>"+
+            "<label class='control-label'>选中动效(json文件):</label>"+
+            "<input type='file' class='form-control upload click_lott'  id='click_lott' name='click_lott' value='' required>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>默认动效(json文件):</label>"+
+            "<input type='file' class='form-control upload default_lott'  id='default_lott' name='default_lott' value='' required>"+
+            "</div>"+
+
+            "<input type='hidden' value='{$token}' name='token'>"+
+            "<input type='hidden' value='/admin/homePage/add' id='master_url' name='master_url'>"+
+            "</form>"
+        );
+        $('#editModal').modal('show');
+    });
+
+    //图片上传
+    $(document).on("change",".upload",function(){
+		console.log($(this))
+		let file_id = $(this).attr('id');
+		console.log(file_id)
+		let file_obj = $(this)[0].files[0];
+		console.log(file_obj)
+        if(file_obj){
+			let img_types = [ "bmp", "png", "gif", "jpg", "jpeg", "svga","json" ]; 
+            let animationType = file_obj.name.split('.');
+			let img = animationType[1];
+			let result= $.inArray(img, img_types)
+
+            if (result == -1) {
+                toastr.warning("文件只限图片或JSON文件");
+                return false;
+            }
+        }
+        var formData = new FormData();
+        formData.append("token", $("#token").val());
+        formData.append("master_url", $("#master_url").val());
+        formData.append("image", file_obj);
+
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            cache: false,
+            processData: false,
+            contentType: false,
+            type: "post",    //请求类型
+            url: "/admin/homePage/ossFile",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: formData,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+				$('#' + file_id).parent().append("<input type='hidden' name='" + file_id + "'  value="+ rs.data.url+ ">");
+                toastr.success(rs.msg);
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+    })
+
+    //添加执行
+    function edit_info(){
+        var edit_info = $("#add_form").serializeArray();
+
+        if($('.type_name').val() == ''){
+            toastr.warning('名称不可为空');
+            return false;
+        }
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/HomePage/add",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data: edit_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    }
+
+	//修改框追加
+    $('.update').on('click',function(){
+		// $(".update-append").empty();
+        // $(".update-append").prepend(
+        //     "<form id='update_form' method='post' >"+
+
+		// 	"<div class='form-group'>"+
+		// 	"<label class='control-label'>"+"平台:"+"</label>"+
+        //         "<select class=\"form-control\" id='app' name='app'>\n" +
+		// 			"<option value=\"yinlian\" >音恋</option>\n" + 
+        //         "</select>" +
+		// 	"</div>"+
+
+        //     "<div class='form-group'>"+
+        //     "<label class='control-label'>"+"名称（英文字符）:"+"</label>"+
+        //     "<input type='text' id='type_name' class='form-control type_name' name='type_name' value='' required>"+
+        //     "</div>"+
+
+		// 	"<div class='form-group'>"+
+        //     "<label class='control-label'>"+"说明:"+"</label>"+
+        //     "<input type='text' id='desc' class='form-control desc' name='desc' value='' required>"+
+        //     "</div>"+
+
+		// 	"<div class='form-group'>"+
+		// 	"<label class='control-label'>默认色值:</label>"+
+		// 	"<input type='text' id='default_font_color' class='form-control color default_font_color' name='default_font_color' value='' required>"+
+		// 	"</div>"+
+		
+		// 	"<div class='form-group'>"+
+		// 	"<label class='control-label'>选中色值:</label>"+
+		// 	"<input type='text' id='click_font_color' class='form-control color click_font_color' name='click_font_color' value='' required>"+
+		// 	"</div>"+
+
+        //     "<div class='form-group'>"+
+        //     "<label class='control-label'>选中图标:</label>"+
+        //     "<input type='file' class='form-control upload click_icon' id='click_icon' name='click_icon' value='' required>"+
+        //     "</div>"+
+
+        //     "<div class='form-group'>"+
+        //     "<label class='control-label'>默认图标:</label>"+
+        //     "<input type='file' class='form-control upload default_icon'  id='default_icon' name='default_icon' value='' required>"+
+        //     "</div>"+
+
+		// 	"<div class='form-group'>"+
+        //     "<label class='control-label'>选中动效(json文件):</label>"+
+        //     "<input type='file' class='form-control upload click_lott'  id='click_lott' name='click_lott' value='' required>"+
+        //     "</div>"+
+
+        //     "<div class='form-group'>"+
+        //     "<label class='control-label'>默认动效(json文件):</label>"+
+        //     "<input type='file' class='form-control upload default_lott'  id='default_lott' name='default_lott' value='' required>"+
+        //     "</div>"+
+
+        //     "<input type='hidden' value='{$token}' name='token'>"+
+        //     "<input type='hidden' class='id' name='id'>"+
+        //     "<input type='hidden' value='/admin/homePage/save' id='master_url' name='master_url'>"+
+        //     "</form>"
+        // );
+        
+		var info = JSON.parse($(this).attr('info'));
+		$(".update-append .click_font_color").parent().find(".minicolors-swatch-color").attr('style','background-color:' + info.click_font_color);
+		$(".update-append .default_font_color").parent().find(".minicolors-swatch-color").attr('style','background-color:' + info.default_font_color);
+
+        $(".update-append .id").val(info.type_name);
+        $(".update-append .desc").val(info.desc);
+        $(".update-append .app").val(info.app);
+        $(".update-append .type_name").val(info.type_name);
+        $(".update-append .click_font_color").val(info.click_font_color);
+        $(".update-append .default_font_color").val(info.default_font_color);
+        $('#updateModal').modal('show');
+    });
+
+	$(document).ready( function() {	
+		$('.color').each( function() {
+			$(this).minicolors({
+				control: $(this).attr('data-control') || 'hue',
+				defaultValue: $(this).attr('data-defaultValue') || '',
+				inline: $(this).attr('data-inline') === 'true',
+				letterCase: $(this).attr('data-letterCase') || 'lowercase',
+				opacity: $(this).attr('data-opacity'),
+				position: $(this).attr('data-position') || 'bottom left',
+				change: function(hex, opacity) {
+					if( !hex ) return;
+					if( opacity ) hex += ', ' + opacity;
+					try {
+						console.log(hex);
+					} catch(e) {}
+				},
+				theme: 'bootstrap'
+			});
+		});
+	});
+    //修改按钮
+    $('#confirm_update').click(function () {
+        var update_info = $("#update_form").serializeArray();
+		console.log(update_info)
+		if($('#update_form .app').val() == ''){
+            toastr.warning('平台不可为空');
+            return false;
+        }
+		if($('#update_form .type_name').val() == ''){
+            toastr.warning('名称不可为空');
+            return false;
+        }
+		$.ajax({
+			async: false,    //表示请求是否异步处理
+			type: "post",    //请求类型
+			url: "/admin/homePage/save",//请求的 URL地址
+			token: $("#token").val(),
+			dataType: "json",//返回的数据类型
+			data: update_info,
+			success: function (rs) {
+				if (rs.code !== 200) {
+					toastr.warning(rs.msg);
+					return false;
+				}
+				toastr.success(rs.msg);
+				setTimeout(location, 1000);   //延迟5秒刷新页面
+			},
+			error: function (rs) {
+				toastr.warning('请求失败');
+			}
+		});
+		function location() {
+			window.location.href = window.location.href;
+		}
+    })
+
+
+    //删除
+    $('.del').on('click',function(){
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            token: $("#token").val(),
+            url: "/admin/delEmoticon",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {master_url:'/admin/delEmoticon',id:$(this).attr('id'),token:$("#token").val()},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    })
+    //清除缓存
+    $("#clearCache").on('click',function(){
+        var master_url = "/admin/homePage/clear";
+        var token = $("#token").val();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/homePage/clear",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data:{master_url:master_url,token:token},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 500);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    })
+</script>
+</body>
+</html>

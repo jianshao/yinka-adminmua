@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+    <style>
+        table {
+            table-layout: fixed;
+        }
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        {if condition="in_array('/admin/addTopic',$user_role_menu)"}
+                        <div class="btn-group hidden-xs form-inline">
+                            <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                <button type="button" class="btn btn-outline btn-success" id="add_topic">
+                                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加标签
+                                </button>
+                            </div>
+                        </div>
+                        {/if}
+                        <div class="example">
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">话题Id</th>
+                                    <th class="text-center">话题名称</th>
+                                    <th class="text-center">所属标签</th>
+                                    <th class="text-center">话题动态数</th>
+                                    <th class="text-center">热门序号</th>
+                                    <th class="text-center">是否热门</th>
+                                    <th class="text-center">上架状态</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($topicList)"}
+                                {volist name="topicList" id="lists"}
+                                <tr>
+                                    <td class="text-center" id="id">{$lists.id}</td>
+                                    <td class="text-center">{$lists.topic_name}</td>
+                                    <td class="text-center exit_label" value="{$lists.label_id}">{$lists.label}</td>
+                                    <td class="text-center ">{$lists.topic_count}</td>
+                                    <td class="text-center topic_order">{$lists.topic_order}</td>
+                                    <td class="text-center">
+                                    {if condition="in_array('/admin/exitTopicHot',$user_role_menu)"}
+                                        {if condition="($lists.topic_hot) == 0"}
+                                        <span>热门状态：未热门</span><br>
+                                        <button class="btn btn-success exitHot" value="{$lists.topic_hot}">推荐热门</button>
+                                        {else}
+                                        <span>热门状态：热门</span><br>
+                                        <button class="btn btn-success exitHot" value="{$lists.topic_hot}" >下架热门</button>
+                                        {/if}
+                                    {/if}
+                                    </td>
+                                    <td class="text-center">
+                                        {if condition="in_array('/admin/exitTopicStatus',$user_role_menu)"}
+                                            {if condition="($lists.topic_status) == 0"}
+                                                <span>标签状态：下架</span><br>
+                                                <button class="btn btn-success topicStatus" value="{$lists.topic_status}">上架</button>
+                                            {else}
+                                                <span>标签状态：上架</span><br>
+                                                <button class="btn btn-success topicStatus" value="{$lists.topic_status}" >下架</button>
+                                            {/if}
+                                        {/if}
+                                    </td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="7" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page > 1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+<!--    修改标签状态-->
+<div class="modal fade" id="exit_model">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>修改话题状态</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <i class="glyphicon glyphicon-sort" id="exit_model_msg"></i>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger" data-btn-danger="modal" onclick="exit_model_on()">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--    修改热门状态-->
+<div class="modal fade" id="hot_model">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>修改热门状态</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <i class="glyphicon glyphicon-sort" id="hot_model_msg"></i>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger" data-btn-danger="modal" onclick="hot_model_on()">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--添加标签-->
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" >
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="addModalLabel">添加标签</h4>
+                </div>
+                <div class="modal-body  add-label">
+                        <form id='add_form' method='post'>
+                        <div class='form-group'>
+                        <label class='control-label'>话题名称： </label>
+                        <input type="text" class="form-control topic_name" name='topic_name'  value="" required="required">
+                        </div>
+                        <div class='form-group'>
+                        <select class="form-control" name="pid" >
+                        <option value="">选择标签&#12288&#12288</option>
+                        {volist name="label" id="lists"}
+                        <option value="{$lists.id}" selected=\"selected\">{$lists.topic_name}</option>
+                        {/volist}
+                        </select>
+                        </div>
+                        <div class='form-group'>
+                        <label class='control-label'>话题状态:</label>
+                        <label class='radio-inline'>
+                        <input type='radio' name='topic_status' class='topic_status' checked value='0'> 下架
+                        </label>
+                        <label class='radio-inline'>
+                        <input type='radio' name='topic_status' class='topic_status'  value='1'> 上架
+                        </label>
+                        </div>
+                        <div class='form-group'>
+                        <label class='control-label'>热门话题:</label>
+                        <label class='radio-inline'>
+                        <input type='radio' name='topic_hot' class='topic_hot' checked value='0'> 否
+                        </label>
+                        <label class='radio-inline'>
+                        <input type='radio' name='topic_hot' class='topic_hot'  value='1'> 是
+                        </label>
+                        </div>
+                        <input type="hidden" value="{$token}" name="token">
+                        <input type="hidden" value='/admin/addTopic' name="master_url">
+                        </form>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="button" class="btn btn-primary" onclick="add_labels()">保存</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+<!--    修改热门序号-->
+<div class="modal fade" id="exit_topic_order">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>修改热度值</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <i class="fa fa-trash-o" id="exit_topic_order_msg"></i>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger" data-btn-danger="modal" onclick="exit_topic_order_on()">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$token}" id="token">
+<input type="hidden" value="" id="label">
+<input type="hidden" value="" id="status">
+<input type="hidden" value="{$user_role_menu_input}" id="user_role_menu">
+<input type="hidden" value="{$labelType}" id="labelType">
+<input type="hidden" value="" id="topicOrder">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<style>
+</style>
+<script>
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/roomList&token=' + $("#token").val() + '&id=' + $("#search_id").val()+'&type='+$("#select_id").val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+    });
+    //修改上下架状态
+    $(".topicStatus").on('click',function(){
+        var id = $(this).parents("tr").find("#id").text();
+        var status = $(this).val();
+        $("#label").val(id);
+        $("#status").val(status);
+        if(status == 0){
+            var statusMsg = "上架";
+        }else{
+            var statusMsg = "下架";
+        }
+        $('#exit_model').modal('show');
+        $("#exit_model_msg").html(' 确定要 '+statusMsg+' 此商品吗?');
+    })
+    function exit_model_on(){
+        var id =  $("#label").val();
+        var status =  $("#status").val();
+        var token = $("#token").val();
+        var master_url = "/admin/exitTopicStatus";
+        var field = 'topic_status';
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/exitTopicStatus",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {id: id,value:status,token: token,master_url:master_url,field:field},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+    //修改热门状态
+    $(".exitHot").on('click',function(){
+        var id = $(this).parents("tr").find("#id").text();
+        var status = $(this).val();
+        $("#label").val(id);
+        $("#status").val(status);
+        if(status == 0){
+            var statusMsg = "推荐热门";
+        }else{
+            var statusMsg = "下架热门";
+        }
+        $('#hot_model').modal('show');
+        $("#hot_model_msg").html(' 确定要 '+statusMsg+' 这条话题吗?');
+    })
+    function hot_model_on(){
+        var id =  $("#label").val();
+        var status =  $("#status").val();
+        var token = $("#token").val();
+        var master_url = "/admin/exitTopicHot";
+        var field = 'topic_hot';
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/exitTopicHot",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {id: id,value:status,token: token,master_url:master_url,field:field},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+    //添加标签
+    $('#add_topic').on('click',function(){
+        $('#addModal').modal('show');
+    });
+    function add_labels(){
+        var add_info = $("#add_form").serializeArray();
+        if (add_info[0].value == '') {
+            toastr.warning('话题名称不能为空');
+            return false;
+        }
+        if(add_info[1].value == ""){
+            toastr.warning('请选择标签');
+            return false;
+        }
+        // console.log(add_info);return;
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/addTopic",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: add_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+    //修改标签
+    $(".exit_label").on('click',function(){
+        var user_role_menu = $("#user_role_menu").val();
+        var user_role_menus = user_role_menu.split(",");
+        var index = $.inArray("/admin/exitTopicTag", user_role_menus);   //结果：index=1
+        if (index <= 0) {
+            return false;
+        }else{
+            var oldType = $(this).attr('value'); //修改之前的值
+            var oldTpyeName = $(this).text();
+            $(this).html('');
+            $(this).prepend("<select class='form-control' id='select_ids'>"
+                + "<option class='text-center'>请选择标签</option>"
+                +"</select>");
+            $(this).unbind('click'); //绑定click事件
+            var labelType = $("#labelType").val().split(',');
+            var labelList = new Array(labelType.length);
+            for(var i=0;i<labelType.length;i++){
+                var temp = new Array(2);
+                temp = labelType[i].split('-');
+                labelList[i] = new Array(temp.length);
+                for(var j=0;j<temp.length;j++){
+                    labelList[i][j] = temp[j];
+                }
+            }
+            $(labelList).each(function (i, n){
+                $("#select_ids").prepend("<option class='text-center' value="+n[0]+" >" + n[1] + "</option>");
+            });
+            var child = $(this).children('select');
+            var that = $(this);
+            var newType = '';
+            var newTypeName = '';
+            $("#select_ids").change(function(){
+                newType = $("#select_ids option:selected").val();//修改之后的值
+                newTypeName = $("#select_ids option:selected").text();
+            });
+            child.blur(function() {
+                var id = $(this).parents("tr").find("#id").text(); //修改的工会ID
+                var field = 'pid'; //修改的字段
+                var master_url = '/admin/exitTopicTag';
+                var token = $('#token').val();
+                if (newType == oldType) {
+                    that.text(oldTpyeName);
+                    history.go(0);
+                    return;
+                } else if(newType == ""){
+                    that.text(oldTpyeName);
+                    history.go(0);
+                    return;
+                } else {
+                    that.text(newTypeName);
+                }
+                // console.log(oldType,oldTpyeName,newType,newTypeName);return;
+                $.ajax({
+                    async: false,    //表示请求是否异步处理
+                    type: "post",    //请求类型
+                    url: "/admin/exitTopicTag",//请求的 URL地址
+                    dataType: "json",//返回的数据类型
+                    data: {value:newType,field:field,id:id,master_url: master_url, token: token},
+                    success: function (rs) {
+                        if (rs.code !== 200) {
+                            toastr.warning(rs.msg);
+                            return false;
+                        }
+                        toastr.success(rs.msg);
+                        setTimeout(location, 500);   //延迟5秒刷新页面
+                    },
+                    error: function (rs) {
+                        toastr.warning('修改失败');
+                        setTimeout(location, 500);   //延迟5秒刷新页面
+                    }
+                });
+            });
+        }
+        that.remove('select');
+        function location() {
+            window.location.href = window.location.href;
+        }
+    });
+    //修改排序
+    $('.topic_order').on('click',function(){
+        var user_role_menu = $("#user_role_menu").val();
+        var user_role_menus = user_role_menu.split(",");
+        var index = $.inArray("/admin/exitTopicNum", user_role_menus);   //结果：index=1
+        if (index <= 0) {
+            return false;
+        }else{
+            var oldOrder = $(this).text(); //修改之前的值
+            $(this).text('');
+            $(this).append('<input type="number">'); //增加input输入框
+            $(this).children('input').focus(); //获取焦点
+            $(this).unbind('clcik'); //绑定click事件
+            var child = $(this).children('input');
+            var that = $(this);
+            child.blur(function(){ //鼠标失焦事件
+                that.text(oldOrder);
+                return;
+            });
+            child.bind('keyup',function(e){ //回车确认事件
+                var key = e.which;
+                if(key == 13){
+                    var id = $(this).parents("tr").find("#id").text(); //修改的工会ID
+                    var newOrder = child.val(); //修改后的值
+                    $("#topicOrder").val(id);
+                    $("#topicOrder").text(newOrder);
+                    $('#exit_topic_order').modal('show');
+                    $("#exit_topic_order_msg").html(' 确定把热门序号修改为 '+ newOrder );
+                }else{
+                    return;
+                }
+            });
+        }
+    });
+    function exit_topic_order_on() {
+        var field = 'topic_order'; //修改的字段
+        var master_url = '/admin/exitTopicNum';
+        var token = $('#token').val();
+        var id = $("#topicOrder").val();
+        var newOrder = $("#topicOrder").text();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/exitTopicNum",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {value:newOrder,field:field,id:id,master_url: master_url, token: token},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 500);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('修改失败');
+                setTimeout(location, 500);   //延迟5秒刷新页面
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+</script>
+</body>
+</html>

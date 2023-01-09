@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/time/daterangepicker.css">
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="example">
+                            <div class="btn-group hidden-xs form-inline">
+                                <div class="form-group">
+                                    <input type="text" value="{$demo}" id="demo" readonly class="form_datetime form-control input-outline" style="width:190px;">
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" value="{$uid}" id="uid" placeholder="用户ID"  class="form_datetime form-control input-outline">
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" value="{$asset_id}" id="asset_id" placeholder="礼物ID"  class="form_datetime form-control input-outline">
+                                </div>
+                                <select class="form-control" id="type">
+                                    <option value="" {if $type == ''} echo selected="selected" {/if}>全部</option>
+                                    <option value="小转盘" {if $type == '小转盘'} echo selected="selected" {/if}>小转盘</option>
+                                    <option value="大转盘" {if $type == '大转盘'} echo selected="selected" {/if}>大转盘</option>
+                                </select>
+                                &#12288
+
+<!--                                <button type="button" class="btn btn-outline btn-success" style="float:right;" id="daochu">-->
+<!--                                    <i aria-hidden="true"></i>导出-->
+<!--                                </button>-->
+                                &#12288
+                                <button type="button" class="btn btn-outline btn-success" style="float:right;" id="search">
+                                    <i aria-hidden="true"></i>搜索
+                                </button>
+                            </div>
+                            <div class="example">
+                                <h2>礼物数量：{$change_amount}</h2>
+                                <table class="table table-hover table-responsive" id="data_table" style="word-wrap: break-word; word-break: break-all;">
+                                    <thead>
+                                    <tr>
+                                        <th class="text-center">日期</th>
+                                        <th class="text-center">用户id</th>
+                                        <th class="text-center">礼物</th>
+                                        <th class="text-center">礼物</th>
+                                        <th class="text-center">礼物</th>
+                                        <th class="text-center">个数</th>
+                                        <th class="text-center">价值</th>
+                                        <th class="text-center">总价值</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {if condition="!empty($data)"}
+                                    {volist name="data" id="list"}
+                                    <tr>
+                                        <td class="text-center created_time" >{$list.created_time}</td>
+                                        <td class="text-center uid" >{$list.uid}</td>
+                                        <td class="text-center name" >{$list.name}</td>
+                                        <td class="text-center asset_id" >{$list.asset_id}</td>
+                                        <td class="text-center " ><img src="{$list.image}" alt="" width="50"></td>
+                                        <td class="text-center change_amount" >{$list.change_amount}</td>
+                                        <td class="text-center price" >{$list.price}</td>
+                                        <td class="text-center ext_4" >{$list.ext_4}</td>
+                                    </tr>
+                                    {/volist}
+                                    {else}
+                                    <tr class="no-records-found">
+                                        <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                    </tr>
+                                    {/if}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {if condition = "$page.total_page >1"}
+                        <div id="Paginator" style="text-align: center">
+                            <ul id="pageLimit"></ul>
+                        </div>
+                        {/if}
+                        <!-- End Example Events -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Panel Other -->
+    </div>
+</div>
+<input type="hidden" value="{$token}" name="token" id="token">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<script src="/admin/js/fileinput/fileinput.js" type="text/javascript"></script>
+<script src="/admin/js/fileinput/zh.js" type="text/javascript"></script>
+<script src="/admin/js/plugins/toastr/toastr.min.js"></script>
+<script src="/time/moment.min.js"></script>
+<script src="/time/daterangepicker.min.js"></script>
+<script src="/admin/js/date-select.js"></script>
+<script>
+    $('#search').on('click',function () {
+        window.location.href = "/admin/TurntableDetails?token=" + $('#token').val() + '&master_url=/admin/TurntableDetails&demo='+$('#demo').val()+'&uid='+$('#uid').val()+'&type='+$('#type').val()+'&asset_id='+$('#asset_id').val();
+    })
+
+    $('#daochu').on('click',function () {
+        window.location.href = "/admin/TurntableDetails?token=" + $('#token').val() + '&master_url=/admin/TurntableDetails&demo='+$('#demo').val()+'&uid='+$('#uid').val()+'&type='+$('#type').val()+'&asset_id='+$('#asset_id').val()+'&daochu='+1;
+    })
+
+    //分页
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/TurntableDetails&token='+ $("#token").val()+'&demo='+$('#demo').val()+'&uid='+$('#uid').val()+'&type='+$('#type').val()+'&asset_id='+$('#asset_id').val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+    });
+</script>
+</body>
+</html>
+
+

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+    <style>
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+    </style>
+
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="btn-group hidden-xs form-inline" style="display:contents">
+                            支付状态:<select class="form-control" id="isstatus">
+                                <!-- <option value="">是否是公会&#12288&#12288</option> -->
+                                <option value="1" {if $isstatus == 1} echo selected="selected" {/if}>是</option>
+                                <option value="0" {if $isstatus == 0} echo selected="selected" {/if}>否</option>
+                            </select>
+                            &#12288
+                            <select class="form-control" id="qdid">
+                                <!--<option value="">支付渠道&#12288&#12288</option>
+                                <option value="1" {if $qudao == 1} echo selected="selected" {/if}>支付宝</option>
+                                <option value="2" {if $qudao == 2} echo selected="selected" {/if}>微信</option>
+                                <option value="3" {if $qudao == 3} echo selected="selected" {/if}>快付通</option>
+                                <option value="4" {if $qudao == 4} echo selected="selected" {/if}>苹果</option>
+                                <option value="5" {if $qudao == 5} echo selected="selected" {/if}>支付宝生活号</option>
+                                <option value="6" {if $qudao == 6} echo selected="selected" {/if}>公众号银联</option>-->
+                                <option value="">支付渠道&#12288&#12288</option>
+                                {if condition="!empty($pay_type_list)"}
+                                {volist name="pay_type_list" id="lists"}
+                                <option value="{$lists.id}" {if $lists.id== $qudao} echo selected="selected" {/if}>{$lists.content}</option>
+                                {/volist}
+                                {/if}
+                            </select>
+                            &#12288
+                            <div class="form-group">
+                                <input type="text" value="{$start_time}" id="datetimeStart"  readonly class="form_datetime form-control input-outline"> --
+                                <input type="text" value="{$end_time}" id="datetimeEnd" readonly class="form_datetime form-control input-outline">(当日)
+                                <input type="hidden" id="endtime" value="{$end_time}"/>
+                            </div>
+                            &#12288
+                            用户ID:<input class="form-control input-outline" type="text"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                   placeholder="请输入用户Id" value="{$chargeuid}" id="chargeuid">
+                            &#12288
+                            <div style="margin-top: 16px"></div>
+                            订单ID:<input style="width: 200px" class="form-control input-outline" type="text" placeholder="请输入订单号或三方单号" value="{$dingdanhao}" id="dingdanhao">
+                            &#12288
+                            订单时间排序:<select class="form-control" id="paixu">
+                                <!-- <option value="">是否是公会&#12288&#12288</option> -->
+                                <option value="1" {if $paixu == 'desc'} echo selected="selected" {/if}>倒叙</option>
+                                <option value="0" {if $paixu == 'asc'} echo selected="selected" {/if}>正序</option>
+                            </select>
+                            &#12288
+                            订单类型:<select class="form-control" id="orderType">
+                                <option value="1" {if $orderType == '1'} echo selected="selected" {/if}>M豆订单</option>
+                                <option value="0" {if $orderType == '0'} echo selected="selected" {/if}>vip订单</option>
+                            </select>
+                            &#12288
+                            <button type="button" class="btn btn-outline btn-success" style="float:right;" id="daochu">
+                                <i aria-hidden="true"></i>导出
+                            </button>
+                            &#12288
+                            <button type="button" class="btn btn-outline btn-success" style="float:right;" id="search">
+                                <i aria-hidden="true"></i>搜索
+                            </button>
+                            <div>
+                                <h3>
+                                    <b style="color:green">M豆收入：{if $rmb!=0&&$rmb!=''}{$rmb}{else}0{/if}</b>
+                                    <b style="color:red">&#12288vip收入：{if $vipRmb!=0&&$vipRmb!=''}{$vipRmb}{else}0{/if}</b>
+                                    <b style="color:blue">&#12288总收入：{if $rmb!=0&&$rmb!=''}{$rmb + $vipRmb}{else}0{/if}</b>
+                                </h3>
+                            </div>
+                        </div>
+                        <div class="example">
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">用户id</th>
+                                    <th class="text-center">用户名</th>
+                                    <th class="text-center">金额</th>
+                                    <th class="text-center">订单时间</th>
+                                    <th class="text-center" style="width:200px;">订单id</th>
+                                    <th class="text-center" style="width:250px;">三方id</th>
+                                    <th class="text-center">支付方式</th>
+                                    <th class="text-center">支付状态</th>
+                                    <!-- <th class="text-center" width="20%">操作</th> -->
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($list)"}
+                                {volist name="list" id="lists"}
+                                <tr>
+                                    <td class="text-center">{$lists.uid}</td>
+                                    <td class="text-center">{$lists.nickname}</td>
+                                    <td class="text-center">{$lists.rmb}</td>
+                                    <td class="text-center">{$lists.addtime}</td>
+                                    <td class="text-center">{$lists.orderno}</td>
+                                    <td class="text-center">{$lists.dealid}</td>
+                                    <td class="text-center">{$lists.content}</td>
+                                    <td class="text-center">{$lists.statusname}</td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="7" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page > 1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+
+
+{include file="../view/admin/common/userItem.html"}
+<input type="hidden" value="{$token}" id="token">
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="" id="to_id">
+<input type="hidden" value="{$user_role_menu_input}" id="user_role_menu">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<script>
+    
+
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/rechargelist&token=' + $("#token").val() + '&start_time='+$("#datetimeStart").val()+'&end_time='+$("#datetimeEnd").val()+'&isstatus='+$("#isstatus").val()+'&qdid='+$("#qdid").val()+'&chargeuid='+$("#chargeuid").val()+'&dingdanhao='+$("#dingdanhao").val()+'&paixu='+$("#paixu").val()+'&orderType='+$('#orderType').val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+        /*   onPageClicked:function (event, originalEvent, type, page) {
+               location.href = "?page="+page;
+           }*/
+    });
+
+    $('#search').click(function () {
+        var start_time = $('#datetimeStart').val();
+        var end_time = $('#datetimeEnd').val();
+        if(start_time > end_time){
+            toastr.warning('开始时间不能大于结束时间');
+            return false;
+        }
+        window.location.href = "/admin/rechargelist?token=" + $("#token").val() + '&start_time='+$("#datetimeStart").val()+'&end_time='+$("#datetimeEnd").val()+'&isstatus='+$("#isstatus").val()+'&qdid='+$("#qdid").val()+'&chargeuid='+$("#chargeuid").val()+'&master_url=/admin/rechargelist&page=1'+'&paixu='+$("#paixu").val()+'&dingdanhao='+$("#dingdanhao").val()+'&orderType='+$('#orderType').val();
+    });
+
+    $('#daochu').click(function () {
+        var start_time = $('#datetimeStart').val();
+        var end_time = $('#datetimeEnd').val();
+        if(start_time > end_time){
+            toastr.warning('开始时间不能大于结束时间');
+            return false;
+        }
+        window.location.href = "/admin/rechargelist?token=" + $("#token").val() + '&start_time='+$("#datetimeStart").val()+'&end_time='+$("#datetimeEnd").val()+'&isstatus='+$("#isstatus").val()+'&qdid='+$("#qdid").val()+'&chargeuid='+$("#chargeuid").val()+'&daochu=1&master_url=/admin/rechargelist&page=1'+'&paixu='+$("#paixu").val()+'&dingdanhao='+$("#dingdanhao").val()+'&orderType='+$('#orderType').val();;
+    });
+
+
+
+
+    $("#datetimeStart").datetimepicker({
+        weekStart: 1,
+        todayBtn: true,
+        todayHighlight: 1,
+        startView: 2,
+        forceParse: 0,
+        showMeridian: 1,
+        format: 'yyyy-mm-dd',
+        minView: '3',
+        language: 'zh-CN',
+        autoclose: true,
+        startDate: '-10y,-10m,-10d',
+    }).on("click", function () {
+        $("#datetimeStart").datetimepicker("setStartDate")
+    });
+    $("#datetimeEnd").datetimepicker({
+        weekStart: 1,
+        todayBtn: true,
+        todayHighlight: 1,
+        startView: 2,
+        forceParse: 0,
+        showMeridian: 1,
+        format: 'yyyy-mm-dd ',
+        minView: '3',
+        language: 'zh-CN',
+        autoclose: true,
+        startDate: '-10y,-10m,-10d'
+    }).on("click", function () {
+        $("#datetimeEnd").datetimepicker("setEndDate")
+    });
+
+
+
+
+
+
+
+
+
+  
+</script>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/admin/layui/css/layui.css" media="all">
+    <script src="/admin/js/jquery.min.js"></script>
+    <style>
+        .layui-table-cell {
+            height: auto;
+            overflow: visible;
+            text-overflow: inherit;
+        }
+
+    </style>
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+</head>
+<body>
+
+<fieldset class="layui-elem-field layui-field-title"> <legend><b>举报详情</b></legend></fieldset>
+<form class="layui-form layui-form-pane" style="padding:10px;">
+    <div class="layui-form-item"> <label class="layui-form-label">用户名ID</label>
+        <div class="layui-input-block">
+            <input type="text"  value="{$detail.from_uid}" class="layui-input" disabled>
+        </div>
+    </div>
+
+    <div class="layui-form-item"> <label class="layui-form-label">用户昵称</label>
+        <div class="layui-input-block">
+            <input type="text"   value="{$detail.from_nickname}" class="layui-input" disabled>
+        </div>
+    </div>
+
+    <div class="layui-form-item"> <label class="layui-form-label">被举报ID</label>
+        <div class="layui-input-block">
+            <input type="text"   value="{$detail.to_uid}" class="layui-input" disabled>
+        </div>
+    </div>
+
+    <div class="layui-form-item"> <label class="layui-form-label">被举报昵称</label>
+        <div class="layui-input-block">
+            <input type="text"   value="{$detail.to_nickname}" class="layui-input" disabled>
+        </div>
+    </div>
+
+    <div class="layui-form-item"> <label class="layui-form-label">举报类型</label>
+        <div class="layui-input-block">
+            <input type="text"   value="{$detail.contents}" class="layui-input" disabled>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-form-text"> <label class="layui-form-label">违规说明</label>
+        <div class="layui-input-block"> <textarea disabled placeholder="请输入内容" class="layui-textarea">{$detail.description}</textarea>
+        </div>
+    </div>
+    {if condition="!empty($imagesList)"}
+    <div class="layui-form-item layui-form-text"> <label class="layui-form-label">图片</label>
+        {volist name="imagesList" id="imgurl"}
+        <span><img style="width:100px;height:100px" src="{$imgurl}" onclick="showpreview(this)"></span>
+        {/volist}
+    </div>
+    {/if}
+
+    {if condition="!empty($detail.videos)"}
+    <div class="layui-form-item layui-form-text"> <label class="layui-form-label">视频</label>
+        <video width="320" height="240" controls> <source src="{$detail.videos}" type="video/mp4"></video>
+    </div>
+    {/if}
+
+    <div class="layui-form-item"> <label class="layui-form-label">提交时间</label>
+        <div class="layui-input-block">
+            <input type="text"   value="{$detail.create_time}" class="layui-input" disabled>
+        </div>
+    </div>
+
+</form>
+
+
+
+
+<div style="padding:5px;">
+    <blockquote class="layui-elem-quote layui-text" style="padding:0;margin:0;">
+        <ul>
+            <i class="layui-icon layui-icon-table" style="font-size: 18px; color: #1E9FFF;">跟进记录</i>
+        </ul>
+    </blockquote>
+    <table id="datatable" lay-filter="test"></table>
+</div>
+
+<script src="/admin/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+<script>
+    layui.use(['table', 'form', 'layer', 'laydate', 'jquery'], function () {
+        var $ = layui.jquery
+            , table = layui.table;
+
+        table.render({
+            elem: '#datatable'
+            , totalRow: true
+            , even:true
+            , url: '/admin/complaintsUserDetail?master_url=/admin/complaintsUserDetail&token={$token}&isRequest=1&id={$id}' //数据接口
+            //, page: true //开启分页
+            , cols: [[ //表头
+                {field: 'id', title: 'ID', width: '10%'}
+                , {field: 'admin_id', title: '处理人ID', width: '10%'}
+                , {field: 'admin_username', title: '处理人名称', width: '20%'}
+                , {field: 'content', title: '跟进说明', width: '40%'}
+                , {field: 'create_time', title: '处理时间', width: '20%'}
+            ]]
+            , id: 'tablereload'
+            , limit: Number.MAX_VALUE // 数据表格默认全部显示
+            , where: {}
+            , done: function (res, curr, count) {
+            }
+        });
+
+    });
+
+
+    function showpreview(this_x){
+        layer.open({
+            type: 1,
+            title:'图片预览',
+            offset:  'auto',
+            area: ['800px', '500px'],
+            content: "<img src='"+this_x.src+"'>" //这里content是一个普通的String
+        });
+    }
+
+
+</script>
+
+
+<script type="text/html" id="format_created_time">
+    <div>{{layui.util.toDateString(d.created_time*1000,'yyyy-MM-dd HH:mm:ss')}}</div>
+</script>
+
+
+<script type="text/html" id="format_status">
+    {{#  if(d.status == 0 ){ }}
+    <span>待处理</span>
+    {{#  } else if(d.status == 1) { }}
+    <span>跟进中</span>
+    {{#  } else if(d.status == 2) { }}
+    <span>完成</span>
+    {{#  } else{ }}
+    <span>未知</span>
+    {{#  } }}
+</script>
+
+
+<script type="text/html" id="actionbutton">
+
+    <button type="button" class="layui-btn layui-btn-sm   layui-btn-normal J_menuItem" title="查看举报详情"
+            href="/admin/checkimMsgDetail?master_url=/admin/checkimMsgDetail&token={$token}">查看详情
+    </button>
+
+    {{#  if(d.status == 0 ||  d.status == 1){ }}
+    <button type="button" class="layui-btn layui-btn-sm  layui-btn-warm" lay-event="editfollow">举报跟进
+    </button>
+
+    <button type="button" class="layui-btn layui-btn-sm layui-btn-danger" lay-event="setcomplete">举报完成
+    </button>
+    {{#  } }}
+
+
+
+
+</script>
+
+
+
+<div id="add-dialog" style="display: none;">
+    <form class="layui-form"  action="" id="sendform">
+        <input type="hidden" id="cid" name="cid">
+        <div class="layui-inline" style="margin: 10px 0px">
+            <div class="layui-input-block">
+                <textarea placeholder="请输入跟进内容" class="layui-textarea" id="contents" name="contents" style="width:300px;" ></textarea>
+            </div>
+        </div>
+        <div class="layui-inline" style="margin: 10px 0px">
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit="" lay-filter="sendbuttion">立即提交</button>
+                <button type="reset" class="layui-btn layui-btn-primary" id="closeBtn">重置</button>
+            </div>
+        </div>
+        </div>
+
+
+    </form>
+
+</div>
+
+
+
+<script>
+
+    layui.use(['jquery'], function () {
+        $('.J_menuItem').on('click', function () {
+            parent.childMenu(this)
+        });
+    })
+
+</script>
+
+
+
+
+</body>
+</html>

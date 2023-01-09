@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link rel="stylesheet" href="/admin/layui/css/layui.css">
+    <script type="text/javascript" src="/admin/layui/layui.js"></script>
+    <script src="/admin/js/jquery.min.js"></script>
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="example">
+
+                            <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                {if condition="in_array('/admin/roomRecommendAdd',$user_role_menu)"}
+                                <button type="button" class="btn btn-outline btn-success" id="roomRecommend">
+                                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>指定推荐房间
+                                </button>
+                                {/if}
+                            </div>
+
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">指定房间Id</th>
+                                    <th class="text-center">开始时间</th>
+                                    <th class="text-center">结束时间</th>
+                                    <th class="text-center">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($data)"}
+                                {volist name="data" id="list"}
+                                <tr>
+                                    <td class="text-center" id="id">{$list.room_id}</td>
+                                    <td class="text-center">{$list.begin_time}</td>
+                                    <td class="text-center">{$list.end_time}</td>
+                                    <td class="text-center">
+                                        {if condition="in_array('/admin/roomRecommendDel',$user_role_menu)"}
+                                        <button class="btn btn-danger del_info">删除</button>
+                                        {/if}
+                                    </td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="7" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+
+<!--指定用户-->
+<div class="modal fade" id="roomRecommendShow" tabindex="-1" role="dialog" aria-labelledby="addYsUser">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="addGuildModalLabel">指定推荐房间ID</h4>
+            </div>
+            <div class="modal-body">
+                <form id='add_form' method="post">
+                    <div class="form-group">
+                        <label class="control-label">指定房间Id:</label>
+                        <input type="text" class="form-control" name='room_id' required="required"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                    </div>
+                    <label class="control-label">设置有效期:</label>
+
+                    <div class="layui-inline">
+                        <div class="layui-input-inline">
+                            <input type="text" name="date" id="begin_time" lay-verify="date" placeholder="日期开始" autocomplete="off"
+                                   class="layui-input" value="">
+                        </div>
+                        <div class="layui-input-inline">
+                            <input type="text" name="date" id="end_time" lay-verify="date" placeholder="日期结束" autocomplete="off"
+                                   class="layui-input" value="">
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="token" value="{$token}" id="token">
+                    <input type="hidden" name="master_url" value="/admin/roomRecommendAdd">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="add_info()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--取消指定用户-->
+<div class="modal fade" id="del_info">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>取消操作</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <i class="fa fa-trash-o" id="del_msg"></i>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger" data-btn-danger="modal" onclick="del_info()">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+{include file="../view/admin/common/userItem.html"}
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="" id="to_id">
+<input type="hidden" value="{$user_role_menu_input}" id="user_role_menu">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<style>
+</style>
+<script>
+    $('#roomRecommend').click(function () {
+        $('#roomRecommendShow').modal("show")
+    });
+
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/getJinUserToGiftLists&token=' + $("#token").val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+    });
+
+    $('.del_info').click(function () {
+        var to_id = $(this).parents("tr").find("#id").text();
+        $("#to_id").val(to_id);
+        $('#del_info').modal('show')
+        $("#del_msg").html(' 您确定要取消指定房间? ')
+    })
+
+    function add_info() {
+        var add_info = $("#add_form").serializeArray();
+        if (add_info[0]['value'] == '') {
+            toastr.warning('指定房间Id不可为空');
+            return false;
+        }
+
+        if(add_info[1]['value'] == '' || add_info[2]['value'] == ''){
+            toastr.warning('时间有效期不可为空');
+            return false;
+        }
+
+        add_info.push({"name":"begin_time","value":add_info[1]['value']}) ;
+        add_info.push({"name":"end_time","value":add_info[2]['value']}) ;
+
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/roomRecommendAdd",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: add_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+    }
+
+    function del_info() {
+        var room_id = $("#to_id").val();
+        var master_url = '/admin/roomRecommendDel'
+        var token = $('#token').val()
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/roomRecommendDel",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {room_id: room_id, master_url: master_url, token: token},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location(), 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    }
+</script>
+
+<script>
+
+
+    layui.use(['jquery','form','layer','element','laydate'], function() {
+        var $ = layui.jquery
+            , laydate = layui.laydate
+
+        //日期
+        laydate.render({
+            elem: '#begin_time'
+            ,type:'datetime'
+            ,format:'yyyy-MM-dd HH:mm:ss'
+        });
+
+        laydate.render({
+            elem: '#end_time'
+            ,type:'datetime'
+            ,format:'yyyy-MM-dd HH:mm:ss'
+        });
+    });
+
+
+
+    $(function(){
+
+        $('.J_menuItem').on('click', function () {
+            parent.childMenu(this)
+        });
+
+    })
+
+
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mua语音 - 运营后台</title>
+<!--    全局css-->
+{include file="../view/admin/common/cssHeader.html"}
+<link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+<link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        {if condition="in_array('/admin/selectUserDetail',$user_role_menu)"}
+                        <div class="pull-left search form-inline">
+                            <div class="form-group">
+                                <input type="text" id="datetimeStart" readonly class="form_datetime"> --
+                                <input type="text" id="datetimeEnd" readonly class="form_datetime">
+                            </div>
+                            <input class="form-control input-outline" type="text"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                   placeholder="请输入Id" value="{$search_id}"
+                                   id="search_id">
+                            <button type="button" class=" btn btn-primary" id="search">搜索</button>
+                        </div>
+                        {/if}
+                        <div class="example">
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">凭证ID</th>
+                                    <th class="text-center">日期</th>
+                                    <th class="text-center">用户ID</th>
+                                    <th class="text-center">上期M豆(M)</th>
+                                    <th class="text-center">上期钻石(D)</th>
+                                    <th class="text-center">苹果支付总数(R)</th>
+                                    <th class="text-center">微信支付总数(R)</th>
+                                    <th class="text-center">支付宝总数(R)</th>
+                                    <th class="text-center">钻石转M豆(M)</th>
+                                    <th class="text-center">礼物收入(D)</th>
+                                    <th class="text-center">买银箱子钥匙</th>
+                                    <th class="text-center">买金箱子钥匙</th>
+                                    <th class="text-center">用银箱子钥匙</th>
+                                    <th class="text-center">用金箱子钥匙</th>
+                                    <th class="text-center">开箱子礼物收益</th>
+                                    <th class="text-center">背包礼物发起猜拳</th>
+                                    <th class="text-center">充值礼物发起猜拳</th>
+                                    <th class="text-center">背包礼物应战猜拳</th>
+                                    <th class="text-center">充值礼物应战猜拳</th>
+                                    <th class="text-center">猜拳礼物收益</th>
+                                    <th class="text-center">背包礼物打赏</th>
+                                    <th class="text-center">购买礼物打赏</th>
+                                    <th class="text-center">本期余额</th>
+                                    <th class="text-center">本期钻石</th>
+                                    <th class="text-center">公司收入</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($data)"}
+                                {volist name="data" id="lists"}
+                                <tr>
+                                    <td class="text-center" id="id">{$lists.id}</td>
+                                    <td class="text-center">{$lists.dates}</td>
+                                    <td class="text-center" id="user_id">{$lists.user_id}</td>
+                                    <td class="text-center ">{$lists.period_bean}</td>
+                                    <td class="text-center">{$lists.period_diamond}</td>
+                                    <td class="text-center">
+                                        {$lists.ios_count}
+                                        <br><button class=" btn btn-primary ios_detail">明细</button>
+                                    </td>
+                                    <td class="text-center">
+                                        {$lists.wechat_count}
+                                        <br><button class=" btn btn-primary wechat_detail">明细</button>
+                                    </td>
+                                    <td class="text-center">
+                                        {$lists.alipay_count}
+                                        <br><button class=" btn btn-primary ali_detail">明细</button>
+                                    </td>
+                                    <td class="text-center">
+                                        {$lists.convert_count}
+                                        <br><button class=" btn btn-primary modes_detail">明细</button>
+                                    </td>
+                                    <td class="text-center">
+                                        {$lists.gift_income}
+                                        <br><button class=" btn btn-primary getGift_detail">明细</button>
+                                    </td>
+
+                                    <td class="text-center">
+                                        {$lists.yin_key}
+                                        <br><button class=" btn btn-primary yin_detail">明细</button>
+                                    </td>
+                                    <td class="text-center">
+                                        {$lists.jin_key}
+                                        <br><button class=" btn btn-primary jin_detail">明细</button>
+                                    </td>
+                                    <td class="text-center">
+                                        {$lists.use_yin}
+                                        <br><button class=" btn btn-primary useYin_detail">明细</button>
+                                    </td>
+                                    <td class="text-center">
+                                        {$lists.use_jin}
+                                        <br><button class=" btn btn-primary useJin_detail">明细</button>
+                                    </td>
+
+                                    <td class="text-center">
+                                        {$lists.box_gift_count}
+                                        <br><button class=" btn btn-primary box_detail">明细</button>
+                                    </td>
+                                    <td class="text-center">
+                                        {$lists.finger_start_bag}
+                                        <br><button class=" btn btn-primary bagS_detail">明细</button>
+                                    </td>
+                                    <td class="text-center">
+                                        {$lists.finger_start_pay}
+                                        <br><button class=" btn btn-primary payS_detail">明细</button>
+                                    </td>
+                                    <td class="text-center">
+                                        {$lists.finger_fight_bag}
+                                        <br><button class=" btn btn-primary bagF_detail">明细</button>
+                                    </td>
+                                    <td class="text-center">
+                                        {$lists.finger_fight_pay}
+                                        <br><button class=" btn btn-primary payF_detail">明细</button>
+                                    </td>
+                                    <td class="text-center">
+                                        {$lists.finger_settlement}
+                                        <br><button class=" btn btn-primary finger_detail">明细</button>
+                                    </td>
+                                    <td class="text-center">
+                                        {$lists.knapsack_gift_count}
+                                        <br><button class=" btn btn-primary bagGift_detail">明细</button>
+                                    </td>
+                                    <td class="text-center">
+                                        {$lists.buy_gift_count}
+                                        <br><button class=" btn btn-primary payGift_detail">明细</button>
+                                    </td>
+                                    <td class="text-center">{$lists.residue_bean}</td>
+                                    <td class="text-center">{$lists.residue_diamond}</td>
+                                    <td class="text-center">{$lists.corporation_income}</td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page >1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+<!--充值明细-->
+<div class="modal fade" id="userPay">
+    <div class="modal-dialog" style="width:80%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>明细</h3>
+            </div>
+            <div class="pull-right search form-inline" style="padding-right: 1%">
+            </div>
+            <table class="table table-hover table-responsive">
+                <thead>
+                <tr>
+                    <th class="text-center">用户ID</th>
+                    <th class="text-center">充值金额</th>
+                    <th class="text-center">等价M豆</th>
+                    <th class="text-center">日期</th>
+                </tr>
+                </thead>
+                <tbody id="pay_show">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!--钻石转M豆-->
+<div class="modal fade" id="userModes">
+    <div class="modal-dialog" style="width:80%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>钻石转M豆明细</h3>
+            </div>
+            <div class="pull-right search form-inline" style="padding-right: 1%">
+            </div>
+            <table class="table table-hover table-responsive">
+                <thead>
+                <tr>
+                    <th class="text-center">用户ID</th>
+                    <th class="text-center">转换M豆</th>
+                    <th class="text-center">日期</th>
+                </tr>
+                </thead>
+                <tbody id="modes_show">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!--礼物收入-->
+<div class="modal fade" id="userGetGift">
+    <div class="modal-dialog" style="width:80%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>钻石转M豆明细</h3>
+            </div>
+            <div class="pull-right search form-inline" style="padding-right: 1%">
+            </div>
+            <table class="table table-hover table-responsive">
+                <thead>
+                <tr>
+                    <th class="text-center">收取礼物ID</th>
+                    <th class="text-center">赠送礼物ID</th>
+                    <th class="text-center">礼物价格</th>
+                    <th class="text-center">等价转换机钻石</th>
+                    <th class="text-center">等价转换机M豆</th>
+                    <th class="text-center">等价转换RMB</th>
+                    <th class="text-center">日期</th>
+                </tr>
+                </thead>
+                <tbody id="getGift_show">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!--礼物打赏-->
+<div class="modal fade" id="userBagGift">
+    <div class="modal-dialog" style="width:80%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>钻石转M豆明细</h3>
+            </div>
+            <div class="pull-right search form-inline" style="padding-right: 1%">
+            </div>
+            <table class="table table-hover table-responsive">
+                <thead>
+                <tr>
+                    <th class="text-center">赠送礼物ID</th>
+                    <th class="text-center">收取礼物ID</th>
+                    <th class="text-center">赠送数量</th>
+                    <th class="text-center">礼物价格</th>
+                    <th class="text-center">日期</th>
+                </tr>
+                </thead>
+                <tbody id="bagGift_show">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!--购买钥匙-->
+<div class="modal fade" id="buyKey">
+    <div class="modal-dialog" style="width:80%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>购买钥匙</h3>
+            </div>
+            <div class="pull-right search form-inline" style="padding-right: 1%">
+            </div>
+            <table class="table table-hover table-responsive">
+                <thead>
+                <tr>
+                    <th class="text-center">用户ID</th>
+                    <th class="text-center">购买数量</th>
+                    <th class="text-center">购买价格</th>
+                    <th class="text-center">日期</th>
+                </tr>
+                </thead>
+                <tbody id="buyKey_show">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!--使用钥匙-->
+<div class="modal fade" id="useKey">
+    <div class="modal-dialog" style="width:80%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>使用钥匙</h3>
+            </div>
+            <div class="pull-right search form-inline" style="padding-right: 1%">
+            </div>
+            <table class="table table-hover table-responsive">
+                <thead>
+                <tr>
+                    <th class="text-center">用户ID</th>
+                    <th class="text-center">使用数量</th>
+                    <th class="text-center">日期</th>
+                </tr>
+                </thead>
+                <tbody id="useKey_show">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!--箱子礼物-->
+<div class="modal fade" id="boxGift">
+    <div class="modal-dialog" style="width:80%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>箱子礼物</h3>
+            </div>
+            <div class="pull-right search form-inline" style="padding-right: 1%">
+            </div>
+            <table class="table table-hover table-responsive">
+                <thead>
+                <tr>
+                    <th class="text-center">用户ID</th>
+                    <th class="text-center">礼物ID</th>
+                    <th class="text-center">数量</th>
+                    <th class="text-center">价格</th>
+                    <th class="text-center">总价</th>
+                    <th class="text-center">日期</th>
+                </tr>
+                </thead>
+                <tbody id="boxGift_show">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!--猜拳-->
+<div class="modal fade" id="finger">
+    <div class="modal-dialog" style="width:80%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>箱子礼物</h3>
+            </div>
+            <div class="pull-right search form-inline" style="padding-right: 1%">
+            </div>
+            <table class="table table-hover table-responsive">
+                <thead>
+                <tr>
+                    <th class="text-center">用户ID</th>
+                    <th class="text-center">礼物ID</th>
+                    <th class="text-center">价格</th>
+                    <th class="text-center">日期</th>
+                </tr>
+                </thead>
+                <tbody id="finger_show">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!--猜拳礼物-->
+<div class="modal fade" id="fingerGift">
+    <div class="modal-dialog" style="width:80%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>箱子礼物</h3>
+            </div>
+            <div class="pull-right search form-inline" style="padding-right: 1%">
+            </div>
+            <table class="table table-hover table-responsive">
+                <thead>
+                <tr>
+                    <th class="text-center">用户ID</th>
+                    <th class="text-center">礼物ID</th>
+                    <th class="text-center">数量</th>
+                    <th class="text-center">价格</th>
+                    <th class="text-center">日期</th>
+                </tr>
+                </thead>
+                <tbody id="fingerGift_show">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{include file="../view/admin/common/userItem.html"}
+<input type="hidden" id="to_id" value="">
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$token}" id="token">
+<input type="hidden" value="" id="ids">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<script>
+$('#pageLimit').bootstrapPaginator({
+    currentPage: $("#page").val(),
+    totalPages: $("#total_page").val(),
+    size: "normal",
+    bootstrapMajorVersion: 3,
+    alignment: "right",
+    numberOfPages: '5',
+    pageUrl: function (type, page, current) {
+        //是每个分页码变成一个超链接
+        return '?page=' + page + '&master_url=/admin/selectUserDetail&token=' + $("#token").val() + '&id=' + $("#search_id").val();
+    },
+    itemTexts: function (type, page, current) {
+        switch (type) {
+            case "first":
+                return "首页";
+            case "prev":
+                return "上一页";
+            case "next":
+                return "下一页";
+            case "last":
+                return "末页";
+            case "page":
+                return page;
+        }
+    }
+});
+$('body').on('hidden.bs.modal', '#userPay', function () {
+    $("#pay_show td").remove();
+});
+$('body').on('hidden.bs.modal', '#userModes', function () {
+    $("#modes_show td").remove();
+});
+$('body').on('hidden.bs.modal', '#userGetGift', function () {
+    $("#getGift_show td").remove();
+});
+$('body').on('hidden.bs.modal', '#userBagGift', function () {
+    $("#bagGift_show td").remove();
+});
+$('body').on('hidden.bs.modal', '#userPayGift', function () {
+    $("#payGift_show td").remove();
+});
+$('body').on('hidden.bs.modal', '#buyKey', function () {
+    $("#buyKey_show td").remove();
+});
+$('body').on('hidden.bs.modal', '#useKey', function () {
+    $("#useKeyt_show td").remove();
+});
+$('body').on('hidden.bs.modal', '#finger', function () {
+    $("#finger_show td").remove();
+});
+$('body').on('hidden.bs.modal', '#fingerGift', function () {
+    $("#fingerGift_show td").remove();
+});
+//苹果充值明细
+$(".ios_detail").click(function () {
+        var id = $(this).parents("tr").find("#id").text();
+        $("#ids").val(id);
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "get",    //请求类型
+            url: "/admin/selectUserIos",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {id: id, master_url: '/admin/selectUserDetail', token: $("#token").val(),},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                console.log(rs.data);
+                if (rs.data.length > 0) {
+                    $(rs.data).each(function (i, n) {
+                        $("#pay_show").prepend(
+                            "<tr class=\"text-center\">" +
+                            " <td class=\"text-center\">"+ n.id +"</td>"+
+                            " <td class=\"text-center\">"+ n.rmb +"</td>"+
+                            " <td class=\"text-center\">"+ n.coin +"</td>"+
+                            " <td class=\"text-center\">"+ n.addtime +"</td>"+
+                            "</tr>"
+                        );
+                    });
+                } else {
+                    $("#pay_show").prepend("<tr class='no-records-found'><td colspan='9' class='text-center'>没有找到匹配的记录</td></tr>");
+                }
+                $('#userPay').modal('show')
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        return false;
+    });
+//微信充值明细
+$(".wechat_detail").click(function () {
+    var id = $(this).parents("tr").find("#id").text();
+    $("#ids").val(id);
+    $.ajax({
+        async: false,    //表示请求是否异步处理
+        type: "get",    //请求类型
+        url: "/admin/selectUserWechat",//请求的 URL地址
+        dataType: "json",//返回的数据类型
+        data: {id: id, master_url: '/admin/selectUserDetail',token: $("#token").val(),},
+        success: function (rs) {
+            if (rs.code !== 200) {
+                toastr.warning(rs.msg);
+                return false;
+            }
+            if (rs.data.length > 0) {
+                $(rs.data).each(function (i, n) {
+                    $("#pay_show").prepend(
+                        "<tr class=\"text-center\">" +
+                        " <td class=\"text-center\">"+ n.id +"</td>"+
+                        " <td class=\"text-center\">"+ n.rmb +"</td>"+
+                        " <td class=\"text-center\">"+ n.coin +"</td>"+
+                        " <td class=\"text-center\">"+ n.addtime +"</td>"+
+                        "</tr>"
+                    );
+                });
+            } else {
+                $("#pay_show").prepend("<tr class='no-records-found'><td colspan='9' class='text-center'>没有找到匹配的记录</td></tr>");
+            }
+            $('#userPay').modal('show')
+        },
+        error: function (rs) {
+            toastr.warning('请求失败');
+        }
+    });
+    return false;
+});
+//支付宝充值明细
+$(".ali_detail").click(function () {
+var id = $(this).parents("tr").find("#id").text();
+$("#ids").val(id);
+$.ajax({
+    async: false,    //表示请求是否异步处理
+    type: "get",    //请求类型
+    url: "/admin/selectUserAli",//请求的 URL地址
+    dataType: "json",//返回的数据类型
+    data: {id: id, master_url: '/admin/selectUserDetail', token: $("#token").val(),},
+    success: function (rs) {
+        if (rs.code !== 200) {
+            toastr.warning(rs.msg);
+            return false;
+        }
+        // console.log(rs.data);
+        if (rs.data.length > 0) {
+            $(rs.data).each(function (i, n) {
+                $("#pay_show").prepend(
+                    "<tr class=\"text-center\">" +
+                        " <td class=\"text-center\">"+ n.id +"</td>"+
+                        " <td class=\"text-center\">"+ n.rmb +"</td>"+
+                        " <td class=\"text-center\">"+ n.coin +"</td>"+
+                        " <td class=\"text-center\">"+ n.addtime +"</td>"+
+                    "</tr>"
+                );
+            });
+        } else {
+            $("#pay_show").prepend("<tr class='no-records-found'><td colspan='9' class='text-center'>没有找到匹配的记录</td></tr>");
+        }
+        $('#userPay').modal('show')
+    },
+    error: function (rs) {
+        toastr.warning('请求失败');
+    }
+});
+return false;
+});
+//钻石转M豆明细
+$(".modes_detail").click(function () {
+    var id = $(this).parents("tr").find("#id").text();
+    $("#ids").val(id);
+    $.ajax({
+        async: false,    //表示请求是否异步处理
+        type: "get",    //请求类型
+        url: "/admin/selectUserModes",//请求的 URL地址
+        dataType: "json",//返回的数据类型
+        data: {id: id, master_url: '/admin/selectUserDetail', token: $("#token").val(),},
+        success: function (rs) {
+            if (rs.code !== 200) {
+                toastr.warning(rs.msg);
+                return false;
+            }
+            // console.log(rs.data);
+            if (rs.data.length > 0) {
+                $(rs.data).each(function (i, n) {
+                    $("#modes_show").prepend(
+                        "<tr class=\"text-center\">" +
+                        " <td class=\"text-center\">"+ n.id +"</td>"+
+                        " <td class=\"text-center\">"+ n.bean +"</td>"+
+                        " <td class=\"text-center\">"+ n.addtime +"</td>"+
+                        "</tr>"
+                    );
+                });
+            } else {
+                $("#modes_show").prepend("<tr class='no-records-found'><td colspan='9' class='text-center'>没有找到匹配的记录</td></tr>");
+            }
+            $('#userModes').modal('show')
+        },
+        error: function (rs) {
+            toastr.warning('请求失败');
+        }
+    });
+    return false;
+});
+//收礼物明细
+$(".getGift_detail").click(function () {
+    var id = $(this).parents("tr").find("#id").text();
+    $("#ids").val(id);
+    $.ajax({
+        async: false,    //表示请求是否异步处理
+        type: "get",    //请求类型
+        url: "/admin/selectUserGift",//请求的 URL地址
+        dataType: "json",//返回的数据类型
+        data: {id: id, master_url: '/admin/selectUserDetail', token: $("#token").val(),},
+        success: function (rs) {
+            if (rs.code !== 200) {
+                toastr.warning(rs.msg);
+                return false;
+            }
+            // console.log(rs.data);return;
+            if (rs.data.length > 0) {
+                $(rs.data).each(function (i, n) {
+                    $("#getGift_show").prepend(
+                        "<tr class=\"text-center\">" +
+                        " <td class=\"text-center\">"+ n.id +"</td>"+
+                        " <td class=\"text-center\">"+ n.get_uid +"</td>"+
+                        " <td class=\"text-center\">"+ n.bean/10+"</td>"+
+                        " <td class=\"text-center\">"+ n.bean +"</td>"+
+                        " <td class=\"text-center\">"+ n.bean/10+"</td>"+
+                        " <td class=\"text-center\">"+ n.bean/100 +"</td>"+
+                        " <td class=\"text-center\">"+ n.addtime +"</td>"+
+                        "</tr>"
+                    );
+                });
+            } else {
+                $("#getGift_show").prepend("<tr class='no-records-found'><td colspan='9' class='text-center'>没有找到匹配的记录</td></tr>");
+            }
+            $('#userGetGift').modal('show')
+        },
+        error: function (rs) {
+            toastr.warning('请求失败');
+        }
+    });
+    return false;
+});
+//背包礼物打赏
+$(".bagGift_detail").click(function () {
+    var id = $(this).parents("tr").find("#id").text();
+    $("#ids").val(id);
+    $.ajax({
+        async: false,    //表示请求是否异步处理
+        type: "get",    //请求类型
+        url: "/admin/selectUserBagGift",//请求的 URL地址
+        dataType: "json",//返回的数据类型
+        data: {id: id, master_url: '/admin/selectUserDetail', token: $("#token").val(),},
+        success: function (rs) {
+            if (rs.code !== 200) {
+                toastr.warning(rs.msg);
+                return false;
+            }
+            // console.log(rs.data);return;
+            if (rs.data.length > 0) {
+                $(rs.data).each(function (i, n) {
+                    $("#bagGift_show").prepend(
+                        "<tr class=\"text-center\">" +
+                        " <td class=\"text-center\">"+ n.uid +"</td>"+
+                        " <td class=\"text-center\">"+ n.touid +"</td>"+
+                        " <td class=\"text-center\">"+ n.giftcount +"</td>"+
+                        " <td class=\"text-center\">"+ n.coin +"</td>"+
+                        " <td class=\"text-center\">"+ n.addtime +"</td>"+
+                        "</tr>"
+                    );
+                });
+            } else {
+                $("#bagGift_show").prepend("<tr class='no-records-found'><td colspan='9' class='text-center'>没有找到匹配的记录</td></tr>");
+            }
+            $('#userBagGift').modal('show')
+        },
+        error: function (rs) {
+            toastr.warning('请求失败');
+        }
+    });
+    return false;
+});
+//充值礼物打赏
+$(".payGift_detail").click(function () {
+    var id = $(this).parents("tr").find("#id").text();
+    $("#ids").val(id);
+    $.ajax({
+        async: false,    //表示请求是否异步处理
+        type: "get",    //请求类型
+        url: "/admin/selectUserPayGift",//请求的 URL地址
+        dataType: "json",//返回的数据类型
+        data: {id: id, master_url: '/admin/selectUserDetail', token: $("#token").val(),},
+        success: function (rs) {
+            if (rs.code !== 200) {
+                toastr.warning(rs.msg);
+                return false;
+            }
+            if (rs.data.length > 0) {
+                $(rs.data).each(function (i, n) {
+                    $("#bagGift_show").prepend(
+                        "<tr class=\"text-center\">" +
+                        " <td class=\"text-center\">"+ n.uid +"</td>"+
+                        " <td class=\"text-center\">"+ n.touid +"</td>"+
+                        " <td class=\"text-center\">"+ n.giftcount +"</td>"+
+                        " <td class=\"text-center\">"+ n.coin +"</td>"+
+                        " <td class=\"text-center\">"+ n.addtime +"</td>"+
+                        "</tr>"
+                    );
+                });
+            } else {
+                $("#bagGift_show").prepend("<tr class='no-records-found'><td colspan='9' class='text-center'>没有找到匹配的记录</td></tr>");
+            }
+            $('#userBagGift').modal('show')
+        },
+        error: function (rs) {
+            toastr.warning('请求失败');
+        }
+    });
+    return false;
+});
+//买银箱子钥匙
+$(".yin_detail").click(function () {
+    var id = $(this).parents("tr").find("#id").text();
+    $("#ids").val(id);
+    $.ajax({
+        async: false,    //表示请求是否异步处理
+        type: "get",    //请求类型
+        url: "/admin/selectBuyYin",//请求的 URL地址
+        dataType: "json",//返回的数据类型
+        data: {id: id, master_url: '/admin/selectUserDetail', token: $("#token").val(),},
+        success: function (rs) {
+            if (rs.code !== 200) {
+                toastr.warning(rs.msg);
+                return false;
+            }
+            if (rs.data.length > 0) {
+                $(rs.data).each(function (i, n) {
+                    $("#buyKey_show").prepend(
+                        "<tr class=\"text-center\">" +
+                        " <td class=\"text-center\">"+ n.id +"</td>"+
+                        " <td class=\"text-center\">"+ n.giftcount +"</td>"+
+                        " <td class=\"text-center\">"+ n.coin +"</td>"+
+                        " <td class=\"text-center\">"+ n.addtime +"</td>"+
+                        "</tr>"
+                    );
+                });
+            } else {
+                $("#buyKey_show").prepend("<tr class='no-records-found'><td colspan='9' class='text-center'>没有找到匹配的记录</td></tr>");
+            }
+            $('#buyKey').modal('show')
+        },
+        error: function (rs) {
+            toastr.warning('请求失败');
+        }
+    });
+    return false;
+});
+//买金箱子钥匙
+$(".jin_detail").click(function () {
+    var id = $(this).parents("tr").find("#id").text();
+    $("#ids").val(id);
+    $.ajax({
+        async: false,    //表示请求是否异步处理
+        type: "get",    //请求类型
+        url: "/admin/selectBuyJin",//请求的 URL地址
+        dataType: "json",//返回的数据类型
+        data: {id: id, master_url: '/admin/selectUserDetail', token: $("#token").val(),},
+        success: function (rs) {
+            if (rs.code !== 200) {
+                toastr.warning(rs.msg);
+                return false;
+            }
+            if (rs.data.length > 0) {
+                $(rs.data).each(function (i, n) {
+                    $("#buyKey_show").prepend(
+                        "<tr class=\"text-center\">" +
+                        " <td class=\"text-center\">"+ n.id +"</td>"+
+                        " <td class=\"text-center\">"+ n.giftcount +"</td>"+
+                        " <td class=\"text-center\">"+ n.coin +"</td>"+
+                        " <td class=\"text-center\">"+ n.addtime +"</td>"+
+                        "</tr>"
+                    );
+                });
+            } else {
+                $("#buyKey_show").prepend("<tr class='no-records-found'><td colspan='9' class='text-center'>没有找到匹配的记录</td></tr>");
+            }
+            $('#buyKey').modal('show')
+        },
+        error: function (rs) {
+            toastr.warning('请求失败');
+        }
+    });
+    return false;
+});
+//用银箱子钥匙
+$(".useYin_detail").click(function () {
+    var id = $(this).parents("tr").find("#id").text();
+    $("#ids").val(id);
+    $.ajax({
+        async: false,    //表示请求是否异步处理
+        type: "get",    //请求类型
+        url: "/admin/selectUseYin",//请求的 URL地址
+        dataType: "json",//返回的数据类型
+        data: {id: id, master_url: '/admin/selectUserDetail', token: $("#token").val(),},
+        success: function (rs) {
+            if (rs.code !== 200) {
+                toastr.warning(rs.msg);
+                return false;
+            }
+            if (rs.data.length > 0) {
+                $(rs.data).each(function (i, n) {
+                    $("#useKey_show").prepend(
+                        "<tr class=\"text-center\">" +
+                        " <td class=\"text-center\">"+ n.id +"</td>"+
+                        " <td class=\"text-center\">"+ n.coin +"</td>"+
+                        " <td class=\"text-center\">"+ n.addtime +"</td>"+
+                        "</tr>"
+                    );
+                });
+            } else {
+                $("#useKey_show").prepend("<tr class='no-records-found'><td colspan='9' class='text-center'>没有找到匹配的记录</td></tr>");
+            }
+            $('#useKey').modal('show')
+        },
+        error: function (rs) {
+            toastr.warning('请求失败');
+        }
+    });
+    return false;
+});
+//用金箱子钥匙
+$(".useJin_detail").click(function () {
+    var id = $(this).parents("tr").find("#id").text();
+    $("#ids").val(id);
+    $.ajax({
+        async: false,    //表示请求是否异步处理
+        type: "get",    //请求类型
+        url: "/admin/selectUseJin",//请求的 URL地址
+        dataType: "json",//返回的数据类型
+        data: {id: id, master_url: '/admin/selectUserDetail', token: $("#token").val(),},
+        success: function (rs) {
+            if (rs.code !== 200) {
+                toastr.warning(rs.msg);
+                return false;
+            }
+            if (rs.data.length > 0) {
+                $(rs.data).each(function (i, n) {
+                    $("#useKey_show").prepend(
+                        "<tr class=\"text-center\">" +
+                        " <td class=\"text-center\">"+ n.id +"</td>"+
+                        " <td class=\"text-center\">"+ n.coin +"</td>"+
+                        " <td class=\"text-center\">"+ n.addtime +"</td>"+
+                        "</tr>"
+                    );
+                });
+            } else {
+                $("#useKey_show").prepend("<tr class='no-records-found'><td colspan='9' class='text-center'>没有找到匹配的记录</td></tr>");
+            }
+            $('#useKey').modal('show')
+        },
+        error: function (rs) {
+            toastr.warning('请求失败');
+        }
+    });
+    return false;
+});
+//开箱子礼物收益
+$(".box_detail").click(function () {
+    var id = $(this).parents("tr").find("#id").text();
+    $("#ids").val(id);
+    $.ajax({
+        async: false,    //表示请求是否异步处理
+        type: "get",    //请求类型
+        url: "/admin/selectUserBox",//请求的 URL地址
+        dataType: "json",//返回的数据类型
+        data: {id: id, master_url: '/admin/selectUserDetail', token: $("#token").val(),},
+        success: function (rs) {
+            if (rs.code !== 200) {
+                toastr.warning(rs.msg);
+                return false;
+            }
+            if (rs.data.length > 0) {
+                $(rs.data).each(function (i, n) {
+                    $("#boxGift_show").prepend(
+                        "<tr class=\"text-center\">" +
+                        " <td class=\"text-center\">"+ n.id +"</td>"+
+                        " <td class=\"text-center\">"+ n.gift_id +"</td>"+
+                        " <td class=\"text-center\">"+ n.coin +"</td>"+
+                        " <td class=\"text-center\">"+ n.gift_coin +"</td>"+
+                        " <td class=\"text-center\">"+ n.count +"</td>"+
+                        " <td class=\"text-center\">"+ n.addtime +"</td>"+
+                        "</tr>"
+                    );
+                });
+            } else {
+                $("#boxGift_show").prepend("<tr class='no-records-found'><td colspan='9' class='text-center'>没有找到匹配的记录</td></tr>");
+            }
+            $('#boxGift').modal('show')
+        },
+        error: function (rs) {
+            toastr.warning('请求失败');
+        }
+    });
+    return false;
+});
+//背包礼物发起猜拳
+$(".bagS_detail").click(function () {
+    var id = $(this).parents("tr").find("#id").text();
+    $("#ids").val(id);
+    $.ajax({
+        async: false,    //表示请求是否异步处理
+        type: "get",    //请求类型
+        url: "/admin/selectBagStart",//请求的 URL地址
+        dataType: "json",//返回的数据类型
+        data: {id: id, master_url: '/admin/selectUserDetail', token: $("#token").val(),},
+        success: function (rs) {
+            if (rs.code !== 200) {
+                toastr.warning(rs.msg);
+                return false;
+            }
+            if (rs.data.length > 0) {
+                $(rs.data).each(function (i, n) {
+                    $("#finger_show").prepend(
+                        "<tr class=\"text-center\">" +
+                        " <td class=\"text-center\">"+ n.id +"</td>"+
+                        " <td class=\"text-center\">"+ n.giftid +"</td>"+
+                        " <td class=\"text-center\">"+ n.gift_coin +"</td>"+
+                        " <td class=\"text-center\">"+ n.addtime +"</td>"+
+                        "</tr>"
+                    );
+                });
+            } else {
+                $("#finger_show").prepend("<tr class='no-records-found'><td colspan='9' class='text-center'>没有找到匹配的记录</td></tr>");
+            }
+            $('#finger').modal('show')
+        },
+        error: function (rs) {
+            toastr.warning('请求失败');
+        }
+    });
+    return false;
+});
+//充值礼物发起猜拳
+$(".payS_detail").click(function () {
+    var id = $(this).parents("tr").find("#id").text();
+    $("#ids").val(id);
+    $.ajax({
+        async: false,    //表示请求是否异步处理
+        type: "get",    //请求类型
+        url: "/admin/selectPayStart",//请求的 URL地址
+        dataType: "json",//返回的数据类型
+        data: {id: id, master_url: '/admin/selectUserDetail', token: $("#token").val(),},
+        success: function (rs) {
+            if (rs.code !== 200) {
+                toastr.warning(rs.msg);
+                return false;
+            }
+            if (rs.data.length > 0) {
+                $(rs.data).each(function (i, n) {
+                    $("#finger_show").prepend(
+                        "<tr class=\"text-center\">" +
+                        " <td class=\"text-center\">"+ n.id +"</td>"+
+                        " <td class=\"text-center\">"+ n.giftid +"</td>"+
+                        " <td class=\"text-center\">"+ n.gift_coin +"</td>"+
+                        " <td class=\"text-center\">"+ n.addtime +"</td>"+
+                        "</tr>"
+                    );
+                });
+            } else {
+                $("#finger_show").prepend("<tr class='no-records-found'><td colspan='9' class='text-center'>没有找到匹配的记录</td></tr>");
+            }
+            $('#finger').modal('show')
+        },
+        error: function (rs) {
+            toastr.warning('请求失败');
+        }
+    });
+    return false;
+});
+//背包礼物应战猜拳
+$(".bagF_detail").click(function () {
+    var id = $(this).parents("tr").find("#id").text();
+    $("#ids").val(id);
+    $.ajax({
+        async: false,    //表示请求是否异步处理
+        type: "get",    //请求类型
+        url: "/admin/selectPayFight",//请求的 URL地址
+        dataType: "json",//返回的数据类型
+        data: {id: id, master_url: '/admin/selectUserDetail', token: $("#token").val(),},
+        success: function (rs) {
+            if (rs.code !== 200) {
+                toastr.warning(rs.msg);
+                return false;
+            }
+            if (rs.data.length > 0) {
+                $(rs.data).each(function (i, n) {
+                    $("#finger_show").prepend(
+                        "<tr class=\"text-center\">" +
+                        " <td class=\"text-center\">"+ n.id +"</td>"+
+                        " <td class=\"text-center\">"+ n.giftid +"</td>"+
+                        " <td class=\"text-center\">"+ n.gift_coin +"</td>"+
+                        " <td class=\"text-center\">"+ n.addtime +"</td>"+
+                        "</tr>"
+                    );
+                });
+            } else {
+                $("#finger_show").prepend("<tr class='no-records-found'><td colspan='9' class='text-center'>没有找到匹配的记录</td></tr>");
+            }
+            $('#finger').modal('show')
+        },
+        error: function (rs) {
+            toastr.warning('请求失败');
+        }
+    });
+    return false;
+});
+//充值礼物应战猜拳
+$(".payF_detail").click(function () {
+    var id = $(this).parents("tr").find("#id").text();
+    $("#ids").val(id);
+    $.ajax({
+        async: false,    //表示请求是否异步处理
+        type: "get",    //请求类型
+        url: "/admin/selectPayFight",//请求的 URL地址
+        dataType: "json",//返回的数据类型
+        data: {id: id, master_url: '/admin/selectUserDetail', token: $("#token").val(),},
+        success: function (rs) {
+            if (rs.code !== 200) {
+                toastr.warning(rs.msg);
+                return false;
+            }
+            if (rs.data.length > 0) {
+                $(rs.data).each(function (i, n) {
+                    $("#finger_show").prepend(
+                        "<tr class=\"text-center\">" +
+                        " <td class=\"text-center\">"+ n.id +"</td>"+
+                        " <td class=\"text-center\">"+ n.giftid +"</td>"+
+                        " <td class=\"text-center\">"+ n.gift_coin +"</td>"+
+                        " <td class=\"text-center\">"+ n.addtime +"</td>"+
+                        "</tr>"
+                    );
+                });
+            } else {
+                $("#finger_show").prepend("<tr class='no-records-found'><td colspan='9' class='text-center'>没有找到匹配的记录</td></tr>");
+            }
+            $('#finger').modal('show')
+        },
+        error: function (rs) {
+            toastr.warning('请求失败');
+        }
+    });
+    return false;
+});
+//猜拳礼物收益
+$(".finger_detail").click(function () {
+    var id = $(this).parents("tr").find("#id").text();
+    $("#ids").val(id);
+    $.ajax({
+        async: false,    //表示请求是否异步处理
+        type: "get",    //请求类型
+        url: "/admin/selectUserfinger",//请求的 URL地址
+        dataType: "json",//返回的数据类型
+        data: {id: id, master_url: '/admin/selectUserDetail', token: $("#token").val(),},
+        success: function (rs) {
+            if (rs.code !== 200) {
+                toastr.warning(rs.msg);
+                return false;
+            }
+            if (rs.data.length > 0) {
+                $(rs.data).each(function (i, n) {
+                    $("#finger_show").prepend(
+                        "<tr class=\"text-center\">" +
+                        " <td class=\"text-center\">"+ n.id +"</td>"+
+                        " <td class=\"text-center\">"+ n.giftid +"</td>"+
+                        " <td class=\"text-center\">"+ n.gift_coin +"</td>"+
+                        " <td class=\"text-center\">"+ n.addtime +"</td>"+
+                        "</tr>"
+                    );
+                });
+            } else {
+                $("#finger_show").prepend("<tr class='no-records-found'><td colspan='9' class='text-center'>没有找到匹配的记录</td></tr>");
+            }
+            $('#finger').modal('show')
+        },
+        error: function (rs) {
+            toastr.warning('请求失败');
+        }
+    });
+    return false;
+});
+//搜索
+$("#search").click(function () {
+    var id = $("#search_id").val();
+    var start_time = $("#datetimeStart").val();
+    var end_time = $("#datetimeEnd").val();
+    if (isNaN(id)) {
+        toastr.warning('请输入正确的Id');
+        return false;
+    }
+    var token = $('#token').val();
+    window.location.href = "/admin/selectUserDetail?token=" + token + '&master_url=/admin/selectUserDetail&page=1&id=' + id+'&end_time='+end_time+'&start_time='+start_time;
+})
+$("#datetimeStart").datetimepicker({
+    weekStart: 1,
+    todayBtn: 0,
+    todayHighlight: 1,
+    startView: 2,
+    forceParse: 0,
+    showMeridian: 1,
+    format: 'yyyy-mm-dd',
+    minView: '3',
+    language: 'zh-CN',
+    autoclose: true,
+    startDate: '-10y,-10m,-10d'
+}).on("click", function () {
+    $("#datetimeStart").datetimepicker("setEndDate", $("#datetimeEnd").val())
+});
+$("#datetimeStart").datetimepicker("setDate", new Date());
+$("#datetimeEnd").datetimepicker({
+    weekStart: 1,
+    todayBtn: 0,
+    todayHighlight: 1,
+    startView: 2,
+    forceParse: 0,
+    showMeridian: 1,
+    format: 'yyyy-mm-dd ',
+    minView: '3',
+    language: 'zh-CN',
+    autoclose: true,
+    startDate: '-10y,-10m,-10d'
+}).on("click", function () {
+    $("#datetimeEnd").datetimepicker("setEndDate", $("#datetimeEnd").val())
+});
+$("#datetimeEnd").datetimepicker("setDate", new Date());
+</script>
+
+</body>
+
+</html>

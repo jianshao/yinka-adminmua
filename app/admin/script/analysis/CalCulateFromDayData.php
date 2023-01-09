@@ -1,0 +1,99 @@
+<?php
+namespace app\admin\script\analysis;
+
+use app\admin\model\BiUserStats1DayModel;
+
+ini_set('set_time_limit', 0);
+ini_set('memory_limit', -1);
+class CalCulateFromDayData
+{
+    const TABLE = 'bi_user_stats_1day';
+    const LIMIT = 500;
+    protected static $instance;
+
+    //单例
+    public static function getInstance()
+    {
+        if (!isset(self::$instance)) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
+    public function calculate($where, $column, $limit = self::LIMIT)
+    {
+        $count = AnalysisCommon::getStatsCount(self::TABLE, $where);
+        $page = AnalysisCommon::getPage($count, $limit);
+
+        $data = $obj = [];
+        for ($i = 0; $i < $page; $i++) {
+            $offset = $i * $limit;
+            $res = AnalysisCommon::getStatsItems(BiUserStats1DayModel::getInstance()->getModel(), $where, $offset, $limit);
+            $this->calDayData($res, $data, $obj, $column);
+        }
+
+        return $data;
+    }
+
+    public function calculateIds(array $ids, $column, $limit = self::LIMIT)
+    {
+        $count = count($ids);
+        $page = AnalysisCommon::getPage($count, $limit);
+
+        $data = $obj = [];
+        for ($i = 0; $i < $page; $i++) {
+            $offset = $i * $limit;
+            $cal_ids = array_slice($ids, $offset, $limit);
+            $where[] = ['id', 'in', $cal_ids];
+            $res = AnalysisCommon::getStatsItems(BiUserStats1DayModel::getInstance()->getModel(), $where, 0, $limit);
+            $this->calDayData($res, $data, $obj, $column);
+        }
+
+        return $data;
+    }
+
+    public function calDayData($res, &$data, &$obj, $column)
+    {
+        foreach ($res as $mins5_data) {
+            $uid = $mins5_data['uid'];
+            $user_json = json_decode($mins5_data['json_data'], true);
+            $stats_column = "{$mins5_data[$column]}";
+
+            if (!isset($data[$stats_column]['active_users'])) {
+                $data[$stats_column]['active_users'] = [];
+            }
+
+            if (!in_array($uid, $data[$stats_column]['active_users'])) {
+                array_push($data[$stats_column]['active_users'], $uid);
+            }
+
+            foreach ($user_json as $json_type => $json) {
+                if (!empty($json)) {
+                    if (array_key_exists($json_type, AnslysisConst::CLASS_MAP)) {
+                        $class = AnslysisConst::CLASS_MAP[$json_type];
+
+                        $user_obj = new $class($stats_column);
+                        $user_obj->fromJson($json);
+
+                        if (!isset($obj[$stats_column][$json_type])) {
+                            $obj[$stats_column][$json_type] = $user_obj;
+                        } else {
+                            $obj[$stats_column][$json_type] = $obj[$stats_column][$json_type]->merge($user_obj);
+                        }
+
+                        $data[$stats_column][$json_type]['data'] = $obj[$stats_column][$json_type]->toJson();
+                    } elseif (!array_key_exists($json_type, AnslysisConst::CLASS_MAP)) {
+                        $data[$stats_column][$json_type]['data'] = $json;
+                    }
+
+                    if (!isset($data[$stats_column][$json_type]['users'])) {
+                        $data[$stats_column][$json_type]['users'][] = $uid;
+                    }
+                    if (!in_array($uid, $data[$stats_column][$json_type]['users'])) {
+                        array_push($data[$stats_column][$json_type]['users'], $uid);
+                    }
+                }
+            }
+        }
+    }
+}

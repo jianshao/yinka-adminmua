@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="example">
+                            <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                <button type="button" class="btn btn-outline btn-success" id="add">
+                                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加
+                                </button>
+                                <button type="button" class="btn btn-outline btn-success" id="clearCache">
+                                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>更新
+                                </button>
+                            </div>
+                        </div>
+                        <table class="table table-hover table-responsive" id="data_table" style="word-wrap: break-word; word-break: break-all;">
+                            <thead>
+                            <tr>
+                                <th class="text-center">爵位ID</th>
+                                <th class="text-center">名称</th>
+<!--                                <th class="text-center">GIF</th>-->
+                                <th class="text-center">SVGA</th>
+                                <th class="text-center">升值</th>
+                                <th class="text-center">贬值</th>
+                                <th class="text-center">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {if condition="!empty($list)"}
+                            {volist name="list" id="list"}
+                            <tr>
+                                <td class="text-center " >{$list.level}</td>
+                                <td class="text-center " >{$list.name}</td>
+<!--                                <td class="text-center " ><img src="{$list.picture}" width="50px" alt=""></td>-->
+                                <td class="text-center " ><div src="{$list.animation}" loops="0" clearsAfterStop="true" style="margin:0 auto;width: 100px;height: 100px;"></div></td>
+                                <td class="text-center " >{$list.value}</td>
+                                <td class="text-center " >{$list.relegation}</td>
+                                <td class="text-center " >
+                                    <button greet_message="{$list.level}" class="btn btn-success details">详情</button>
+                                </td>
+                            </tr>
+                            {/volist}
+                            {else}
+                            <tr class="no-records-found">
+                                <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                            </tr>
+                            {/if}
+                            </tbody>
+                        </table>
+                        <!-- End Example Events -->
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!-- End Panel Other -->
+    </div>
+</div>
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+                </button>
+                <h4 class="modal-title" id="editModalLabel">添加</h4>
+            </div>
+            <div class="modal-body edit-append">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" >关闭</button>
+                <button type="button" class="btn btn-primary" onclick="edit_info()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+{include file="../view/admin/common/jsHeader.html"}
+<input type="hidden" value="{$token}" name="token" id="token">
+<script src="/admin/js/trap/fileinput.js" type="text/javascript"></script>
+<script src="/admin/js/trap/fileinput_locale_zh.js" type="text/javascript"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/svgaplayerweb@2.3.1/build/svga.min.js"></script>
+<script>
+    //清除缓存
+    $("#clearCache").on('click',function(){
+        var master_url = "/admin/clearCache";
+        var token = $("#token").val();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/clearCache",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data:{master_url:master_url,token:token,type:'duke_conf'},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 500);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    })
+
+    $('#add').click(function () {
+        $(".edit-append").empty();
+        $(".edit-append").prepend(
+            "<form id='edit_form' method='post' >"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"爵位名称:"+"</label>" +
+            "<input type='text' class='form-control' name='name'  required='required'>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>SVGA:</label>"+
+            "<input type='file' class='form-control corner_sign' id='image' required>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"升值:"+"</label>" +
+            "<input type='text' class='form-control' name='name'  required='required'>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"贬值:"+"</label>" +
+            "<input type='text' class='form-control' name='name'  required='required'>"+
+            "</div>"+
+
+            "<input type='hidden' value='{$token}' name='token'>"+
+            "<input type='hidden' value='/admin/addAttire' id='master_url' name='master_url'>"+
+            " </form>"
+        );
+        $('#editModal').modal('show');
+    })
+
+    //图片上传
+    $(document).on("change",".corner_sign",function(){
+        var sign = $(this).attr('id');
+        if($(this)[0].files[0]){
+            var animationType = $(this)[0].files[0].name.split('.');
+            if (animationType[1] != "bmp"&&animationType[1] != "png"&&animationType[1] != "gif" && animationType[1]!="jpg" && animationType[1]!="jpeg" && animationType[1] != "svga") {
+                toastr.warning("文件只限图片");
+                return false;
+            }
+        }
+        var formData = new FormData();
+        formData.append("token", $("#token").val());
+        formData.append("master_url", $("#master_url").val());
+        formData.append("image", $(this)[0].files[0]);
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            cache: false,
+            processData: false,
+            contentType: false,
+            type: "post",    //请求类型
+            url: "/admin/ossAttireFile",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: formData,
+            success: function (rs) {
+                if (rs.status !== 1) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                $('#edit_form').append("<input type='hidden' name="+sign+"  value="+rs.image+">");
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    })
+
+    //添加执行
+    function edit_info(){
+        var edit_info = $("#edit_form").serializeArray();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/dukeConfigAdd",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data: edit_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    }
+
+
+    $('.details').click(function () {
+        window.location.href = "/admin/dukeDetailsConfig?token=" + $('#token').val() + '&master_url=/admin/dukeDetailsConfig&id=' + $(this).attr('greet_message');
+    })
+</script>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="example">
+                            <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                <button type="button" class="btn btn-outline btn-success" id="add">
+                                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加
+                                </button>
+                            </div>
+                        </div>
+                        <table class="table table-hover table-responsive" id="data_table" style="word-wrap: break-word; word-break: break-all;">
+                            <thead>
+                            <tr>
+                                <th class="text-center">id</th>
+                                <th class="text-center">奖池类型</th>
+                                <th class="text-center">麦位</th>
+                                <th class="text-center">状态</th>
+                                <th class="text-center">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {if condition="!empty($list)"}
+                            {volist name="list" id="list"}
+                            <tr>
+                                <td style="width: 20px;" class="text-center" >{$list.id}</td>
+                                <td style="width: 20px;" class="text-center" >{$list.type}</td>
+                                <td style="width: 20px;" class="text-center" >{$list.num}</td>
+                                <td style="width: 20px;" class="text-center" >{$list.status}</td>
+                                <td style="width: 20px;" class="text-center">
+
+                                    <button greet_message="{$list.id}" class="btn btn-success details">详情</button>
+
+                                </td>
+                            </tr>
+                            {/volist}
+                            {else}
+                            <tr class="no-records-found">
+                                <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                            </tr>
+                            {/if}
+                            </tbody>
+                        </table>
+                        <!-- End Example Events -->
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!-- End Panel Other -->
+    </div>
+</div>
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+                </button>
+                <h4 class="modal-title" id="editModalLabel">添加</h4>
+            </div>
+            <div class="modal-body edit-append">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" >关闭</button>
+                <button type="button" class="btn btn-primary" onclick="edit_info()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{include file="../view/admin/common/jsHeader.html"}
+<input type="hidden" value="{$token}" name="token" id="token">
+<script src="/admin/js/trap/fileinput.js" type="text/javascript"></script>
+<script src="/admin/js/trap/fileinput_locale_zh.js" type="text/javascript"></script>
+<link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+<script src="/admin/js/bootstrap.min.js?v=3.3.6"></script>
+<script>
+    $('.createTime').click(function () {
+        alert('编辑添加时间')
+    })
+    $('.updateTime').click(function () {
+        alert('编辑修改时间')
+        return false
+        var locale = {
+            "format": 'YYYY-MM-DD HH:mm',
+            "separator": " - ",
+            "applyLabel": "确定",
+            "cancelLabel": "取消",
+            "fromLabel": "起始时间",
+            "toLabel": "结束时间'",
+            "customRangeLabel": "自定义",
+            "weekLabel": "W",
+            "daysOfWeek": ["日", "一", "二", "三", "四", "五", "六"],
+            "monthNames": ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"],
+            "firstDay": 1
+        };
+        $(this).daterangepicker({
+            'locale': locale,
+            timePicker: true, //显示时间
+            ranges: {
+                '今日': [moment(), moment()],
+                '昨日': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                '最近7日': [moment().subtract(6, 'days'), moment()],
+                '最近30日': [moment().subtract(29, 'days'), moment()],
+                '本月': [moment().startOf('month'), moment().endOf('month')],
+                '上月': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month')
+                    .endOf('month')
+                ]
+            },
+            "alwaysShowCalendars": true,
+            "opens": "right",
+        }, function (start, end, label) {
+            timeRangeChange = [start.format('YYYY-MM-DD HH:mm:00'), end.format('YYYY-MM-DD HH:mm:00')];
+            console.log(timeRangeChange);
+        });
+    })
+
+    //详情
+    $('.details').click(function () {
+        window.location.href = "/admin/treasurePoolDetails?token=" + $('#token').val() + '&master_url=/admin/treasurePoolDetails&page=1&id=' + $(this).attr('greet_message');
+    })
+    
+    //添加装扮信息
+    $('#add').on('click',function(){
+        alert('其实我不是人类我是椰子树上的一种稀有的椰果，名字叫做沃氏你椰椰')
+        return false
+        $(".attire-append").empty();
+        $(".edit-append").empty();
+        $(".edit-append").prepend(
+            "<form id='edit_form' method='post' >"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"礼物名称:"+"</label>" +
+            "<input type='text' class='form-control' name='name'  required='required'>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"魅力值:"+"</label>" +
+            "<input type='text' class='form-control' name='charm' oninput=\"this.value = this.value.replace(/[^0-9]/g, '');\" required='required'>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"单位:"+"</label>" +
+            "<input type='text' class='form-control' name='unit' required='required'>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>图片:</label>"+
+            "<input type='file' class='form-control corner_sign' id='image' required>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>动图:</label>"+
+            "<input type='file' class='form-control corner_sign' id='animation' required>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>动画:</label>"+
+            "<input type='file' class='form-control corner_sign' id='giftAnimation' required>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>角标:</label>"+
+            "<input type='file' class='form-control corner_sign' id='tags' required>"+
+            "</div>"+
+
+            "<input type='hidden' value='{$token}' name='token'>"+
+            "<input type='hidden' value='/admin/addAttire' id='master_url' name='master_url'>"+
+            " </form>"
+        );
+        $('#editModal').modal('show');
+    });
+
+    //图片上传
+    $(document).on("change",".corner_sign",function(){
+        var sign = $(this).attr('id');
+        if($(this)[0].files[0]){
+            var animationType = $(this)[0].files[0].name.split('.');
+            if (animationType[1] != "bmp"&&animationType[1] != "png"&&animationType[1] != "gif" && animationType[1]!="jpg" && animationType[1]!="jpeg" && animationType[1] != "svga") {
+                toastr.warning("文件只限图片");
+                return false;
+            }
+        }
+        var formData = new FormData();
+        formData.append("token", $("#token").val());
+        formData.append("master_url", $("#master_url").val());
+        formData.append("image", $(this)[0].files[0]);
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            cache: false,
+            processData: false,
+            contentType: false,
+            type: "post",    //请求类型
+            url: "/admin/ossAttireFile",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: formData,
+            success: function (rs) {
+                if (rs.status !== 1) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                $('#edit_form').append("<input type='hidden' name="+sign+"  value="+rs.image+">");
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    })
+
+    //添加执行
+    function edit_info(){
+        var edit_info = $("#edit_form").serializeArray();
+        if(edit_info[0]['value']==''&&edit_info[1]['value']==''){
+            toastr.warning("商品不选你想啥呐！你想屁吃呐？");
+            return false;
+        }
+        if(edit_info[2]['value']==''){
+            toastr.warning("分类必填");
+            return false;
+        }
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/giftConfAdd",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data: edit_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    }
+
+</script>
+</div>
+</body>
+</html>

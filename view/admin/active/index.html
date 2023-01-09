@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/active.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+</head>
+<body class="gray-bg">
+<!--添加活动窗口-->
+
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="panel panel-default activi  navbar-fixed-bottom  modal-dialog" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"  style="display: none">
+        <i class="glyphicon glyphicon-remove close_activi" onclick="onbreak()"></i>
+        <h1>活动基础信息</h1>
+        <div class="addBtn">
+            <button class="addActivi btn btn-info">增加</button>
+            <button class="saveActivi exitActive btn btn-info">保存</button>
+        </div>
+        <div class="topWindow row">
+            <!--    基本信息，上半部分表单内容-->
+            <div class="col-md-5">
+                <div class="activiNameBig row">
+                    <span class="col-md-3">名称</span><input type="text" class="activiName col-md-9">
+                </div>
+                <div class="start_timeBig row">
+                    <span class="col-md-3">开始时间</span><input type="text" id="start_time" readonly class="form_start_datetime timing_time" class="start_time col-md-9">
+                </div>
+                <div class="end_timeBig row">
+                    <span class="col-md-3">结束时间</span><input type="text" id="end_time" readonly class="form_end_datetime timing_time" class="end_time col-md-9">
+                </div>
+                <div class="active_buttonBig row">
+                    <span class="col-md-3">悬浮按钮</span><input type="text" class="active_button col-md-9">
+                </div>
+                <div class="is_associatedBig row">
+                    <span class="col-md-3">是否关联</span><input type="checkbox" class="is_associated col-md-1" />
+                </div>
+            </div>
+            <div class="col-md-7">
+                <div class="active_addressBig row">
+                    <span class="col-md-3">活动地址</span><input type="text" class=" active_address col-md-9">
+                </div>
+                <div class="active_imgBig row">
+                    <span class="col-md-3">弹窗图片</span><input type="hidden" class="active_img col-md-9"><input type='file' class='form-control'  id='image' value='' required>
+                </div>
+                <div class="introduceBig row">
+                    <span class="col-md-3">活动介绍</span><input type="text" class="introduce col-md-9">
+                </div>
+            </div>
+        </div>
+<!--        <h1>活动内容</h1>-->
+<!--        <div class="bottomWindow bottomWindow0 row">&lt;!&ndash;    活动内容，下半部分表单内容&ndash;&gt;-->
+<!--            <button class="col-md-2 delete_activi btn btn-info" style="display: none">删除</button>-->
+<!--            <div class="left_bot col-md-5">&lt;!&ndash;    左下的input&ndash;&gt;-->
+<!--                <div class="is_associatedBig row">-->
+<!--                    <span class="col-md-3">类型</span>-->
+<!--                    <div class="col-md-3">-->
+<!--                        <input type="radio" activetype="pay" value='pay'  checked="checked" name="is_associated0" class=" type col-md-3 changeType"><span>消费</span>-->
+<!--                    </div>-->
+<!--                    <div class="col-md-3">-->
+<!--                        <input  type="radio" activetype="behavior" value='behavior'  name="is_associated0" class=" type col-md-3 changeType"><span>行为</span>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <div class="consumption_items">-->
+<!--                    <div class="row con-items">-->
+<!--                        <span class="col-md-3">消耗礼物</span>-->
+<!--                        <select  class="con_items_id col-md-3" placeholder="id"  name="" id="">-->
+<!--                            <option value="">-&#45;&#45;请选择-&#45;&#45;</option>-->
+<!--                        {volist name="gift" id="lists"}-->
+<!--                            <option value="{$lists.id}">{$lists.gift_name}</option>-->
+<!--                        {/volist}-->
+<!--                        </select>-->
+<!--                        <input class="con_items_num col-md-3" placeholder="数量" type="number">-->
+<!--                        <button class="btn add_btn btn-info">+</button>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <div class="consumption_currency">-->
+<!--                    <div class="row">-->
+<!--                        <span class="col-md-3">消耗货币</span>-->
+<!--                        <select class="form-control con_currency_id col-md-3">-->
+<!--                            <option disabled style="display: none" selected>类型</option>-->
+<!--                            <option value="0">人民币</option>-->
+<!--                            <option value="1">M豆</option>-->
+<!--                        </select>-->
+<!--                        <input class="con_currency_num col-md-3" placeholder="数量"  type="number">-->
+<!--                        <button class="btn btn-info add_btn">+</button>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <div class="behavior" style="display: none">-->
+<!--                    <div class="row">-->
+<!--                        <span class="col-md-3">行为</span>-->
+<!--                        <input class="behavior_id col-md-3" placeholder="id"  type="text">-->
+<!--                        <input class="behavior_num col-md-3" placeholder="数量" type="number">-->
+<!--                        <button class="btn btn-info add_btn">+</button>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="right_bot col-md-5">-->
+<!--                <div class="reward_item">-->
+<!--                    <div class="row">-->
+<!--                        <span class="col-md-3">奖励物品</span>-->
+<!--                        <input class="reward_item_id col-md-3" placeholder="id"  type="text">-->
+<!--                        <input class="reward_item_num col-md-3" placeholder="数量" type="number">-->
+<!--                        <button class="btn btn-info add_btn">+</button>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <div class="reward_currency">-->
+<!--                    <div class="row">-->
+<!--                        <span class="col-md-3">奖励货币</span>-->
+<!--                        <select class="reward_currency_id form-control col-md-3">-->
+<!--                            <option  style="display: none" selected>类型</option>-->
+<!--                            <option value="0" >人民币</option>-->
+<!--                            <option value="1" >M豆</option>-->
+<!--                        </select>-->
+<!--                        <input class="reward_currency_num col-md-3" placeholder="数量"  type="number">-->
+<!--                        <button class="btn btn-info add_btn">+</button>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <div class="attire_id">-->
+<!--                    <div class="row">-->
+<!--                        <span class="col-md-3">奖励装扮</span>-->
+<!--                        <select class=" attire_select form-control col-md-3" name="attire_id" id="attire_id">-->
+<!--                            <option  disabled style="display: none" selected value="">-&#45;&#45;请选择-&#45;&#45;</option>-->
+<!--                            {volist name="attire" id="lists"}-->
+<!--                            <option attire_name="{$lists.attire_name}" value="{$lists.id}" >{$lists.attire_name}</option>-->
+<!--                            {/volist}-->
+<!--                        </select>-->
+<!--                        <button class="btn btn-info add_type">+</button>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--        </div>-->
+    </div>
+</div>
+<!--以上为添加活动的弹框内容-->
+<!--活动详情窗口-->
+<div class="modal fade" id="myDetail" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="detail_window modal-dialog" style="background: #ffffff;z-index: 99">
+        <h1>活动基础信息</h1>
+        <div class="detail_top">
+            <div style="margin-left: 11%">
+                <p>名称：<span class="detail_name"></span></p>
+                <p>开始时间：<span class="detail_start_time"></span></p>
+                <p>结束时间：<span class="detail_end_time"></span></p>
+                <p>悬浮按钮：<span class="detail_button"></span></p>
+                <p>是否关联：<span class="detail_relation"></span></p>
+            </div>
+            <div>
+                <p>活动页地址：<span class="detail_url"></span></p>
+                <p>弹窗图片：<span class="detail_img"></span></p>
+                <p>活动介绍：<span class="detail_title"></span></p>
+            </div>
+        </div>
+<!--        <h1>活动内容</h1>-->
+
+<!--        <div class="detail_bottom detail_bottom0">-->
+<!--            <div style="margin-left: 11%">-->
+<!--                <div><p>类型：<span class="detail_type">消费</span></p></div>-->
+<!--                <div class="detail_pay detail_xhwp">-->
+<!--                    <p>消耗礼物：<span>ID:</span> <span class="xhwp_id"></span>&nbsp;-&nbsp;<span>数量:</span><span class="xhwp_num"></span></p>-->
+<!--                </div>-->
+<!--                <div class="detail_pay detail_xhhb">-->
+<!--                    <p>消耗货币：<span>ID:</span> <span class="xhhb_id"></span>&nbsp;-&nbsp;<span>数量:</span><span class="xhhb_num"></span></p>-->
+<!--                </div>-->
+<!--                <div class="detail_behavior">-->
+<!--                    <p>行为：<span>ID:</span><span class="xw_id"></span>&nbsp;-&nbsp;<span>数量:</span><span class="xw_num"></span></p>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div>-->
+<!--                <div class="detail_cuccry detail_jlwp">-->
+<!--                    <p>奖励物品：<span>ID:</span><span class="jlwp_id"></span>&nbsp;-&nbsp;<span>数量:</span><span class="jlwp_num"></span></p>-->
+<!--                </div>-->
+<!--                <div class="detail_cuccry detail_jlhb">-->
+<!--                    <p>奖励货币:<span>ID:</span> <span class="jlhb_id"></span>&nbsp;-&nbsp;<span>数量:</span><span class="jlhb_num"></span></p>-->
+<!--                </div>-->
+<!--                <div class="detail_cuccry detail_attire">-->
+<!--                    <p>奖励装扮:<span class="attire_name_dateil"></span></p>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+    </div>
+</div>
+<!--以上为活动详情窗口-->
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        {if condition="in_array('/admin/guildList',$user_role_menu)"}
+                        <div class="pull-right search form-inline">
+                            <input class="form-control input-outline" type="text"
+                                   placeholder="请输入活动名称" value="{$search_name}"
+                                   id="search_name">
+                            <button type="button" class=" btn btn-primary" id="search">搜索</button>
+                        </div>
+                        {/if}
+                        <div class="example">
+                            {if condition="in_array('/admin/addActive',$user_role_menu)"}
+                            <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                <button data-toggle="modal" data-target="#myModal" class="btn openPanel btn-primary" style="margin-bottom: 10px">
+                                    <i class="glyphicon glyphicon-plus"></i>&nbsp;增加活动</button>
+
+                            </div>
+                            {/if}
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">Id</th>
+                                    <th class="text-center">名称</th>
+                                    <th class="text-center">开始时间</th>
+                                    <th class="text-center">结束时间</th>
+                                    <th class="text-center">发起人</th>
+                                    <th class="text-center">最后修改人</th>
+                                    <th class="text-center">最后修改时间</th>
+                                    <th class="text-center">活动状态</th>
+                                    <th colspan="2" class="text-center">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($list)"}
+                                {volist name="list" id="lists"}
+                                <tr>
+                                    <td class="text-center" id="id">{$lists.id}</td>
+                                    <td class="text-center">{$lists.name}</td>
+                                    <td class="text-center">{$lists.start_time}</td>
+                                    <td class="text-center">{$lists.end_time}</td>
+                                    <td class="text-center">{$lists.created_user}</td>
+                                    <td class="text-center">{$lists.updated_user}</td>
+                                    <td class="text-center">{$lists.updated_time}</td>
+                                    <td class="text-center">{$lists.status_name}</td>
+                                    <td colspan="2" class="text-center">
+                                        {if condition="in_array('/admin/activeItems',$user_role_menu)"}
+                                        <button class="btn btn-primary detailsBtn" data-toggle="modal" data-target="#myDetail">详情</button>
+                                        {/if}
+                                        {if condition="in_array('/admin/exitActive',$user_role_menu)"}
+                                        <button class="btn btn-info modifyBtn" data-toggle="modal" data-target="#myModal">修改</button>
+                                        {/if}
+                                        <!-- {if condition="in_array('/admin/activeStart',$user_role_menu)"}
+                                        {if $lists.active_status == 0}
+                                        <button class="btn btn-success actionBtn" data-toggle="modal" data-target="#startActive">开始</button>
+                                        {/if}
+                                        {/if} -->
+                                        <!-- {if condition="in_array('/admin/activeStop',$user_role_menu)"}
+                                        {if $lists.active_status == 1}
+                                        <button class="btn btn-danger stopBtn">终止</button>
+                                        {/if}
+                                        {/if} -->
+                                    </td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="10" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page >1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+<div class="modal fade" id="startActive" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+
+    <div class="modal-dialog" style="height: auto" >
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>开始活动</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <i class="glyphicon glyphicon-play" id="action_active_msg"></i>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger" data-btn-danger="modal" onclick="action_active_op()">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="end_active">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>结束活动</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <i class="glyphicon glyphicon-stop" id="end_active_msg"></i>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger" data-btn-danger="modal" onclick="end_active_op()">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{include file="../view/admin/common/userItem.html"}
+<input type="hidden" id="to_id" value="">
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="" id="form_guild_id">
+<input type="hidden" value="{$attiretype}" id="attiretype">
+<input type="hidden" value="{$gifttype}" id="gifttype">
+<input type="hidden" id="exit-propor-hidden">
+<input type="hidden" id="socity-hidden">
+<input type="hidden" id="token" value="{$token}">
+<input type="hidden" id="active_id" value="">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<script src="/admin/js/trap/fileinput.js" type="text/javascript"></script>
+<script src="/admin/js/trap/fileinput_locale_zh.js" type="text/javascript"></script>
+
+
+
+
+
+<script>
+    //搜索
+    $("#search").click(function () {
+        var name = $("#search_name").val();
+        var token = $('#token').val();
+        window.location.href = "/admin/activeList?token=" + token + '&master_url=/admin/activeList&search_name=' + name;
+    })
+    //分页
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/activeList&token=' + $("#token").val() + '&search_name=' + $("#search_name").val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+    });
+    var index=0
+    var keyId=''
+    function clear(){
+        $('.addbottom').remove()
+        $('.activi input').val('')
+    }
+    //保存活动
+    $('.saveActivi').click(function(numberId){
+        var data={
+            name:$('.activiName').val(),
+            start_time:$('#start_time').val(),
+            end_time:$('#end_time').val(),
+            active_address:$('.active_address').val(),
+            active_button:$('.active_button').val(),
+            active_img:$('.active_img').val(),
+            introduce:$('.introduce').val(),
+            is_associated:$('.is_associated').prop("checked")==true?1:0,
+
+            content:[//有几个content取决于有几个活动
+            ]
+        }
+        $('.activi .bottomWindow').each(function(index,item){
+            const dom = $(item)
+            var temporaryCont={
+                type:'',
+                sort:'',
+                content:{
+                    consumption_items:[],
+                    consumption_currency:[],
+                    reward_item:[],
+                    reward_currency:[]
+                }
+            }
+            var bbb=[] //消耗礼物
+            var ccc=[] //消耗货币
+            var behavior=[] //行为
+            var rewardItem=[] //奖励物品
+            var rewardCu=[] //奖励货币
+            var activeTypeBig='' //活动类型
+            var attire_id=[] //奖励装扮
+            var styleCont=$("input[name='is_associated"+index+"']:checked").attr('activetype')
+            //判断类型（不同类型取不同的值）
+            if(styleCont=='behavior'){
+                //如果类型为“行为”，就取‘行为’的值放入consumption_items中
+                dom.find(".behavior div").each(function(index,item){
+                    var contbehavior={
+                        id:$(item).find('.behavior_id').val(),
+                        number:$(item).find('.behavior_num').val()
+                    }
+                    behavior.push(contbehavior)
+                });
+                temporaryCont.content.consumption_items=behavior
+            }else{ //如果类型为“花费”，就取‘花费’的值放入consumption_items中
+                //消耗礼物
+                dom.find(".consumption_items div").each(function(index,item){
+                    var cont={
+                        id:$(item).find('.con_items_id').val(),
+                        number:$(item).find('.con_items_num').val()
+                    }
+                    bbb.push(cont)
+                });
+                temporaryCont.content.consumption_items=bbb
+            }
+            //消耗货币
+            dom.find(".consumption_currency div").each(function(index,item){
+                const str = '.bottomWindow'+index
+                let contCur={
+                    id:$(item).find('.con_currency_id').val(),
+                    number:$(item).find('.con_currency_num').val()
+                }
+                ccc.push(contCur)
+            });
+            temporaryCont.content.consumption_currency=ccc
+            //奖励物品
+            dom.find(".reward_item div").each(function(index,item){
+                var rewardit={
+                    id:$(item).find('.reward_item_id').val(),
+                    number:$(item).find('.reward_item_num').val()
+                }
+                rewardItem.push(rewardit)
+            });
+            temporaryCont.content.reward_item=rewardItem
+            //奖励奖励装扮
+            dom.find(".attire_id div").each(function(index,item){
+                var attireid={
+                    attire_id:$(item).find('.attire_select').val(),
+                    attire_name:$(item).find('.attire_select option:selected').text()
+                }
+                attire_id.push(attireid)
+            });
+            temporaryCont.content.attire_id=attire_id
+            //奖励货币
+            dom.find(".reward_currency div").each(function(index,item){
+                var rewardccc={
+                    id:$(item).find('.reward_currency_id').val(),
+                    number:$(item).find('.reward_currency_num').val()
+                }
+                rewardCu.push(rewardccc)
+            });
+            temporaryCont.content.reward_currency=rewardCu
+            //活动类型
+            var activeType = dom.find('input:radio:checked').val()
+            if(activeType =='null' || activeType == ''){
+                var activeType = dom.find('input:radio:checked').attr('activetype')
+            }
+
+            if(activeType=='behavior'){
+                activeTypeBig=1
+            }else{
+                activeTypeBig=0
+            }
+            temporaryCont.type=activeTypeBig
+            data.content.push(temporaryCont)
+        })
+
+        //打印data
+        var token = $("#token").val();
+        var master_url = '/admin/addActive';
+        var id = keyId;
+        console.log(data)
+        if(id==''){
+            $.ajax({
+                async: false,    //表示请求是否异步处理
+                type: "post",    //请求类型
+                url: "/admin/addActive",//请求的 URL地址
+                dataType: "json",//返回的数据类型
+                data: {active:data,token:token,master_url:master_url},
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000);   //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+        }else{
+            $.ajax({
+                async: false,    //表示请求是否异步处理
+                type: "post",    //请求类型
+                url: "/admin/exitActive",//请求的 URL地址
+                dataType: "json",//返回的数据类型
+                data: {id:id,active:data,token:token,master_url:'/admin/exitActive'},
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000);   //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+        }
+        function location() {
+            window.location.href = window.location.href;
+        }
+        // $('.activi').hide()
+        return false;
+    })
+    //复制‘消耗礼物’
+    $(document).on('click', '.consumption_items .add_btn',function(){
+        var $this = $(this);
+        index++
+        let content='<div class="row con-items'+index+'">\n' +
+            '                    <span class="col-md-3">消耗礼物</span>\n' +
+            '                        <select  class="con_items_id gift_select col-md-3" placeholder="id"  name="" id="">\n' +
+            '                            <option value="">---请选择---</option>' +
+            '                        </select>'+
+            '                        <input class="con_items_num col-md-3" placeholder="数量" type="text">\n' +
+            '                        <button class="btn btn-info delete_btn">-</button>\n' +
+            '                </div>'
+
+        let parent=$(this).parent().parent()
+        let lenght= $(this).parent().parent().children('.row').length
+        if(lenght<3){
+            $(parent).append(content)
+            var gifttype = $('#gifttype').val()
+            $.each($.parseJSON(gifttype),function(i,n)
+            {
+                $('.con-items'+index+'').children('.gift_select').append("<option  value='" + n.id + "' >" + n.gift_name + "</option>")
+            });
+        }else{
+            alert("最多填写三个哦")
+        }
+    })
+    //复制 ‘奖励装扮’
+    $(document).on('click', '.attire_id .add_type',function(){
+        var $this = $(this);
+        index++
+        let content='<div class="row">\n' +
+            '                    <span class="col-md-3">奖励装扮</span>\n' +
+            '                    <select class="reward_currency_id attire_select form-control col-md-3" name="attire_id" id="attire_id">'+
+            '                       <option  disabled style="display: none" selected value="">---请选择---</option>'+
+            '                    </select>'+
+            '                        <button class="btn btn-info delete_btn">-</button>\n' +
+            '                </div>\n'
+
+
+        let parent=$(this).parent().parent()
+        let lenght= $(this).parent().parent().children('.row').length
+        if(lenght<3){
+            $(parent).append(content)
+            var attiretype = $('#attiretype').val()
+            $.each($.parseJSON(attiretype),function(i,n)
+            {
+                $this.parent().parent('div:last-child').children('.row:last-child').children('.attire_select').append("<option attire_name='"+n.attire_name+"'  value='" + n.id + "' >" + n.attire_name + "</option>")
+            });
+        }else{
+            alert("最多填写三个哦")
+        }
+    })
+    //复制‘消耗货币’
+    $(document).on('click', '.consumption_currency .add_btn',function(){
+        index++
+        let content='<div class="row con-items'+index+'">\n' +
+            '                    <span class="col-md-3">消耗货币</span>\n' +
+            '                        <select class="con_currency_id form-control col-md-3">\n' +
+            '                        <option disabled style="display: none" selected>类型</option>\n' +
+            '                        <option value="0">人民币</option>\n' +
+            '                        <option value="1">M豆</option>\n' +
+            '                            </select>\n' +
+            '                        <input class="con_currency_num col-md-3" placeholder="数量"  type="number">\n' +
+            '                        <button class="btn btn-info delete_btn">-</button>\n' +
+            '                </div>'
+        let parent=$(this).parent().parent()
+        let lenght= $(this).parent().parent().children('.row').length
+        if(lenght<3){
+            $(parent).append(content)
+        }else{
+            alert("最多填写三个哦")
+        }
+    })
+    //复制‘行为’
+    $(document).on('click', '.behavior .add_btn',function(){
+        index++
+        let content='<div class="row con-items'+index+'">\n' +
+            '                    <span class="col-md-3">行为</span>\n' +
+            '                        <input class="behavior_id col-md-3"  type="text">\n' +
+            '                        <input class="behavior_num col-md-3" type="text">\n' +
+            '                        <button class="btn btn-info delete_btn">-</button>\n' +
+            '                </div>'
+        let parent=$(this).parent().parent()
+        let lenght= $(this).parent().parent().children('.row').length
+        if(lenght<3){
+            $(parent).append(content)
+        }else{
+            alert("最多填写三个哦")
+        }
+    })
+    //复制‘奖励物品’
+    $(document).on('click', '.reward_item .add_btn',function(){
+        index++
+        let content='<div class="row con-items'+index+'">\n' +
+            '                    <span class="col-md-3">奖励物品</span>\n' +
+            '                        <input class="reward_item_id con_items_id col-md-3" placeholder="id"  type="text">\n' +
+            '                        <input class="reward_item_num con_items_num col-md-3" placeholder="数量" type="number">\n' +
+            '                        <button class="btn btn-info delete_btn">-</button>\n' +
+            '        </div>'
+
+        let parent=$(this).parent().parent()
+        let lenght= $(this).parent().parent().children('.row').length
+        if(lenght<3){
+            $(parent).append(content)
+        }else{
+            alert("最多填写三个哦")
+        }
+    })
+    //复制‘奖励货币’
+    $(document).on('click', '.reward_currency .add_btn',function(){
+        index++
+        let content=' <div class="row">\n' +
+            '                    <span class="col-md-3">奖励货币</span>\n' +
+            '                    <select class="reward_currency_id form-control col-md-3">\n' +
+            '                        <option disabled style="display: none" selected>类型</option>\n' +
+            '                        <option value="0">人民币</option>\n' +
+            '                        <option value="1">M豆</option>\n' +
+            '                    </select>\n' +
+            '                    <input class="reward_currency_num col-md-3" placeholder="数量"  type="number">\n' +
+            '                    <button class="btn btn-info delete_btn">-</button>\n' +
+            '                </div>'
+
+        let parent=$(this).parent().parent()
+        let lenght= $(this).parent().parent().children('.row').length
+        if(lenght<3){
+            $(parent).append(content)
+        }else{
+            alert("最多填写三个哦")
+        }
+    })
+    //删除选项
+    $(document).on('click','.delete_btn',function(){
+        $(this).parent().remove()
+    })
+    //选择类型
+    $(document).on('change', '.changeType',function(){
+
+        //pay
+        //$(.is_associated').prop("checked")
+        let parent=$(this).parent().parent().parent()
+        if($(this).val() == ''){
+            console.log($(this).attr('activetype'))
+            if($(this).attr('activetype')=='pay'){
+                parent.children('.consumption_items').show()
+                parent.children('.consumption_items').children('.row').children('.con_items_id').val('')
+                parent.children('.consumption_items').children('.row').children('.con_items_num').val('')
+                parent.children('.consumption_currency').show()
+                parent.children('.consumption_currency').children('.row').children('.con_currency_num').val('')
+                parent.children('.behavior').hide()
+
+            }else{
+                parent.children('.consumption_items').hide()
+                parent.children('.consumption_currency').hide()
+                parent.children('.behavior').show()
+                parent.children('.behavior').children('.row').children('.behavior_id').val('')
+                parent.children('.behavior').children('.row').children('.behavior_name').val('')
+            }
+        }else
+        if(this.value=='pay'){
+            parent.children('.consumption_items').show()
+            parent.children('.consumption_items').children('.row').children('.con_items_id').val('')
+            parent.children('.consumption_items').children('.row').children('.con_items_num').val('')
+            parent.children('.consumption_currency').show()
+            parent.children('.consumption_currency').children('.row').children('.con_currency_num').val('')
+            parent.children('.behavior').hide()
+        }else{
+            parent.children('.consumption_items').hide()
+            parent.children('.consumption_currency').hide()
+            parent.children('.behavior').show()
+            parent.children('.behavior').children('.row').children('.behavior_id').val('')
+            parent.children('.behavior').children('.row').children('.behavior_name').val('')
+        }
+
+    })
+    //打开填写活动面板
+    $('.openPanel').click(function(){
+        clear()
+
+        $('.activi').show()
+    })
+    //增加活动
+    $('.addActivi').click(function(){
+
+        index++
+        let length = $('.activi > .bottomWindow').length
+        if(length=1){
+            $('.delete_activi').show()
+        }
+
+        let content='<div class="bottomWindow addbottom bottomWindow'+index+' row"><!--    活动内容，下半部分表单内容-->\n' +
+            '<button class="delete_activi col-md-2 btn btn-info">删除</button>\n' +
+            '        <div class="left_bot col-md-5"><!--    左下的input-->\n' +
+            '            <div class="is_associatedBig row">\n' +
+            '                <span class="col-md-3">类型</span>\n' +
+            '                <div class="col-md-3">\n' +
+            '                    <input type="radio" value="pay" checked="checked" name="is_associated'+index+'" class="col-md-3 changeType"><span>消费</span>\n' +
+            '                </div>\n' +
+            '                <div class="col-md-3">\n' +
+            '                    <input type="radio" value="behavior" name="is_associated'+index+'" class="col-md-3 changeType"><span>行为</span>\n' +
+            '                </div>\n' +
+            '            </div>\n' +
+            '            <div class="consumption_items">\n' +
+            '                <div class="row con-items">\n' +
+            '                    <span class="col-md-3">消耗礼物</span>\n' +
+            '                        <select  class="con_items_id gift_select col-md-3 giftWindow'+index+'" placeholder="id"  name="" id="">\n' +
+            '                            <option value="">---请选择---</option>' +
+            '                        </select>'+
+            '                        <input class="con_items_num col-md-3" placeholder="数量" type="number">\n' +
+            '                        <button class="btn btn-info add_btn">+</button>\n' +
+            '                </div>\n' +
+            '            </div>\n' +
+            '            <div class="consumption_currency">\n' +
+            '                <div class="row">\n' +
+            '                    <span class="col-md-3">消耗货币</span>\n' +
+            '                    <select class="form-control con_currency_id col-md-3">\n' +
+            '                        <option disabled style="display: none" selected>类型</option>\n' +
+            '                        <option value="0">人民币</option>\n' +
+            '                        <option value="1">M豆</option>\n' +
+            '                    </select>\n' +
+            '                    <input class="con_currency_num col-md-3" placeholder="数量"  type="number">\n' +
+            '                    <button class="btn btn-info add_btn">+</button>\n' +
+            '                </div>\n' +
+            '            </div>\n' +
+            '            <div class="behavior" style="display: none">\n' +
+            '                <div class="row">\n' +
+            '                    <span class="col-md-3">行为</span>\n' +
+            '                    <input class="behavior_id col-md-3" placeholder="id"  type="text">\n' +
+            '                    <input class="behavior_num col-md-3" placeholder="数量" type="number">\n' +
+            '                    <button class="btn btn-info add_btn">+</button>\n' +
+            '                </div>\n' +
+            '            </div>\n' +
+            '        </div>\n' +
+            '        <div class="right_bot col-md-5">\n' +
+            '            <div class="reward_item">\n' +
+            '                <div class="row">\n' +
+            '                    <span class="col-md-3">奖励物品</span>\n' +
+            '                    <input class="reward_item_id col-md-3" placeholder="id"  type="text">\n' +
+            '                    <input class="reward_item_num col-md-3" placeholder="数量" type="number">\n' +
+            '                    <button class="btn btn-info add_btn">+</button>\n' +
+            '                </div>\n' +
+            '            </div>\n' +
+            '            <div class="reward_currency">\n' +
+            '                <div class="row">\n' +
+            '                    <span class="col-md-3">奖励货币</span>\n' +
+            '                    <select class="reward_currency_id form-control col-md-3">\n' +
+            '                        <option disabled style="display: none" selected>类型</option>\n' +
+            '                        <option value="0">人民币</option>\n' +
+            '                        <option value="1">M豆</option>\n' +
+            '                    </select>\n' +
+            '                    <input class="reward_currency_num col-md-3" placeholder="数量"  type="number">\n' +
+            '                    <button class="btn btn-info add_btn">+</button>\n' +
+            '                </div>\n' +
+            '            </div>\n' +
+
+            '           <div class="attire_id">\n' +
+            '                <div class="row">\n' +
+            '                    <span class="col-md-3">奖励装扮</span>\n' +
+            '                    <select class="reward_currency_id attire_select form-control col-md-3 attireWindow'+index+'" name="attire_id" id="attire_id ">'+
+            '                       <option  disabled style="display: none" selected value="">---请选择---</option>'+
+            '                    </select>'+
+            '                    <button class="btn btn-info add_type">+</button>\n' +
+            '                </div>\n' +
+            '            </div>\n'
+
+        '        </div>\n' +
+
+        '    </div>'
+        let parent=$(this).parent().parent()
+        let lenght= $(this).parent().parent().children('.bottomWindow').length
+        if(lenght<4){
+            $(parent).append(content)
+            var attiretype = $('#attiretype').val()
+            $.each($.parseJSON(attiretype),function(i,n)
+            {
+                // $this.parent().parent('div:last-child').children('.row:last-child').children('.attire_select').append("<option attire_name='"+n.attire_name+"'  value='" + n.id + "' >" + n.attire_name + "</option>")
+                $('.attireWindow'+index+'').append("<option attire_name='"+n.attire_name+"'  value='" + n.id + "' >" + n.attire_name + "</option>")
+            });
+            var gifttype = $('#gifttype').val()
+            $.each($.parseJSON(gifttype),function(i,n)
+            {
+                $('.giftWindow'+index+'').append("<option gift_name='"+n.gift_name+"'  value='" + n.id + "' >" + n.gift_name + "</option>")
+            });
+        }else{
+            alert("不得超过四个活动哦")
+        }
+
+    })
+    //活动详情
+    $('.detailsBtn').click(function () {
+        var id = $(this).parents("tr").find("#id").text();
+        var token = $("#token").val();
+        var master_url = '/admin/activeItems';
+        let data={
+            name:'',
+            active_address:'',
+            active_button:'',
+            active_img:'',
+            start_time:'',
+            end_time:'',
+            introduce:'',
+            is_associated:'',
+            content:{
+            }
+        }
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "get",    //请求类型
+            url: "/admin/activeItems",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {id:id,token:token,master_url:master_url},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                // data=rs.data.content;
+
+                $('.detail_name').html(rs.data.content.name)
+                $('.detail_button').html(rs.data.content.active_button)
+                $('.detail_start_time').html(rs.data.content.start_time)
+                $('.detail_end_time').html(rs.data.content.end_time)
+                $('.detail_img').html(rs.data.content.active_img)
+                $('.detail_url').html(rs.data.content.active_address)
+                $('.detail_title').html(rs.data.content.introduce)
+                $('.detail_relation').html(rs.data.content.is_associated)
+                $('.attire_name_details').html(rs.data.content.is_associated)
+                //编辑活动项
+                let contentTest=rs.data.content.content;
+                function fixValue(optionData,index){ //填值
+                    const str = '.detail_bottom'+index
+                    let that = $(str)
+                    //后台返回content是字符串，所以直接用不了
+                    optionData.content = JSON.parse(optionData.content)
+                    //debugger;
+                    if(optionData.type == 1){
+                        var str1 = 'detail_bottom'+index
+                        //debugger;
+                        that.find('.detail_type').html("行为")
+                        that.find('.detail_pay').hide()
+                        that.find('.detail_behavior').show()
+                        for(let j = 0;j<optionData.content.consumption_items.length;j++){
+                            if(j == 0){
+                                that.find('.xw_id').html(optionData.content.consumption_items[j].id)
+                                that.find('.xw_num').html(optionData.content.consumption_items[j].number)
+                            }else{
+                                //消耗货币
+                                var num = 10
+                                let str='<p>行为：<span class="xw_id">'+optionData.content.consumption_items[j].id+'</span>: <span class="xw_num">'+optionData.content.consumption_items[j].number+'</span></p>'
+                                that.find('.detail_behavior').append(str)
+                            }
+                        }
+                    }
+                else{
+                        that.find('.detail_type').html("消费")
+                        that.find('.detail_pay').show()
+                        that.find('.detail_behavior').hide()
+                        //消耗礼物
+                        for(let j = 0;j<optionData.content.consumption_items.length;j++){
+                            if(j == 0){
+                                that.find('.xhwp_id').html(optionData.content.consumption_items[j].id)
+                                that.find('.xhwp_num').html(optionData.content.consumption_items[j].number)
+                            }else{
+                                let str='<p>消耗礼物： <span class="xhwp_id">'+optionData.content.consumption_items[j].id+'</span>- <span class="xhwp_num">'+optionData.content.consumption_items[j].number+'</span></p>'
+                                that.find('.detail_xhwp').append(str)
+                            }
+                        }
+                        //消耗货币
+                        for(let j = 0;j<optionData.content.consumption_currency.length;j++){
+
+                            if(j == 0){
+                                that.find('.xhhb_id').html(optionData.content.consumption_currency[j].id)
+                                that.find('.xhhb_num').html(optionData.content.consumption_currency[j].number)
+                            }else{
+
+                                let str = '<p>消耗货币： <span class="xhhb_id">'+optionData.content.consumption_currency[j].id+'</span>-<span class="xhhb_num">'+optionData.content.consumption_currency[j].number+'</span></p>'
+                                that.find('.detail_xhhb').append(str)
+                            }
+                        }
+                    }
+                    //奖励物品
+                    for(let j = 0;j<optionData.content.reward_item.length;j++){
+                        if(j == 0){
+                            that.find('.jlwp_id').html(optionData.content.reward_item[j].id)
+                            that.find('.jlwp_num').html(optionData.content.reward_item[j].number)
+                        }else{
+                            let str='<p>奖励物品：<span class="jlwp_id">物品id</span>- <span class="jlwp_num">物品数量</span></p>'
+                            that.find('.detail_jlwp').append(str)
+                        }
+                    }
+                    for(let j = 0;j<optionData.content.attire_id.length;j++){
+                        if(j == 0){
+                            that.find('.attire_name_dateil').html(optionData.content.attire_id[j].attire_name)
+                        }else{
+                            let str='<p>奖励装扮：<span class="attire_name_dateil"></span></p>'
+                            that.find('.detail_attire').append(str)
+                        }
+                    }
+                    for(let j = 0;j<optionData.content.reward_currency.length;j++){
+                        if(j == 0){
+                            that.find('.jlhb_id').html(optionData.content.reward_currency[j].id)
+                            that.find('.jlhb_num').html(optionData.content.reward_currency[j].number)
+                        }else{
+                            let str='<p>奖励货币: <span class="jlhb_id">'+optionData.content.reward_currency[j].id+'</span>- <span class="jlhb_num">'+optionData.content.reward_currency[j].number+'</span></p>'
+                            if(optionData.content.reward_currency[j].id==0){
+                                str += '                        <option value="0" selected>人民币</option>' +
+                                    '                        <option value="1">M豆</option>'
+                            } else{
+                                str+='                        <option value="0">人民币</option>' +
+                                    '                        <option value="1" selected>M豆</option>'
+                            }
+
+                            str+=   '                    </select>' +
+                                '                    <input class="reward_currency_num col-md-3" value="'+optionData.content.reward_currency[j].number+'" placeholder="数量"  type="number">' +
+                                '                    <button class="btn btn-info delete_btn">-</button>' +
+                                '                </div>'
+                            $('.reward_currency').append(str)
+                        }
+                    }
+                }
+                for(let i = 0;i<contentTest.length;i++){
+                    let optionData = contentTest[i]
+                    if(i == 0){
+
+                    }else{
+                        let str = "<div class=\"detail_bottom detail_bottom"+i+"\">\n" +
+                            "            <div  style=\"margin-left: 11%\">\n" +
+                            "                <div><p>类型：<span class=\"detail_type\">消费</span></p></div>\n" +
+                            "                <div class=\"detail_pay detail_xhwp\">\n" +
+                            "                    <p>消耗礼物：<span>ID:</span> <span class=\"xhwp_id\"></span>&nbsp;-&nbsp;<span>数量:</span><span class=\"xhwp_num\"></span></p>\n" +
+                            "                </div>\n" +
+                            "                <div class=\"detail_pay detail_xhhb\">\n" +
+                            "                    <p>消耗货币：<span>ID:</span> <span class=\"xhhb_id\"></span>&nbsp;-&nbsp;<span>数量:</span><span class=\"xhhb_num\"></span></p>\n" +
+                            "                </div>\n" +
+                            "                <div class=\"detail_behavior\">\n" +
+                            "                    <p>行为：<span>ID:</span><span class=\"xw_id\"></span>&nbsp;-&nbsp;<span>数量:</span><span class=\"xw_num\"></span></p>\n" +
+                            "                </div>\n" +
+                            "            </div>\n" +
+                            "            <div>\n" +
+                            "                <div class=\"detail_cuccry detail_jlwp\">\n" +
+                            "                    <p>奖励物品：<span>ID:</span><span class=\"jlwp_id\"></span>&nbsp;-&nbsp;<span>数量:</span><span class=\"jlwp_num\"></span></p>\n" +
+                            "                </div>\n" +
+                            "                <div class=\"detail_cuccry detail_jlhb\">\n" +
+                            "                    <p>奖励货币:<span>ID:</span> <span class=\"jlhb_id\"></span>&nbsp;-&nbsp;<span>数量:</span><span class=\"jlhb_num\"></span></p>\n" +
+                            "                </div>\n" +
+                            "                <div class='detail_cuccry detail_attire'>"+
+                            "                    <p>奖励装扮:<span class='attire_name_dateil'></span></p>"+
+                            "                </div>\n" +
+                            "            </div>\n" +
+                            "        </div>"
+                        $('.detail_window').append(str)
+                    }
+                    fixValue(optionData,i)
+                }
+                //以上为编辑活动内容
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        $('.detail_window').show();
+    })
+    //关闭活动
+    $('.close_detail').click(function(){
+        // $('.detail_window').hide()
+        window.location.reload()//刷新当前页面.
+    })
+    //编辑活动
+    $('.modifyBtn').click(function () {
+        clear()
+        var id = $(this).parents("tr").find("#id").text();
+        var token = $("#token").val();
+        var master_url = '/admin/activeItems';
+        let data={
+            name:'',
+            active_address:'',
+            active_button:'',
+            active_img:'',
+            id:'',
+            start_time:'',
+            end_time:'',
+            introduce:'',
+            is_associated:'',
+            content:{
+            }
+        }
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "get",    //请求类型
+            url: "/admin/activeItems",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {id:id,token:token,master_url:master_url},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                keyId=rs.data.content.id;
+                if(rs.data.content.content){
+                    var len = rs.data.content.content.length;
+                }else{
+                    var len = 0;
+                }
+                $('.activiName').val(rs.data.content.name)
+                $('.active_button').val(rs.data.content.active_button)
+                $('.form_start_datetime').val(rs.data.content.start_time)
+                $('.form_end_datetime').val(rs.data.content.end_time)
+                $('.active_address').val(rs.data.content.active_address)
+                $('.active_img').val(rs.data.content.active_img)
+                $('.introduce').val(rs.data.content.introduce)
+                if(rs.data.content.is_associated=='关联'){
+                    $('.is_associated').prop("checked",true)
+                }else{
+                    $('.is_associated').prop("checked",false)
+                }
+                //编辑活动项
+                let contentTest=rs.data.content.content;
+
+                function fixValue(optionData,index){ //填值
+                    const str = '.bottomWindow'+index
+                    let that = $(str)
+                    //后台返回content是字符串，所以直接用不了
+                    optionData.content = JSON.parse(optionData.content)
+                    if(optionData.type == 1){
+                        var str1 = 'is_associated'+index
+                        if($("input[name="+str1+"]").val()!=''){
+                            $("input[name="+str1+"][value='behavior']").attr("checked",true);
+                        }else{
+                            $("input[name="+str1+"][activetype='behavior']").attr("checked",true);
+                        }
+
+                        that.find('.consumption_items').hide()
+                        that.find('.consumption_currency').hide()
+                        that.find('.behavior').show()
+                        for(let j = 0;j<optionData.content.consumption_items.length;j++){
+                            if(j == 0){
+                                that.find('.behavior_id').val(optionData.content.consumption_items[j].id)
+                                that.find('.behavior_num').val(optionData.content.consumption_items[j].number)
+                            }else{
+                                //消耗货币
+                                var num = 10
+                                let str='<div class="row con-items'+j+'">' +
+                                    '                    <span class="col-md-3">行为</span>' +
+                                    '                        <input class="con_items_id col-md-3 " value="'+optionData.content.consumption_items[j].id+'" type="text">' +
+                                    '                        <input class="con_items_num col-md-3" value="'+optionData.content.consumption_items[j].number+'" type="text">' +
+                                    '                        <button class="btn btn-info delete_btn">-</button>' +
+                                    '                </div>'
+                                that.find('.behavior').append(str)
+                            }
+                        }
+                    }else{
+                        var str1 = 'is_associated'+index
+                        if($("input[name="+str1+"]").val()!=''){
+                            $("input[name="+str1+"][value='pay']").attr("checked",true);
+                        }else{
+                            $("input[name="+str1+"][activetype='pay']").attr("checked",true);
+                        }
+                        // $("that input[name="+str1+"][value='pay']").attr("checked",true);
+                        for(let j = 0;j<optionData.content.consumption_items.length;j++){
+                            if(j == 0){
+                                that.find('.con_items_id').val(optionData.content.consumption_items[j].id)
+                                that.find('.con_items_num').val(optionData.content.consumption_items[j].number)
+                            }else{
+                                let str='<div class="row con-items'+index+'">' +
+                                    '                    <span class="col-md-3">消耗礼物</span>' +
+                                    '                        <input class="con_items_id col-md-3" value="'+optionData.content.consumption_items[j].id+'" placeholder="id"  type="text">' +
+                                    '                        <input class="con_items_num col-md-3" value="'+optionData.content.consumption_items[j].number+'" placeholder="数量" type="text">' +
+                                    '                        <button class="btn btn-info delete_btn">-</button>' +
+                                    '                </div>'
+                                that.find('.consumption_items').append(str)
+                            }
+                        }
+                        for(let j = 0;j<optionData.content.consumption_currency.length;j++){
+                            if(j == 0) {
+                                that.find('.con_currency_id').val(optionData.content.consumption_currency[j].id)
+                                that.find('.con_currency_num').val(optionData.content.consumption_currency[j].number)
+                            }else{
+                                let str = '<div class="row con-items'+j+'">' +
+                                    '<span class="col-md-3">消耗货币</span>' +
+                                    '<select ok="ok" value = "'+optionData.content.consumption_currency[j].id+'" class="con_currency_id form-control col-md-3">'
+                                if(optionData.content.consumption_currency[j].id==0){
+                                    str += '<option value="0" selected>人民币</option>' +
+                                        '<option value="1">M豆</option>'
+                                } else{
+                                    str+='<option value="0">人民币</option>' +
+                                        '<option value="1" selected>M豆</option>'
+                                }
+
+                                str+=  '</select>' +
+                                    '<input class="con_currency_num col-md-3"  value="'+optionData.content.consumption_currency[j].number+'" placeholder="数量"  type="number">' +
+                                    '<button class="btn btn-info delete_btn">-</button>' +
+                                    '</div>'
+
+
+                                that.find('.consumption_currency').append(str)
+                            }
+                        }
+                    }
+                    for(let j = 0;j<optionData.content.reward_item.length;j++){
+                        if(j == 0){
+                            that.find('.reward_item_id').val(optionData.content.reward_item[j].id)
+                            that.find('.reward_item_num').val(optionData.content.reward_item[j].number)
+                        }else{
+                            let str='<div class="row con-items'+j+'">' +
+                                '                    <span class="col-md-3">奖励物品</span>' +
+                                '                        <input class="reward_item_id con_items_id col-md-3" value="'+optionData.content.reward_item[j].id+'" placeholder="id"  type="text">' +
+                                '                        <input class="reward_item_num con_items_num col-md-3" value="'+optionData.content.reward_item[j].number+'" placeholder="数量" type="number">' +
+                                '                        <button class="btn btn-info delete_btn">-</button>' +
+                                '        </div>'
+                            that.find('.reward_item').append(str)
+                        }
+                    }
+
+                    for(let j = 0;j<optionData.content.reward_currency.length;j++){
+                        if(j == 0){
+                            that.find('.reward_currency_id').val(optionData.content.reward_currency[j].id)
+                            that.find('.reward_currency_num').val(optionData.content.reward_currency[j].number)
+                        }else{
+                            let str=' <div class="row">' +
+                                '                    <span class="col-md-3">奖励货币</span>' +
+                                '                    <select value="'+optionData.content.reward_currency[j].id+'" class="reward_currency_id form-control col-md-3">'
+                            if(optionData.content.reward_currency[j].id==0){
+                                str += '                        <option value="0" selected>人民币</option>' +
+                                    '                        <option value="1">M豆</option>'
+                            } else{
+                                str+='                        <option value="0">人民币</option>' +
+                                    '                        <option value="1" selected>M豆</option>'
+                            }
+
+                            str+=   '                    </select>' +
+                                '                    <input class="reward_currency_num col-md-3" value="'+optionData.content.reward_currency[j].number+'" placeholder="数量"  type="number">' +
+                                '                    <button class="btn btn-info delete_btn">-</button>' +
+                                '                </div>'
+                            $('.reward_currency').append(str)
+                        }
+                    }
+                    var attiretype = $.parseJSON($('#attiretype').val())
+                    for(let j = 0;j<optionData.content.attire_id.length;j++){
+                        if(j == 0){
+                            that.find('.attire_select').val(optionData.content.attire_id[j].attire_id)
+                        }else{
+                            let str=' <div class="row">' +
+                                '                    <span class="col-md-3">奖励装扮</span>' +
+                                '                    <select class="form-control col-md-3 attire_select attireWindow'+i+'" name="attire_id" id="attire_id ">'
+                            if(optionData.content.reward_currency[j].id==attiretype[j]['id']){
+                                str += '                        <option value="'+attiretype[j]['id']+'" selected>'+attiretype[j]['attire_name']+'</option>'
+                            } else{
+                                str+='                        <option value="'+attiretype[j]['id']+'">'+attiretype[j]['attire_name']+'</option>'
+                            }
+
+                            str+=   '                    </select>' +
+                                '                    <input class="reward_currency_num col-md-3" value="'+optionData.content.reward_currency[j].number+'" placeholder="数量"  type="number">' +
+                                '                    <button class="btn btn-info delete_btn">-</button>' +
+                                '                </div>'
+                            $('.reward_currency').append(str)
+                        }
+                    }
+
+                }
+
+                var attireid_arr = []
+                for(let i = 0;i<contentTest.length;i++){
+                    let optionData = contentTest[i]
+                    if(i == 0){
+
+                    }else{
+                        let str = '<div class="bottomWindow addbottom row bottomWindow'+i+'"><!--    活动内容，下半部分表单内容-->\n' +
+                            '                    <button class="delete_activi col-md-2 btn btn-info">删除</button>\n' +
+                            '        <div class="left_bot col-md-5"><!--    左下的input-->\n' +
+                            '            <div class="is_associatedBig row">\n' +
+                            '                <span class="col-md-3">类型</span>\n' +
+                            '                <div class="col-md-3">\n' +
+                            '                    <input type="radio" value="pay" activetype="pay" checked="checked" name="is_associated'+i+'" class="col-md-3 changeType"><span>消费</span>\n' +
+                            '                </div>\n' +
+                            '                <div class="col-md-3">\n' +
+                            '                    <input type="radio" activetype="behavior" value="behavior" name="is_associated'+i+'" class="col-md-3 changeType"><span>行为</span>\n' +
+                            '                </div>\n' +
+                            '            </div>\n' +
+                            '            <div class="consumption_items">\n' +
+                            '                <div class="row con-items">\n' +
+                            '                    <span class="col-md-3">消耗礼物</span>\n' +
+                            '                        <input class="con_items_id col-md-3" placeholder="id"  type="text">\n' +
+                            '                        <input class="con_items_num col-md-3" placeholder="数量" type="number">\n' +
+                            '                        <button class="btn btn-info">+</button>\n' +
+                            '                </div>\n' +
+                            '            </div>\n' +
+                            '            <div class="consumption_currency">\n' +
+                            '                <div class="row">\n' +
+                            '                    <span class="col-md-3">消耗货币</span>\n' +
+                            '                    <select no="no" class="form-control con_currency_id col-md-3">\n' +
+                            '                        <option disabled style="display: none" selected>类型</option>\n' +
+                            '                        <option value="0">人民币</option>\n' +
+                            '                        <option value="1">M豆</option>\n' +
+                            '                    </select>\n' +
+                            '                    <input class="con_currency_num col-md-3" placeholder="数量"  type="number">\n' +
+                            '                    <button class="btn btn-info">+</button>\n' +
+                            '                </div>\n' +
+                            '            </div>\n' +
+                            '            <div class="behavior" style="display: none">\n' +
+                            '                <div class="row">\n' +
+                            '                    <span class="col-md-3">行为</span>\n' +
+                            '                    <input class="behavior_id col-md-3" placeholder="id"  type="text">\n' +
+                            '                    <input class="behavior_num col-md-3" placeholder="数量" type="number">\n' +
+                            '                    <button class="btn btn-info">+</button>\n' +
+                            '                </div>\n' +
+                            '            </div>\n' +
+                            '        </div>\n' +
+                            '        <div class="right_bot col-md-5">\n' +
+                            '            <div class="reward_item">\n' +
+                            '                <div class="row">\n' +
+                            '                    <span class="col-md-3">奖励物品</span>\n' +
+                            '                    <input class="reward_item_id col-md-3" placeholder="id"  type="text">\n' +
+                            '                    <input class="reward_item_num col-md-3" placeholder="数量" type="number">\n' +
+                            '                    <button class="btn btn-info">+</button>\n' +
+                            '                </div>\n' +
+                            '            </div>\n' +
+                            '            <div class="reward_currency">\n' +
+                            '                <div class="row">\n' +
+                            '                    <span class="col-md-3">奖励货币</span>\n' +
+                            '                    <select class="reward_currency_id form-control col-md-3">\n' +
+                            '                        <option disabled style="display: none" selected>类型</option>\n' +
+                            '                        <option value="0">人民币</option>\n' +
+                            '                        <option value="1">M豆</option>\n' +
+                            '                    </select>\n' +
+                            '                    <input class="reward_currency_num col-md-3" placeholder="数量"  type="number">\n' +
+                            '                    <button class="btn btn-info">+</button>\n' +
+                            '                </div>\n' +
+                            '            </div>\n' +
+                            '           <div class="attire_id">\n' +
+                            '                <div class="row">\n' +
+                            '                    <span class="col-md-3">奖励装扮</span>\n' +
+                            '                    <select class="form-control col-md-3 attire_select attireWindow'+i+'" name="attire_id" id="attire_id ">'+
+                            '                       <option  disabled style="display: none" selected value="">---请选择---</option>'+
+                            '                    </select>\n' +
+                            '                    <button class="btn btn-info add_type">+</button>\n' +
+                            '                </div>\n' +
+                            '            </div>\n'
+                        '        </div>\n' +
+                        '    </div>'
+                        $('.navbar-fixed-bottom').append(str)
+                        var attiretype = $.parseJSON($('#attiretype').val())
+                        $.each(attiretype,function(l,n)
+                        {
+                            if(rs.data.attireid[i]==n.id){
+                                $('.attireWindow'+i+'').append("<option attire_name='"+n.attire_name+"' checked  value='" + n.id + "' >" + n.attire_name + "</option>")
+                            }else{
+                                $('.attireWindow'+i+'').append("<option attire_name='"+n.attire_name+"'  value='" + n.id + "' >" + n.attire_name + "</option>")
+                            }
+                            //     $('.attireWindow'+i+'').append("<option attire_name='"+n.attire_name+"'  value='" + n.id + "' >" + n.attire_name + "</option>")
+                        });
+                    }
+                    fixValue(optionData,i)
+                }
+                //以上为编辑活动内容
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        $('.activi').show();
+
+    })
+    //开始活动
+    $(".actionBtn").click(function(){
+        var active_id = $(this).parents("tr").find("#id").text();
+        $("#active_id").val($(this).parents("tr").find("#id").text());
+        $('#action_active').modal('show')
+        $("#action_active_msg").html(' 您确定要开启ID为：' + active_id + ' 的活动吗? ');
+
+    })
+    //确认开启活动
+    function action_active_op(){
+        var active_id = $("#active_id").val();
+        var token = $("#token").val();
+        var master_url = '/admin/activeStart';
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/activeStart",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {id: active_id, master_url: master_url, token: token},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    };
+    //结束活动
+    $(".stopBtn").click(function(){
+        var active_id = $(this).parents("tr").find("#id").text();
+        $("#active_id").val($(this).parents("tr").find("#id").text());
+        $('#end_active').modal('show')
+        $("#end_active_msg").html(' 您确定要结束ID为：' + active_id + ' 的活动吗? ');
+
+    })
+    //删除活动
+    $(document).on('click', '.delete_activi',function(){
+        console.log('触发删除')
+        let parent=$(this).parent()
+        let length=$('.activi > .bottomWindow').length
+        if(length>1){
+            parent.remove()
+        }
+        if(length==2){
+            $('.delete_activi').hide()
+        }
+    })
+    function end_active_op(){
+        var active_id = $("#active_id").val();
+        var token = $("#token").val();
+        var master_url = '/admin/activeStop';
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/activeStop",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {id: active_id, master_url: master_url, token: token},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    };
+    $('.close_activi').click(function () {
+        $('.activi').hide()
+    })
+    $("#end_time").datetimepicker({
+        weekStart: 1,
+        todayBtn: 1,
+        todayHighlight: 1,
+        startView: 2,
+        forceParse: 0,
+        showMeridian: 1,
+        format: 'yyyy-mm-dd hh:ii',
+        minView: '0',
+        language: 'zh-CN',
+        autoclose: true,
+        startDate: new Date()
+    });
+    $("#end_time").datetimepicker("setDate", new Date());
+
+	$("#start_time").datetimepicker({
+        weekStart: 1,
+        todayBtn: 1,
+        todayHighlight: 1,
+        startView: 2,
+        forceParse: 0,
+        showMeridian: 1,
+        format: 'yyyy-mm-dd hh:ii',
+        minView: '0',
+        language: 'zh-CN',
+        autoclose: true,
+        startDate: new Date()
+    });
+    $("#start_time").datetimepicker("setDate", new Date());
+    //刷新页面
+    function onbreak(){
+        window.location.reload()
+    }
+    //图片上传
+    $(document).on("change","#image",function(){
+        if($('#image')[0].files[0]){
+            var animationType = $('#image')[0].files[0].name.split('.');
+            if (animationType[1] != "bmp"&&animationType[1] != "png"&&animationType[1] != "gif" && animationType[1]!="jpg" && animationType[1]!="jpeg" && animationType[1] != "svga") {
+                toastr.warning("文件只限图片");
+                return false;
+            }
+        }
+        var formData = new FormData();
+        formData.append("token", $("#token").val());
+        formData.append("master_url", $("#master_url").val());
+        formData.append("image", $('#image')[0].files[0]);
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            cache: false,
+            processData: false,
+            contentType: false,
+            type: "post",    //请求类型
+            url: "/admin/ossAttireFile",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: formData,
+            success: function (rs) {
+                if (rs.status !== 1) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                $('.active_img').val("{$img_url}"+rs.image)
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    })
+</script>
+</body>
+
+
+</html>

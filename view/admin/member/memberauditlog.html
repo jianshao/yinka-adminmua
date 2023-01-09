@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="/admin/layui/css/layui.css" media="all">
+</head>
+<style>
+
+
+</style>
+
+<body>
+<script src="/admin/layui/layui.js" charset="utf-8"></script>
+<!--您的Layui代码start-->
+
+<script>
+
+    const laydata = {
+        method:'GET',
+        //height:315,
+        url:'/admin/memberAuditLog?master_url=/admin/memberAuditLog&token={$token}&isRequest=1&user_id={$user_id}',
+        //page:true,
+        //limit:2,
+        //limits:[2,4,6,8,14],
+        id:'mydata',
+        //toolbar: '#addconfig',
+        //where:{username:"{$user_id}" },
+        defaultToolbar:["exports"],
+        text: {
+            none: '暂无相关数据' //默认：无数据。
+        },
+    }
+
+</script>
+<table class="layui-table" lay-data="laydata" lay-filter="mydata">
+    <thead>
+    <tr>
+        <th lay-data="{field:'id', width:'10%'}">ID</th>
+        <th lay-data="{field:'user_id', width:'10%'}">用户ID</th>
+        <th lay-data="{field:'content', width:'30%'}">内容</th>
+        <th lay-data="{field:'status', width:'10%',align:'right',templet:'#formatter_status'}">状态</th>
+        <th lay-data="{field:'action', width:'10%',align:'right',templet:'#formatter_action'}">类型</th>
+        <th lay-data="{field:'admin_user_name', width:'10%',align:'right'}">操作人</th>
+        <th lay-data="{field:'update_time', width:'20%',align:'right'}">操作时间</th>
+    </tr>
+    </thead>
+
+</table>
+
+
+</body>
+
+<script type="text/html" id="formatter_status">
+    {{#  if(d.status ==1 ){ }}
+    <span style="color:green">同意</span>
+    {{#  } else { }}
+    <span style="color:darkred">拒绝</span>
+    {{#  } }}
+</script>
+
+
+
+
+
+<script type="text/html" id="formatter_action">
+    {{#  if(d.action == 'avatar' ){ }}
+    <span>用户头像</span>
+    {{#  } else if(d.action == 'nickname' ) { }}
+    <span>用户昵称</span>
+    {{#  } else if(d.action == 'intro' ) { }}
+    <span>用户信息</span>
+    {{#  } else if(d.action == 'wall' ) { }}
+    <span>用户墙</span>
+    {{#  } else if(d.action == 'roomName' ) { }}
+    <span>房间名称</span>
+    {{#  } else if(d.action == 'roomWelcomes' ) { }}
+    <span>房间欢迎语</span>
+    {{#  } else if(d.action == 'roomDesc' ) { }}
+    <span>房间公告</span>
+    {{#  } else { }}
+    <span></span>
+    {{#  } }}
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</html>

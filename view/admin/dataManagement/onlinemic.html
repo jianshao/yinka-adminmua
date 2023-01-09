@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/admin/layui/css/layui.css" media="all">
+    <script src="/admin/js/jquery.min.js"></script>
+    <style>
+        .layui-table-cell {
+            height: auto;
+            overflow: visible;
+            text-overflow: inherit;
+            white-space: normal;
+        }
+    </style>
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+</head>
+<body>
+<div style="padding:5px;">
+
+    <div class="demoTable">
+        <form class="layui-form" onsubmit="return false;" id="myform">
+
+            <div class="layui-inline">
+                <div class="layui-input-inline">
+                    <input type="text" name="date" id="date_b" lay-verify="date" placeholder="日期开始" autocomplete="off"
+                           class="layui-input" value="{$begintime}">
+                </div>
+                <div class="layui-input-inline">
+                    <input type="text" name="date" id="date_e" lay-verify="date" placeholder="日期结束" autocomplete="off"
+                           class="layui-input" value="{$endtime}">
+                </div>
+
+                <div class="layui-inline">
+                    <input class="layui-input" name="id" id="s_uid" style="width:80px" placeholder="用户ID">
+                </div>
+
+
+                <div class="layui-inline">
+                    <input class="layui-input" name="id" id="s_guild_id" style="width:80px" placeholder="工会ID">
+                </div>
+
+
+                <div class="layui-inline">
+                    <input class="layui-input" name="id" id="s_room_id" style="width:80px" placeholder="房间ID">
+                </div>
+
+
+                <div class="layui-input-inline" style="width:150px"><select name="modules" lay-verify="required"
+                                                                            lay-search=""
+                                                                            id="s_ok">
+                    <option value="">是否有效</option>
+                    <option value="1">是</option>
+                    <option value="2">否</option>
+                </select>
+                </div>
+
+            </div>
+
+
+            <button class="layui-btn" data-type="reload">搜索</button>
+        </form>
+    </div>
+    <table id="datatable" lay-filter="test"></table>
+</div>
+
+<script src="/admin/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+<script>
+    layui.use(['table', 'form', 'layer', 'laydate', 'jquery'], function () {
+
+        var $ = layui.jquery
+            , form = layui.form
+            , laydate = layui.laydate
+            , table = layui.table;
+
+        //日期
+        laydate.render({
+            elem: '#date_b'
+        });
+
+        laydate.render({
+            elem: '#date_e'
+        });
+
+
+        table.render({
+            elem: '#datatable'
+            , totalRow: true
+            //, height: 420
+            , toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+            , url: '/admin/userOnlineMic?master_url=/admin/userOnlineMic&token={$token}&isRequest=1' //数据接口
+            , page: false //开启分页
+            , limit: Number.MAX_VALUE
+            , cols: [[ //表头
+                {field: 'uid', title: '用户ID',width: '8%'}
+                , {field: 'nickname', title: '用户昵称',width: '20%'}
+                , {field: 'guild_name', title: '用户所属工会',width: '20%'}
+                , {field: 'room_id', title: '房间ID',width: '8%'}
+                , {field: 'room_name', title: '房间名称',width: '20%'}
+                //, {field: 'guild_id', title: '工会ID',width: '10%',hide:true}
+                //, {field: 'guild_name', title: '工会名',width: '10%',hide:true}
+                //, {field: 'is_master', title: '是否房主',width: '10%',hide:true}
+                , {field: 'durations_sum', title: '累计时长',width: '8%'}
+                , {field: 'receive_gift_count', title: '魅力值',width: '8%'}
+                , {field: 'status', title: '有效次数',width: '8%'}
+            ]]
+            , id: 'tablereload'
+            //, limits: [30, 50, 100]
+            //, limit: 30 //每页默认显示的数量
+            , where: {begintime: "{$begintime}", endtime: "{$endtime}"}
+        });
+
+
+        var $ = layui.$, active = {
+            reload: function () {
+
+                var s_uid = $('#s_uid');
+                var s_guild_id = $('#s_guild_id');
+                var s_room_id = $('#s_room_id');
+                var date_b = $('#date_b');
+                var date_e = $('#date_e');
+                var s_ok = $('#s_ok');
+                //执行重载
+                table.reload('tablereload', {
+                    /*     page: {
+                             curr: 1 //重新从第 1 页开始
+                         }*/
+                    where: {
+                        begintime: date_b.val()
+                        , endtime: date_e.val()
+                        , uid: s_uid.val()
+                        , guild_id: s_guild_id.val()
+                        , room_id: s_room_id.val()
+                        , s_ok: s_ok.val()
+                    }
+                });
+            }
+        };
+
+        $('.demoTable .layui-btn').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+    });
+
+
+</script>
+
+
+</body>
+</html>

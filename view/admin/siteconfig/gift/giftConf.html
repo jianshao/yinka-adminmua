@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+
+<body class="gray-bg">
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <!-- Panel Other -->
+        <div class="ibox float-e-margins">
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <!-- Example Events -->
+                        <div class="example-wrap">
+                            <div class="example">
+                                <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                    <button type="button" class="btn btn-outline btn-success" id="add">
+                                        <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加
+                                    </button>
+                                    <button type="button" class="btn btn-outline btn-success" id="clearCache">
+                                        <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>更新
+                                    </button>
+                                </div>
+                                <div class="btn-group hidden-xs form-inline" role="group">
+                                    <input type="text" placeholder="请输入礼物ID或模糊名称" value="{$giftId}" id="giftId">
+                                    &#12288
+                                    礼物分类:<select id="giftType">
+                                        <option value="0" {if $giftType==0} echo selected="selected" {/if}>请选择 </option> <option value="1" {if $giftType==1} echo selected="selected" {/if}>普通礼物 </option> <option value="2" {if $giftType==2} echo selected="selected" {/if}>随机礼物 </option> <option value="3" {if $giftType==3} echo selected="selected" {/if}>福袋 </option> </select> &#12288 <button type="button" class="btn btn-outline btn-success" style="float:right;" id="search">
+                                            <i aria-hidden="true"></i>搜索
+                                            </button>&nbsp;
+                                </div>
+                            </div>
+                            <table class="table table-hover table-responsive" id="data_table" style="word-wrap: break-word; word-break: break-all;">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center">id</th>
+                                        <th class="text-center">名称</th>
+                                        <th class="text-center">图片</th>
+                                        <th class="text-center">动图</th>
+                                        <th class="text-center">动画</th>
+                                        <th class="text-center">MP4</th>
+                                        <th class="text-center">角标</th>
+                                        <th class="text-center">礼物类型</th>
+                                        <th class="text-center">vip</th>
+                                        <th class="text-center">爵位</th>
+                                        <th class="text-center">魅力值</th>
+                                        <th class="text-center">价格</th>
+                                        <th class="text-center">MP4宽高比</th>
+                                        <th class="text-center">单位</th>
+                                        <th class="text-center">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {if condition="!empty($list)"}
+                                    {volist name="list" id="list"}
+                                    <tr>
+                                        <td style="width: 20px;" class="text-center id">{$list.giftId}</td>
+                                        <td style="width: 20px;" class="text-center gift_name">{$list.name}</td>
+                                        <td style="width: 20px;" class="text-center"><img src="{$list.image}" width="50px" class="show_img" alt=""></td>
+                                        <td style="width: 20px;" class="text-center"><img src="{$list.animation}" width="50px" class="show_img" alt=""></td>
+                                        <td style="width: 20px;" class="text-center">
+                                            {if condition="!empty($list['gift_animation'])"}
+                                            <button src="{$list.giftAnimation}" class="show_svga" id="{$list.giftId}">点击播放</button>
+                                            {/if}
+                                        </td>
+                                        <td style="width: 20px;" class="text-center">
+                                            {if condition="!empty($list['giftMp4Animation'])"}
+                                            <button src="{$list.gift_mp4}" class="show_video">点击播放</button>
+                                            {/if}
+                                        </td>
+                                        <td style="width: 20px;" class="text-center"><img src="{$list.tags}" width="50px" class="show_img" alt=""></td>
+                                        <td style="width: 20px;" class="text-center">{if $list.gift_type ==
+                                            1}普通礼物{elseif $list.gift_type == 2}随机礼物{elseif $list.gift_type == 3}福袋{/if}
+                                        </td>
+                                        <td style="width: 20px;" class="text-center is_vip" vip="{$list.vipLevel}">
+                                            {$list.vip_name}</td>
+                                        <td style="width: 20px;" class="text-center is_duke" duke="{$list.dukeLevel}">
+                                            {$list.duke_name}</td>
+                                        <td style="width: 20px;" class="text-center gift_number">{$list.charm}</td>
+                                        <td style="width: 20px;" class="text-center gift_coin">{$list.count}</td>
+                                        <td style="width: 20px;" class="text-center mp4Rate">{$list.mp4Rate}</td>
+                                        <td style="width: 20px;" class="text-center">{$list.unit}</td>
+                                        <td style="width: 20px;" class="text-center">
+                                            <button class="btn btn-success editGift" gift_introduce="{$list.intro}" gift_classification="{$list.classification}" class_type="{$list.class_type}" is_all_mic="{$list.is_all_mic}" gift_type="{$list.gift_type}">编辑</button>
+                                            <button class="btn btn-success addGiftImage">添加图片</button>
+                                            {if $list.gift_type == 2}
+                                            <button giftId="{$list.giftId}" class="btn btn-danger randomGiftConf">配置</button>
+                                            {elseif $list.gift_type == 3}
+                                            <button giftId="{$list.giftId}" class="btn btn-danger luckBagGift">配置</button>
+                                            {/if}
+                                        </td>
+                                    </tr>
+                                    {/volist}
+                                    {else}
+                                    <tr class="no-records-found">
+                                        <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                    </tr>
+                                    {/if}
+                                </tbody>
+                            </table>
+                            {if condition = "$page.total_page >1"}
+                            <div id="Paginator" style="text-align: center">
+                                <ul id="pageLimit"></ul>
+                            </div>
+                            {/if}
+                            <!-- End Example Events -->
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <!-- End Panel Other -->
+        </div>
+    </div>
+    <div class="modal fade" id="video" tabindex="-1" role="dialog" aria-labelledby="videoLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="videoLabel">视频播放</h4>
+                </div>
+                <div class="modal-body video-append">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="svga" tabindex="-1" role="dialog" aria-labelledby="svgaLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="svgaLabel">动画播放</h4>
+                </div>
+                <div class="modal-body svga-append">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="editModalLabel">添加</h4>
+                </div>
+                <div class="modal-body edit-append">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="edit_info()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--编辑礼物信息-->
+    <div class="modal fade" id="giftSaveModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="giftSaveModalLabel">礼物编辑</h4>
+                </div>
+                <div class="modal-body giftSave-append">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="giftConfSave()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--编辑图片-->
+    <div class="modal fade" id="uploadFileModal" tabindex="-1" role="dialog" aria-labelledby="uploadFileModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="upload-file-name">图片编辑</h4>
+                </div>
+                <div class="modal-body">
+                    <form id='uploads_files' method="post" enctype="multipart/form-data">
+                        <input type="hidden" id="gifts_id" name="id" value="">
+                        <input type="hidden" name="master_url" value="/admin/giftConfAdd">
+                        <input type="hidden" name="token" value="{$token}">
+                        <div class="form-group">
+                            <label class="control-label">添加礼物图片[PNG]</label>
+                            <input type="file" class="form-control gift_tags" imagename="image" id="image" value="" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">添加礼物角标[PNG]</label>
+                            <input type="file" class="form-control gift_tags" imagename="tags" id="tags" value="" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">添加礼物动图[GIF]:</label>
+                            <input type="file" class="form-control gift_tags" imagename="animation" id="animation" value="" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">添加礼物动画[SVGA]:</label>
+                            <input type="file" class="form-control gift_tags" imagename="giftAnimation" id="giftAnimation" value="" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">添加礼物动画[MP4]:</label>
+                            <input type="file" class="form-control gift_tags" imagename="giftMp4Animation" id="giftMp4Animation" value="" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="add_imgs()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="outerdiv" style="position:fixed;top:0;left:0;background:rgba(0,0,0,0.7);z-index:2;width:100%;height:100%;display:none;">
+        <div id="innerdiv" style="position:absolute;">
+            <img id="max_img" src="" />
+        </div>
+    </div>
+    </div>
+    {include file="../view/admin/common/jsHeader.html"}
+    <input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+    <input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+    <input type="hidden" value="{$token}" name="token" id="token">
+    <script src="/admin/js/trap/fileinput.js" type="text/javascript"></script>
+    <script src="/admin/js/trap/fileinput_locale_zh.js" type="text/javascript"></script>
+    <script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+    <script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/svgaplayerweb@2.3.1/build/svga.min.js"></script>
+    <script>
+        //清除缓存
+        $("#clearCache").on('click', function () {
+            var master_url = "/admin/clearCache";
+            var token = $("#token").val();
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                url: "/admin/clearCache", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: {
+                    master_url: master_url,
+                    token: token,
+                    type: 'gift_conf'
+                },
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 500); //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        })
+
+        $('#search').click(function () {
+            var giftType = $('#giftType').val();
+            var giftId = $('#giftId').val();
+            var token = $('#token').val();
+            window.location.href = "/admin/giftConf?token=" + token + '&master_url=/admin/giftConf&page=1&giftId=' +
+                giftId + '&giftType=' + giftType;
+        });
+
+        //配置跳转
+        $(".randomGiftConf").on('click', function () {
+            var giftId = $(this).attr('giftId');
+            window.location.href = "/admin/randomGift?token=" + $('#token').val() + '&master_url=/admin/randomGift&' +
+                '&giftId=' + giftId;
+
+        })
+
+        //配置跳转
+        $(".luckBagGift").on('click', function () {
+            var giftId = $(this).attr('giftId');
+            window.location.href = "/admin/luckBagGift?token=" + $('#token').val() +
+                '&master_url=/admin/luckBagGift&' + '&giftId=' + giftId;
+
+        })
+
+        function add_imgs() {
+            if ($("#gifts_id").val() == "") {
+                toastr.warning('未获得礼物ID');
+                return false;
+            }
+            var formData = $("#uploads_files").serializeArray();
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                url: "/admin/giftConfImg", //请求的 URL地址
+                token: $("#token").val(),
+                dataType: "json", //返回的数据类型
+                data: formData,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000); //延迟5秒刷新页面
+
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        }
+
+        $('.show_video').click(function () {
+            var url = $(this).attr('src');
+            $.ajax({
+                async: true, //表示请求是否异步处理
+                type: "get", //请求类型
+                url: "/admin/decrymp4file?master_url=/admin/decrymp4file&token=" + $("#token").val() +
+                    "&fileUrl=" + url, //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: {
+                    fileUrl: url
+                },
+                timeout: 5000, //超时时间设置，单位毫秒
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+
+                    $('.video-append').empty();
+                    $('.video-append').prepend('<video width="320" height="240" controls>' +
+                        '<source src="' + rs.url + '" type="video/mp4">' +
+                        '</video>');
+                    $('#video').modal('show');
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+
+
+        });
+
+
+        /*		$('.show_video').click(function () {
+        			var url = $(this).attr('src');
+
+        			$('.video-append').empty();
+        			$('.video-append').prepend('<video width="320" height="240" controls>' +
+        					'<source src="' + url + '" type="video/mp4">' +
+        					'</video>');
+        			$('#video').modal('show');
+
+
+        		});*/
+
+        $('.show_svga').click(function () {
+            var url = $(this).attr('src');
+            var gift_id = $(this).attr('id');
+            $('.svga-append').empty();
+            $('.svga-append').prepend(
+                '<div id="svga_' + gift_id + '" class="play_svga" src="' + url + '" class="play_svga" gift_id="' +
+                gift_id + '" style="width: 100px; height: 150px;"></div>'
+            );
+
+            $('#svga').modal('show');
+        });
+
+        $('#svga').on('show.bs.modal', function (e) {
+            var url = $('#svga').find('.play_svga').attr('src')
+            var gift_id = $('#svga').find('.play_svga').attr('gift_id')
+
+            id = '#svga_' + gift_id;
+            var player = new SVGA.Player(id);
+            var parser = new SVGA.Parser(id);
+            parser.load(url, function (videoItem) {
+                player.loops = 2
+                player.clearsAfterStop = false
+                player.setVideoItem(videoItem)
+                player.startAnimation()
+                player.onFrame(function (i) {})
+            })
+        })
+
+        $('.show_img').click(function () {
+            var _this = $(this); //将当前的min_img元素作为_this传入函数
+            imgShow("#outerdiv", "#innerdiv", "#max_img", _this);
+        })
+
+        function imgShow(outerdiv, innerdiv, max_img, _this) {
+            var src = _this.attr("src"); //获取当前点击的min_img元素中的src属性
+            $("#max_img").attr("src", src); //设置#max_img元素的src属性
+
+            /*获取当前点击图片的真实大小，并显示弹出层及大图*/
+            $("<img/>").attr("src", src).load(function () {
+                var windowW = $(window).width(); //获取当前窗口宽度
+                var windowH = $(window).height(); //获取当前窗口高度
+                var realWidth = this.width; //获取图片真实宽度
+                var realHeight = this.height; //获取图片真实高度
+                var imgWidth, imgHeight;
+                var scale = 0.8; //缩放尺寸，当图片真实宽度和高度大于窗口宽度和高度时进行缩放
+
+                if (realHeight > windowH * scale) {
+                    imgHeight = windowH * scale;
+                    imgWidth = imgHeight / realHeight * realWidth;
+                    if (imgWidth > windowW * scale) {
+                        imgWidth = windowW * scale;
+                    }
+                } else if (realWidth > windowW * scale) {
+                    imgWidth = windowW * scale;
+                    imgHeight = imgWidth / realWidth * realHeight;
+                } else {
+                    imgWidth = realWidth;
+                    imgHeight = realHeight;
+                }
+                $("#max_img").css("width", imgWidth); //以最终的宽度对图片缩放
+
+                var w = (windowW - imgWidth) / 2; //计算图片与窗口左边距
+                var h = (windowH - imgHeight) / 2; //计算图片与窗口上边距
+                $(innerdiv).css({
+                    "top": h,
+                    "left": w
+                }); //设置#innerdiv的top和left属性
+                $(outerdiv).fadeIn("fast"); //淡入显示#outerdiv及.pimg
+            });
+
+            $(outerdiv).click(function () {
+                $(this).fadeOut("fast");
+            });
+        }
+
+        //删除
+        $('.delete').click(function () {
+            toastr.warning('功能未开放');
+            return false;
+
+            var id = $(this).attr('delId')
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                url: "/admin/giftConfDel", //请求的 URL地址
+                token: $("#token").val(),
+                dataType: "json", //返回的数据类型
+                data: {
+                    id: id,
+                    token: $('#token').val(),
+                    master_url: '/admin/giftConfDel'
+                },
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000); //延迟5秒刷新页面
+
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        })
+        //添加
+        $('#add').on('click', function () {
+            $(".attire-append").empty();
+            $(".edit-append").empty();
+            $(".edit-append").prepend(
+                "<form id='edit_form' method='post' >" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "礼物名称:" + "</label>" +
+                "<input type='text' class='form-control' name='name'  required='required'>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "礼物描述:" + "</label>" +
+                "<input type='text' class='form-control' name='classification'  required='required'>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "魅力值:" + "</label>" +
+                "<input type='text' class='form-control' name='charm' oninput=\"this.value = this.value.replace(/[^-?\\d+$]/g, '');\" required='required'>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "价格:" + "</label>" +
+                "<input type='text' class='form-control' name='count' oninput=\"this.value = this.value.replace(/[^0-9]/g, '');\" required='required'>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>MP4宽高比:</label>" +
+                "<input type='text' class='form-control' name='mp4Rate' value='0.5' required='required'>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "单位:" + "</label>" +
+                "<select name='unit' class='form-control'>" +
+                "<option value='个' >个</option>" +
+                "</select>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>礼物效果:</label>" +
+                "<select class='form-control ' name='class_type'  required='' aria-required='true'>" +
+                "<option value='1'>------------全屏动效------------</option>" +
+                "<option value='2'>------------局部动效------------</option>" +
+                // "<option value='3'>------------福袋------------</option>"+
+                "</select>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>是否全麦赠送:</label>" +
+                "<select class='form-control ' name='is_all_mic'  required='' aria-required='true'>" +
+                "<option value='0'>------------否------------</option>" +
+                "<option value='1'>------------是------------</option>" +
+                "</select>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>礼物分类:</label>" +
+                "<select class='form-control ' name='gift_type'  required='' aria-required='true'>" +
+                "<option value='1'>------------普通礼物------------</option>" +
+                "<option value='2'>------------随机礼物------------</option>" +
+                "<option value='3'>------------福袋------------</option>" +
+                "</select>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>图片:</label>" +
+                "<input type='file' class='form-control corner_sign' id='image' required>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>动图:</label>" +
+                "<input type='file' class='form-control corner_sign' id='animation' required>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>动画:</label>" +
+                "<input type='file' class='form-control corner_sign' id='giftAnimation' required>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>角标:</label>" +
+                "<input type='file' class='form-control corner_sign' id='tags' required>" +
+                "</div>" +
+
+                "<input type='hidden' value='{$token}' name='token'>" +
+                "<input type='hidden' value='/admin/giftConfAdd' id='master_url' name='master_url'>" +
+                " </form>"
+            );
+            $('#editModal').modal('show');
+        });
+        //添加或更改图片
+        $('.addGiftImage').on('click', function () {
+            $("#gifts_id").val($(this).parents("tr").find(".id").text());
+            $('#uploadFileModal').modal('show');
+        })
+        //编辑礼物信息
+        $('.editGift').on('click', function () {
+            $(".giftSave-append").empty()
+            $(".giftSave-append").prepend(
+                "<form id='edit_form' method='post'>" +
+                " <input type='hidden' value='/admin/giftConfSave'>" +
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "礼物名称:" + "</label>" +
+                "<input type='text' class='form-control gift_name' name='name' value='' required>" +
+                "</div>" +
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "礼物描述:" + "</label>" +
+                "<input type='text' class='form-control gift_classification' name='classification' value='' required>" +
+                "</div>" +
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "介绍:" + "</label>" +
+                "<input type='text' class='form-control gift_introduce' name='intro' value='' required>" +
+                "</div>" +
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "魅力值:" + "</label>" +
+                "<input type='text' class='form-control gift_number' name='charm' value='' required>" +
+                "</div>" +
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "价格:" + "</label>" +
+                "<input type='text' class='form-control gift_coin' name='count' value='' required>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>MP4宽高比:</label>" +
+                "<input type='text' class='form-control mp4Rate' name='mp4Rate' value='0.5' required='required'>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>礼物效果:</label>" +
+                "<select class='form-control class_type' name='class_type' required='' aria-required='true' autocomplete='off'>" +
+                "<option value='1'>------------全屏动效------------</option>" +
+                "<option value='2'>------------局部动效------------</option>" +
+                "</select>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>是否全麦赠送:</label>" +
+                "<select class='form-control is_all_mic' name='is_all_mic' aria-required='true' required autocomplete='off'>" +
+                "<option value='0'>------------否------------</option>" +
+                "<option value='1'>------------是------------</option>" +
+                "</select>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>礼物分类:</label>" +
+                "<select class='form-control gift_type' name='gift_type' required='' aria-required='true' autocomplete='off'>" +
+                "<option value='1'>------------普通礼物------------</option>" +
+                "<option value='2'>------------随机礼物------------</option>" +
+                "<option value='3'>------------福袋------------</option>" +
+                "</select>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "爵位礼物:" + "</label>" +
+                "<select class='form-control is_duke' name='dukeLevel' aria-required='true' autocomplete='off'>" +
+                "<option value='0'>------------请选择------------</option>" +
+                "{volist name='duke' id='list'}" +
+                "<option value='{$list.duke_id}'>------------{$list.duke_name}------------</option>" +
+                "{/volist}" +
+                "</select>" +
+                "</div>" +
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "会员礼物:" + "</label>" +
+                "<select class='form-control is_vip' name='vipLevel' aria-required='true' autocomplete='off'>" +
+                "<option value='0'>------------请选择------------</option>" +
+                "<option value='1'>------------VIP------------</option>" +
+                "<option value='2'>------------SVIP------------</option>" +
+                "</select>" +
+                "</div>" +
+                "<input type='hidden' value='/admin/giftConfSave' name='master_url'>" +
+                "<input type='hidden' value='{$token}' name='token'>" +
+                "<input type='hidden' class='gift_id' name='giftId'>" +
+                " </form>"
+            );
+            $(".giftSave-append .gift_name").val($(this).parents("tr").find(".gift_name").text());
+            $(".giftSave-append .gift_classification").val($(this).attr('gift_classification'));
+            $(".giftSave-append .gift_introduce").val($(this).attr('gift_introduce'));
+            $(".giftSave-append .gift_number").val($(this).parents("tr").find(".gift_number").text());
+            $(".giftSave-append .gift_coin").val($(this).parents("tr").find(".gift_coin").text());
+            $(".giftSave-append .mp4Rate").val($(this).parents("tr").find(".mp4Rate").text());
+
+            var is_duke = $(this).parents("tr").find(".is_duke").attr('duke');
+            // $(".giftSave-append .is_duke option[value='" + is_duke + "']").attr("selected", "select");
+            $(".giftSave-append .is_duke").val(is_duke);
+
+            // $(".giftSave-append .class_type option[value='" + $(this).attr('class_type') + "']").attr("selected", "select");
+            $(".giftSave-append .class_type").val($(this).attr('class_type'));
+
+            // $(".giftSave-append .is_all_mic option[value='" + $(this).attr('is_all_mic') + "']").attr("selected", "select");
+            $(".giftSave-append .is_all_mic").val($(this).attr('is_all_mic'));
+
+            // $(".giftSave-append .gift_type option[value='" + $(this).attr('gift_type') + "']").attr("selected", "select");
+            $(".giftSave-append .gift_type").val($(this).attr('gift_type'));
+
+            var is_vip = $(this).parents("tr").find(".is_vip").attr('vip');
+            // $(".giftSave-append .is_vip option[value='" + is_vip + "']").attr("selected", "select");
+            $(".giftSave-append .is_vip").val(is_vip);
+
+            $(".giftSave-append .gift_id").val($(this).parents("tr").find(".id").text());
+            $('#giftSaveModal').modal('show');
+        });
+        //编辑执行
+        function giftConfSave() {
+            var edit_info = $("#edit_form").serializeArray();
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                url: "/admin/giftConfSave", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: edit_info,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000); //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        }
+        //图片上传
+        $(document).on("change", ".corner_sign", function () {
+            var sign = $(this).attr('id');
+            if ($(this)[0].files[0]) {
+                var animationType = $(this)[0].files[0].name.split('.');
+                if (animationType[1] != "bmp" && animationType[1] != "png" && animationType[1] != "gif" &&
+                    animationType[1] != "jpg" && animationType[1] != "jpeg" && animationType[1] != "svga") {
+                    toastr.warning("文件只限图片");
+                    return false;
+                }
+            }
+            var formData = new FormData();
+            formData.append("token", $("#token").val());
+            formData.append("master_url", $("#master_url").val());
+            formData.append("image", $(this)[0].files[0]);
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                cache: false,
+                processData: false,
+                contentType: false,
+                type: "post", //请求类型
+                url: "/admin/ossAttireFile", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: formData,
+                success: function (rs) {
+                    if (rs.status !== 1) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    $('#edit_form').append("<input type='hidden' name=" + sign + "  value=" + rs.image +
+                        ">");
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        })
+        //添加执行
+        function edit_info() {
+            var edit_info = $("#edit_form").serializeArray();
+            if (edit_info[0]['value'] == '' && edit_info[1]['value'] == '') {
+                toastr.warning("必填参数为空");
+                return false;
+            }
+            if (edit_info[2]['value'] == '') {
+                toastr.warning("分类必填");
+                return false;
+            }
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                url: "/admin/giftConfAdd", //请求的 URL地址
+                token: $("#token").val(),
+                dataType: "json", //返回的数据类型
+                data: edit_info,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000); //延迟5秒刷新页面
+
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+
+            return false;
+        }
+        //分页
+        $('#pageLimit').bootstrapPaginator({
+            currentPage: $("#page").val(),
+            totalPages: $("#total_page").val(),
+            size: "normal",
+            bootstrapMajorVersion: 3,
+            alignment: "right",
+            numberOfPages: '5',
+            pageUrl: function (type, page, current) {
+                //是每个分页码变成一个超链接
+                return '?page=' + page + '&master_url=/admin/giftConf&token=' + $("#token").val() + '&giftType=' +
+                    $("#giftType").val()
+            },
+            itemTexts: function (type, page, current) {
+                switch (type) {
+                    case "first":
+                        return "首页";
+                    case "prev":
+                        return "上一页";
+                    case "next":
+                        return "下一页";
+                    case "last":
+                        return "末页";
+                    case "page":
+                        return page;
+                }
+            }
+            /*   onPageClicked:function (event, originalEvent, type, page) {
+                   location.href = "?page="+page;
+               }*/
+        });
+        //图片上传
+        $(document).on("change", ".gift_tags", function () {
+            var that = $(this)
+            if (that[0].files[0]) {
+                var animationType = that[0].files[0].name.split('.');
+                if (animationType[1] != "bmp" && animationType[1] != "png" && animationType[1] != "gif" &&
+                    animationType[1] != "jpg" && animationType[1] != "jpeg" && animationType[1] != "svga" &&
+                    animationType[1] != "mp4") {
+                    toastr.warning("不支持文件");
+                    return false;
+                }
+            }
+            var imagename = $(this).attr('imagename');
+            var formData = new FormData();
+            formData.append("token", $("#token").val());
+            formData.append("master_url", '/admin/giftConfAdd');
+            formData.append("image", that[0].files[0]);
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                cache: false,
+                processData: false,
+                contentType: false,
+                type: "post", //请求类型
+                url: "/admin/ossAttireFile", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: formData,
+                success: function (rs) {
+                    if (rs.status !== 1) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    that.parent().append("<input type='hidden' name=" + imagename + "  value=" + rs
+                        .image + ">");
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+        });
+    </script>
+    </div>
+</body>
+
+</html>

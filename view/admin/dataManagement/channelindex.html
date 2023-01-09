@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Mua语音 - 运营后台</title>
+	<!--    全局css-->
+	{include file="../view/admin/common/cssHeader.html"}
+	<link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+	<link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+	<link href="/time/daterangepicker.css" rel="stylesheet">
+	<style>
+		table {
+			table-layout: fixed;
+		}
+
+		td {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+	</style>
+</head>
+
+<body class="gray-bg">
+	<div class="wrapper wrapper-content animated fadeInRight">
+		<!-- Panel Other -->
+		<div class="ibox float-e-margins">
+			<div class="ibox-content">
+				<div class="row row-lg">
+					<div class="col-sm-12">
+						<!-- Example Events -->
+						<div class="example-wrap">
+							<div class="btn-group hidden-xs form-inline">
+								<div class="form-group">
+									<input type="text" value="{$demo}" id="demo" readonly
+										class="form_datetime form-control input-outline" style="width:190px;">
+								</div>
+								<div class="form-group">
+									<select class="form-control" id="channel" style="width: 200px;">
+										<option value="">请选择渠道&#12288&#12288</option>
+										{if condition="!empty($channel_list)"}
+										{volist name="$channel_list" id="list_channel"}
+										<option value="{$list_channel.channel_name}" {if
+											$list_channel.channel_name==$channel} echo selected="selected"
+											{/if}>{$list_channel.channel_name} </option> {/volist} {/if} </select>
+											</div> <div class="form-group">
+											<select class="form-control" id="type" style="width: 200px;">
+												<!-- <option value="1" {if $type == 1} echo selected="selected" {/if}>未去重</option> -->
+												<option value="2" {if $type==2} echo selected="selected" {/if}>以去重
+													</option> </select> </div> <div class="form-group">
+													<button type="button" class="btn btn-outline btn-success"
+														id="search">
+														<i aria-hidden="true"></i>搜索
+													</button>
+								</div>
+								<div class="form-group">
+									<button type="button" class="btn btn-outline btn-success" id="daochu">
+										<i aria-hidden="true"></i>导出
+									</button>
+								</div>
+								<div class="form-group">
+									<button type="button" class="btn btn-outline btn-success" id="paydaochu">
+										<i aria-hidden="true"></i>渠道充值导出
+									</button>
+								</div>
+							</div>
+							<div class="example">
+								<table class="table table-hover table-responsive" id="data_table">
+									<thead>
+										<tr>
+											<th class="text-center">id</th>
+											<th class="text-center">渠道</th>
+											<th class="text-center">日期</th>
+											<th class="text-center">日活</th>
+											<th class="text-center">新增</th>
+											<th class="text-center">新增充值总金额</th>
+											<th class="text-center">新增充值人数</th>
+											<th class="text-center">新增充值率</th>
+											<th class="text-center">新增总充值</th>
+											<th class="text-center">新增累计充值人数</th>
+											<th class="text-center">充值总金额</th>
+											<th class="text-center">充值人数</th>
+											<th class="text-center">充值率</th>
+											<th class="text-center">ARPU</th>
+											<th class="text-center">ARPPU</th>
+											<th class="text-center">三日付费</th>
+											<th class="text-center">七日付费</th>
+											<th class="text-center">十五付费</th>
+											<th class="text-center" style="width:150px;">操作</th>
+										</tr>
+									</thead>
+									<tbody>
+										{if condition="!empty($list)"}
+										{volist name="list" id="data"}
+										<tr>
+											<td class="text-center" id="channel_id">{$data.id}</td>
+											<td class="text-center channel" id="channels">{$data.channel}</td>
+											<td class="text-center riq" id="riq">{$data.riq}</td>
+											<td class="text-center">{$data.rih}</td>
+											<td class="text-center">{$data.xinz}</td>
+											<td class="text-center">{$data.nczzje}</td>
+											<td class="text-center">{$data.nczrs}</td>
+											<!--新增充值人数-->
+											<td class="text-center">{$data.nczl/100}%</td>
+											<!--新增充值率-->
+											<td class="text-center">{$data.pay_retention_sum}</td>
+											<!--新增总充值-->
+											<td class="text-center"
+												ref='<?php echo json_encode($data['total_pay_users']);?>'
+												onclick="users(this)">{$data.total_pay_count}</td>
+											<!--新增累计充值人数-->
+											<td class="text-center">{$data.czzje}</td>
+											<!--充值总金额-->
+											<td class="text-center">{$data.czrs}</td>
+											<!--充值人数-->
+											<td class="text-center">{$data.czl/100}%</td>
+											<!--充值率-->
+											<td class="text-center">{$data.arpu/100}</td>
+											<!--ARPU-->
+											<td class="text-center">{$data.arppu/100}</td>
+											<!--ARPPU-->
+											<td class="text-center">{$data.scharge}</td>
+											<!--三日付费-->
+											<td class="text-center">{$data.qcharge}</td>
+											<!--七日付费-->
+											<td class="text-center">{$data.swcharge}</td>
+											<!--十五付费-->
+											<td class="text-center">
+												{if condition="in_array('/admin/channelRetention',$user_role_menu)"}
+												<button class="btn btn-success details"
+													channel_id="{$data.id}">详情</button>
+												<button class="btn btn-success select_retention">留存</button>
+												{/if}
+											</td>
+										</tr>
+										{/volist}
+										{else}
+										<tr class="no-records-found">
+											<td colspan="9" class="text-center">没有找到匹配的记录</td>
+										</tr>
+										{/if}
+									</tbody>
+								</table>
+							</div>
+						</div>
+						{if condition = "$page.total_page > 1"}
+						<div id="Paginator" style="text-align: center">
+							<ul id="pageLimit"></ul>
+						</div>
+						{/if}
+						<!-- End Example Events -->
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- End Panel Other -->
+	</div>
+	<!--查看渠道留存详情-->
+	<div class="modal fade" id="selectRate">
+		<div class="modal-dialog" style="width:80%">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h3>详情</h3>
+				</div>
+				<table class="table table-hover table-responsive" id="select_forum_reply_table">
+					<thead>
+						<tr>
+							<th class="text-center">渠道id</th>
+							<th class="text-center">次日留存</th>
+							<th class="text-center">三日留存</th>
+							<th class="text-center">七日留存</th>
+							<th class="text-center">十五日留存</th>
+							<th class="text-center">三十日留存</th>
+						</tr>
+					</thead>
+					<tbody id="member_tbody">
+
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="detailModalLabel">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true"
+							onclick="empty()">&times;</span>
+					</button>
+					<h4 class="modal-title" id="detailModalLabel">用户列表</h4>
+				</div>
+				<div class="modal-body detail-append">
+				</div>
+			</div>
+		</div>
+	</div>
+	{include file="../view/admin/common/userItem.html"}
+	<input type="hidden" value="{$token}" id="token">
+	<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+	<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+	<input type="hidden" value="{$user_role_menu_input}" id="user_role_menu">
+	<!-- 全局js -->
+	{include file="../view/admin/common/jsHeader.html"}
+	<script src="/admin/js/fileinput/fileinput.js" type="text/javascript"></script>
+	<script src="/admin/js/fileinput/zh.js" type="text/javascript"></script>
+	<script src="/admin/js/plugins/toastr/toastr.min.js"></script>
+	<script src="/time/moment.min.js"></script>
+	<script src="/time/daterangepicker.min.js"></script>
+	<script src="/admin/js/date-select.js"></script>
+	<style>
+	</style>
+	<script>
+		$('body').on('hidden.bs.modal', '#selectRate', function () {
+			$("#member_tbody tr").remove();
+		});
+
+		$('#pageLimit').bootstrapPaginator({
+			currentPage: $("#page").val(),
+			totalPages: $("#total_page").val(),
+			size: "normal",
+			bootstrapMajorVersion: 3,
+			alignment: "right",
+			numberOfPages: '5',
+			pageUrl: function (type, page, current) {
+				//是每个分页码变成一个超链接
+				return '?page=' + page + '&master_url=/admin/channelindex&token=' + $("#token").val() + '&demo=' +
+					$("#demo").val() + '&channel=' + $('#channel').val() + '&type=' + $('#type').val();
+			},
+			itemTexts: function (type, page, current) {
+				switch (type) {
+					case "first":
+						return "首页";
+					case "prev":
+						return "上一页";
+					case "next":
+						return "下一页";
+					case "last":
+						return "末页";
+					case "page":
+						return page;
+				}
+			}
+		});
+		$('#search').click(function () {
+			var channel = $('#channel').val();
+			var token = $('#token').val();
+			var page = $("#page").val();
+			window.location.href = "/admin/channelindex?token=" + token + '&master_url=/admin/channelindex&page=' +
+				page + '&demo=' + $("#demo").val() + '&channel=' + channel + '&type=' + $('#type').val();
+		})
+		$('.details').click(function () {
+			var channel = $(this).parent().siblings('.channel').text();
+			var strtime = $(this).parent().siblings('.riq').text();
+			var endtime = $(this).parent().siblings('.riq').text();
+			var token = $('#token').val();
+			var demo = strtime + ' - ' + endtime;
+			if (strtime > endtime) {
+				toastr.warning('开始时间不能大于结束时间');
+				return false;
+			}
+			window.location.href = "/admin/channelDetails?token=" + token +
+				'&master_url=/admin/channelDetails&demo=' + demo + '&channel=' + channel + '&channel_id=' + $(this)
+				.attr('channel_id');
+		})
+		$('#daochu').click(function () {
+			var token = $('#token').val();
+			var page = $("#page").val();
+			var channel = $('#channel').val();
+			window.location.href = "/admin/channelindex?token=" + token + '&master_url=/admin/channelindex&page=' +
+				page + '&demo=' + $("#demo").val() + '&channel=' + channel + '&daochu=1';
+		})
+
+		$('#paydaochu').click(function () {
+			var token = $('#token').val();
+			var channel = $('#channel').val();
+			window.location.href = "/admin/channelindex?token=" + token + '&master_url=/admin/channelindex' +
+				'&demo=' + $("#demo").val() + '&channel=' + channel + '&daochu=2';
+		})
+
+		//渠道留存详情
+		$(".select_retention").click(function () {
+			var id = $(this).parents("tr").find("#channel_id").text();
+			var channel = $(this).parents("tr").find("#channels").text();
+			var riq = $(this).parents("tr").find("#riq").text();
+			$.ajax({
+				async: false, //表示请求是否异步处理
+				type: "post", //请求类型
+				url: "/admin/channelRetention", //请求的 URL地址
+				dataType: "json", //返回的数据类型
+				data: {
+					id: id,
+					channel: channel,
+					type: 1,
+					riq: riq,
+					master_url: '/admin/channelRetention',
+					token: $("#token").val(),
+				},
+				success: function (rs) {
+					console.log(rs)
+					if (rs.code !== 200) {
+						toastr.warning(rs.msg);
+						return false;
+					}
+					$("#member_tbody").prepend("<tr class = " + rs.data.id + ">" +
+						"<td class='text-center'>" + rs.data.id + "</td>" +
+						"<td class='text-center'>" + rs.data.day_1 + "</td>" +
+						"<td class='text-center'>" + rs.data.day_2 + "</td>" +
+						"<td class='text-center'>" + rs.data.day_6 + "</td>" +
+						"<td class='text-center'>" + rs.data.day_14 + "</td>" +
+						"<td class='text-center'>" + rs.data.day_29 + "</td>" +
+						"</tr>"
+					);
+					$('#selectRate').modal('show')
+				},
+				error: function (rs) {
+					toastr.warning('请求失败');
+				}
+			});
+			return false;
+		});
+
+		function users(obj) {
+			var str = '';
+			var info = $(obj).attr('ref');
+			var info = eval("(" + info + ")");
+			$.each(info, function (key, uid) {
+				str += '<tr><td class="text-center">' + uid + '</td></tr>'
+			});
+			$(".detail-append").empty();
+			$(".detail-append").prepend(
+				"<table class='table table-hover table-responsive' id='data_table' style='word-wrap: break-word; word-break: break-all;'>" +
+				"<thead>" +
+				"<tr>" +
+				"<th class='text-center'>用户ID</th>" +
+				"</tr>" +
+				"</thead>" +
+				"<tbody>" +
+				str +
+				"<tbody>" +
+				"<table>")
+			$('#detailModal').modal('show');
+		}
+	</script>
+</body>
+
+</html>

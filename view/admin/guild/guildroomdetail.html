@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="example">
+                            {if condition="in_array('/admin/addGuidRoom',$user_role_menu)"}
+                            <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                <button type="button" class="btn btn-outline btn-success" id="addGuidRoom">
+                                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>指定工会房间
+                                </button>
+                            </div>
+                            {/if}
+                            {if condition="in_array('/admin/addGuidIndexRoom',$user_role_menu)"}
+                            <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                <button type="button" class="btn btn-outline btn-success" id="addGuidIndexRoom">
+                                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>指定首页房间
+                                </button>
+                            </div>
+                            {/if}
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">房间Id</th>
+                                    <th class="text-center">房间类型</th>
+                                    <th class="text-center">房间昵称</th>
+                                    <th class="text-center">总金额(M豆)</th>
+                                    <th class="text-center">工分抽成比例</th>
+                                    <th class="text-center">工公抽成</th>
+                                    <th class="text-center">日期</th>
+                                    <th class="text-center">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($data)"}
+                                {volist name="data" id="data"}
+                                <tr>
+                                    <td class="text-center" id='id'>{$data.room_id}</td>
+                                    <td class="text-center" id='room_type'>{$data.room_type}</td>
+                                    <td class="text-center">{$data.room_name}</td>
+                                    <td class="text-center">{$data.totailcoin}</td>
+                                    <td class="text-center">{$data.scale}%</td>
+                                    <td class="text-center">{$data.commission}</td>
+                                    <td class="text-center">{$data.addtime}</td>
+                                    <td class="text-center">
+                                        {if condition="in_array('/admin/delGuidRoom',$user_role_menu)"}
+                                        <button class="btn btn-danger del_info">删除</button>
+                                        {/if}
+                                    </td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="7" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+
+<!--派对房间指定用户-->
+<div class="modal fade" id="addGuidRoomShow" tabindex="-1" role="dialog" aria-labelledby="addGuidRoom">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="addGuildModalLabel">指定公会派对房间</h4>
+            </div>
+            <div class="modal-body">
+                <form id='add_form' method="post">
+                    <div class="form-group">
+                        <label class="control-label">房间Id:</label>
+                        <input type="text" class="form-control" name='room_id' required="required"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                    </div>
+                    <input type="hidden" name="token" value="{$token}" id="token">
+                    <input type="hidden" name="guild_id" value="{$guild_id}" id="guild_id">
+                    <input type="hidden" name="master_url" value="/admin/addGuidRoom">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="add_info()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--派对房间取消指定用户-->
+<div class="modal fade" id="del_info">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>取消操作</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <i class="fa fa-trash-o" id="del_msg"></i>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger" data-btn-danger="modal" onclick="del_info()">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--工会首页房间指定用户-->
+<div class="modal fade" id="addGuidIndexRoomShow" tabindex="-1" role="dialog" aria-labelledby="addGuidRoom">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="addGuildModalLabel">指定公会首页房间</h4>
+            </div>
+            <div class="modal-body">
+                <form id='add_form1' method="post">
+                    <div class="form-group">
+                        <label class="control-label">房间Id:</label>
+                        <input type="text" class="form-control" name='room_id' required="required"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                    </div>
+                    <input type="hidden" name="token" value="{$token}" id="token">
+                    <input type="hidden" name="guild_id" value="{$guild_id}" id="guild_id">
+                    <input type="hidden" name="master_url" value="/admin/addGuidRoom">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="add_info1()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{include file="../view/admin/common/userItem.html"}
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="" id="to_id">
+<input type="hidden" value="" id="room_type">
+<input type="hidden" value="{$user_role_menu_input}" id="user_role_menu">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<style>
+</style>
+<script>
+    $('#addGuidRoom').click(function () {
+        $('#addGuidRoomShow').modal("show")
+    });
+    $('#addGuidIndexRoom').click(function () {
+        $('#addGuidIndexRoomShow').modal("show")
+    });
+
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+//            return '?page=' + page + '&master_url=/admin/getJinUserToGiftLists&token=' + $("#token").val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+    });
+
+    $('.del_info').click(function () {
+        var id = $(this).parents("tr").find("#id").text();
+        var room_type = $(this).parents("tr").find("#room_type").text();
+        $("#to_id").val(id);
+        $("#room_type").val(room_type);
+        $('#del_info').modal('show')
+        $("#del_msg").html(' 您确定要取消此房间? ')
+    })
+
+
+    function add_info() {
+        var add_info = $("#add_form").serializeArray();
+        if (add_info[0]['value'] == '') {
+            toastr.warning('指定房间Id不可为空');
+            return false;
+        }
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/addGuidRoom",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: add_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+    }
+
+    function del_info() {
+        var id = $("#to_id").val();
+        var guild_id = $("#guild_id").val();
+        var room_type = $("#room_type").val();
+        var master_url = '/admin/delGuidRoom'
+        var token = $('#token').val()
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/delGuidRoom",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {id: id, master_url: master_url, token: token,guild_id: guild_id, room_type: room_type},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location(), 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    }
+
+
+    function add_info1() {
+        var add_info = $("#add_form1").serializeArray();
+        if (add_info[0]['value'] == '') {
+            toastr.warning('指定房间Id不可为空');
+            return false;
+        }
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/addGuidRoomIndex",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: add_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+    }
+</script>
+
+</body>
+
+</html>

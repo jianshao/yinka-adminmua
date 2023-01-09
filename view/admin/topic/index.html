@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+    <style>
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+    </style>
+
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        {if condition="in_array('/admin/addLabel',$user_role_menu)"}
+                        <div class="btn-group hidden-xs form-inline">
+                            <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                <button type="button" class="btn btn-outline btn-success" id="add_label">
+                                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加标签
+                                </button>
+                            </div>
+                        </div>
+                        {/if}
+                        <div class="example">
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">标签Id</th>
+                                    <th class="text-center">标签名称</th>
+                                    <th class="text-center">标签话题总数</th>
+                                    <th class="text-center">标签状态</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($labelList)"}
+                                {volist name="labelList" id="lists"}
+                                <tr>
+                                    <td class="text-center" id="id">{$lists.id}</td>
+                                    <td class="text-center">{$lists.topic_name}</td>
+                                    <td class="text-center">{$lists.count}</td>
+                                    <td class="text-center">
+                                    {if condition="in_array('/admin/exitLabel',$user_role_menu)"}
+                                        {if condition="($lists.topic_status) == 0"}
+                                        <span>标签状态：下架</span><br>
+                                        <button class="btn btn-success exitLabel" value="{$lists.topic_status}">上架</button>
+                                        {else}
+                                        <span>标签状态：上架</span><br>
+                                        <button class="btn btn-success exitLabel" value="{$lists.topic_status}" >下架</button>
+                                        {/if}
+                                    {/if}
+                                    </td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="7" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page > 1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+<!--    修改标签状态-->
+<div class="modal fade" id="exit_model">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>修改标签上下架状态</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <i class="glyphicon glyphicon-sort" id="exit_model_msg"></i>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger" data-btn-danger="modal" onclick="exit_model_on()">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--添加礼物信息-->
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" >
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="addModalLabel">添加标签</h4>
+                </div>
+                <div class="modal-body  add-label">
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="button" class="btn btn-primary" onclick="add_labels()">保存</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+</div>
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$token}" id="token">
+<input type="hidden" value="" id="label">
+<input type="hidden" value="" id="status">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<style>
+</style>
+<script>
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/roomList&token=' + $("#token").val() + '&id=' + $("#search_id").val()+'&type='+$("#select_id").val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+    });
+    //修改上下架状态
+    $(".exitLabel").on('click',function(){
+        var id = $(this).parents("tr").find("#id").text();
+        var status = $(this).val();
+        $("#label").val(id);
+        $("#status").val(status);
+        if(status == 0){
+            var statusMsg = "上架";
+        }else{
+            var statusMsg = "下架";
+        }
+        $('#exit_model').modal('show');
+        $("#exit_model_msg").html(' 确定要 '+statusMsg+' 此标签吗?');
+    })
+    function exit_model_on(){
+        var id =  $("#label").val();
+        var status =  $("#status").val();
+        var token = $("#token").val();
+        var master_url = "/admin/exitLabel";
+        var field = 'topic_status';
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/exitLabel",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {id: id,value:status,token: token,master_url:master_url,field:field},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+    //添加标签
+    $('#add_label').on('click',function(){
+        $(".add-label").prepend(
+            "<form id='add_form' method='post'>"+
+            "<div class='form-group'>"+
+                "<label class='control-label'>" + "标签名称： "+"</label>"+
+                "<input type=\"text\" class=\"form-control topic_name\" name='topic_name'  value=\"\" required=\"required\">"+
+            "</div>"+
+            "<div class='form-group'>"+
+                "<label class='control-label'>"+"标签状态:"+"</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='topic_status' class='topic_status' checked value='0'>"+" 下架"+
+                "</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='topic_status' class='topic_status'  value='1'>"+" 上架"+
+                "</label>"+
+            "</div>"+
+            " <input type=\"hidden\" value=\"{$token}\" name=\"token\">"+
+            " <input type=\"hidden\" value='/admin/addLabel' name=\"master_url\">"+
+            " </form>"
+        );
+        $('#addModal').modal('show');
+    });
+    //执行添加or修改
+    function add_labels(){
+        var add_info = $("#add_form").serializeArray();
+        if (add_info[0].value == '') {
+            toastr.warning('标签名称不能为空');
+            return false;
+        }
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/addLabel",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: add_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+</script>
+</body>
+</html>

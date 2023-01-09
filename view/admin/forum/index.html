@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Mua语音 - 运营后台</title>
+	<link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+	<link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="/time/daterangepicker.css">
+	<!--    全局css-->
+	{include file="../view/admin/common/cssHeader.html"}
+	<style>
+		table {
+			table-layout: fixed;
+		}
+
+		td {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+	</style>
+
+</head>
+
+<body class="gray-bg">
+	<div class="wrapper wrapper-content animated fadeInRight">
+		<!-- Panel Other -->
+		<div class="ibox float-e-margins">
+			<div class="ibox-content">
+				<div class="row row-lg">
+					<div class="col-sm-12">
+						<!-- Example Events -->
+						<div class="example-wrap">
+							<div class="btn-group hidden-xs form-inline">
+								<div class="form-group">
+									时间范围：
+									<input type="text" value="{$demo}" id="demo" readonly class="form_datetime form-control input-outline" style="width:190px;">
+								</div>
+								<div class="form-group">
+									用户ID：
+									<input class="form-control input-outline" type="text" value="{$uid}" oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="用户Id" id="uid">
+								</div>
+								&#12288
+								<button type="button" class="btn btn-outline btn-success" style="float:right;" id="search">
+									<i aria-hidden="true"></i>搜索
+								</button>
+							</div>
+							<div class="example">
+								<h3>发布动态总数:{$total_forum} 审核通过条数:{$agree_forum} 发布人数:{$total_users}</h3>
+							</div>
+							<div class="example">
+								<table class="table table-hover table-responsive" id="data_table">
+									<thead>
+										<tr>
+											<th class="text-center" style="color:#1c84c6">ID</th>
+											<th class="text-center">昵称</th>
+											<th class="text-center">用户Id</th>
+											<th class="text-center">用户等级</th>
+											<th class="text-center">话题</th>
+											<th class="text-center">内容</th>
+											<th class="text-center">图片</th>
+											<th class="text-center">语音</th>
+											<th class="text-center">发布时间</th>
+											<th class="text-center">审核时间</th>
+											</th>
+											<th class="text-center">操作</th>
+										</tr>
+									</thead>
+									<tbody>
+										{if condition="!empty($list)"}
+										{volist name="list" id="lists"}
+										<tr>
+											<td class="text-center" id="id">{$lists.forum_id}</td>
+											<td class="text-center">{$lists.nickname}</td>
+											<td class="text-center" style="color:#1c84c6" onclick="on_user_item({$lists.forum_uid},'/admin/memberItem')">{$lists.forum_uid}</td>
+                                            <td class="text-center">{$lists.lv_dengji}</td>
+                                            <td class="text-center">{$topic_map[$lists.tid]}</td>
+											<td class="text-center" id="forum_content" title="{$lists.forum_content}">
+												{$lists.forum_content}
+											</td>
+											<td class="text-center">
+												{volist name="$lists.forum_image" id="img_list"}
+												<img src="{$img_list}" alt="缩略图" class="thumbnail col-sm-4 col-md-4 show_img">
+												{/volist}
+											</td>
+											<td class="text-center">
+												{if condition="!empty($lists.forum_voice)"}
+												<audio src="{$lists.forum_voice}" controls="controls" style="width:100px;height: 20px"></audio>
+												{/if}
+											</td>
+											<td class="text-center">{$lists.createtime}</td>
+											<td class="text-center">{$lists.examined_time}</td>
+											<td class="text-center">
+												{if condition="in_array('/admin/replyList',$user_role_menu)"}
+												<button class="btn btn-success select_forum_reply">查看评论</button>
+												{/if}
+												{if condition="in_array('/admin/delForum',$user_role_menu)"}
+												<button class="btn btn-danger del_forum">删除</button>
+												{/if}
+											</td>
+										</tr>
+										{/volist}
+										{else}
+										<tr class="no-records-found">
+											<td colspan="7" class="text-center">没有找到匹配的记录</td>
+										</tr>
+										{/if}
+									</tbody>
+								</table>
+							</div>
+						</div>
+						{if condition = "$page.total_page > 1"}
+						<div id="Paginator" style="text-align: center">
+							<ul id="pageLimit"></ul>
+						</div>
+						{/if}
+						<!-- End Example Events -->
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- End Panel Other -->
+	</div>
+	<div id="outerdiv" style="position:fixed;top:0;left:0;background:rgba(0,0,0,0.7);z-index:2;width:100%;height:100%;display:none;">
+		<div id="innerdiv" style="position:absolute;">
+			<img id="max_img" style="border:5px solid #fff;" src="" />
+		</div>
+	</div>
+	<!--删除帖子-->
+	<div class="modal fade" id="del_forum">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h3>删除操作</h3>
+				</div>
+				<div class="modal-body" style="text-align: center">
+					<i class="fa fa-trash-o" id="del_msg"></i>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-default" data-dismiss="modal">关闭</button>
+					<button class="btn btn-danger" data-btn-danger="modal" onclick="del_forum()">确认</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!--查看帖子评论-->
+	<div class="modal fade" id="select_forum_reply">
+		<div class="modal-dialog" style="width:70%">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h3>查看评论</h3>
+				</div>
+				<table class="table table-hover table-responsive" id="select_forum_reply_table">
+					<thead>
+						<tr>
+							<th class="text-center">评论时间</th>
+							<th class="text-center">动态Id</th>
+							<th class="text-center">评论Id</th>
+							<th class="text-center">评论人Id</th>
+							<th class="text-center">评论内容</th>
+							<th class="text-center">操作</th>
+						</tr>
+					</thead>
+					<tbody id="reply_tbody">
+
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+	<!--删除评论-->
+	<div class="modal fade" id="del_reply">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h3>删除操作</h3>
+				</div>
+				<div class="modal-body" style="text-align: center">
+					<i class="fa fa-trash-o" id="del_reply_msg"></i>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-default" data-dismiss="modal">关闭</button>
+					<button class="btn btn-danger" data-btn-danger="modal" onclick="del_reply_op()">确认</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	{include file="../view/admin/common/userItem.html"}
+	<input type="hidden" value="{$token}" id="token">
+	<input type="hidden" value="" id="to_id">
+	<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+	<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+	<input type="hidden" value="{$user_role_menu_input}" id="user_role_menu">
+	<!-- 全局js -->
+	{include file="../view/admin/common/jsHeader.html"}
+	<script src="/time/moment.min.js"></script>
+	<script src="/time/daterangepicker.min.js"></script>
+	<script src="/admin/js/date-select.js"></script>
+	<script>
+		$('body').on('hidden.bs.modal', '#select_forum_reply', function () {
+			$("#reply_tbody tr").remove();
+		});
+		$(function () {
+			//鼠标位于 a标签上方时发生 mouseover 事件
+			$("#forum_content").mouseover(function (e) {
+				this.Mytitle = this.title; //获取超链接 title属性的内容
+				this.title = ""; //设置 title属性内容为空
+				$("body").append("<div id='div_toop'>" + this.Mytitle + "</div>"); //将要显示的内容添加到 新建 div标签中 并追加到 body 中
+				$("#div_toop")
+					.css({
+						//设置 div 内容位置
+						"top": (e.pageY + 10) + "px",
+						"position": "absolute", //添加绝对位置
+						"left": (e.pageX + 20) + "px"
+					}).show("fast"); // show(spe.ed,callback) speed: xian'shi'su'du
+			}).mouseout(function () { //鼠标指针从 a标签 上离开时 发生mouseout 事件
+				this.title = this.Mytitle;
+				$("#div_toop").remove(); //移除对象
+			}).mousemove(function (e) { //鼠标指针在 a标签 中移动时 发生mouseout 事件
+				$("#div_toop")
+					.css({
+						//设置 div 内容位置
+						"top": (e.pageY + 10) + "px",
+						"position": "absolute", //添加绝对位置
+						"left": (e.pageX + 20) + "px"
+					});
+			});
+		});
+
+		$(".del_forum").click(function () {
+			var id = $(this).parents("tr").find("#id").text();
+			$("#to_id").val(id);
+			var content = $(this).parents("tr").find("#forum_content").text();
+			$('#del_forum').modal('show')
+			$("#del_msg").html(' 您确定要删除动态内容：' + content + ' ? ')
+		})
+
+		$(".select_forum_reply").click(function () {
+			// $('#select_forum_reply').off().on('show','hidden.bs.modal');
+			var id = $(this).parents("tr").find("#id").text();
+			$.ajax({
+				async: false, //表示请求是否异步处理
+				type: "post", //请求类型
+				url: "/admin/replyList", //请求的 URL地址
+				dataType: "json", //返回的数据类型
+				data: {
+					forum_id: id,
+					master_url: '/admin/replyList',
+					token: $("#token").val(),
+					page: 1
+				},
+				success: function (rs) {
+					if (rs.code !== 200) {
+						toastr.warning(rs.msg);
+						return false;
+					}
+					if (rs.data.list.length > 0) {
+						$(rs.data.list).each(function (i, n) {
+							$("#reply_tbody").prepend("<tr class = " + n.reply_id + ">" +
+								"<td class='text-center'>" + n.createtime + "</td>" +
+								"<td class='text-center'>" + n.forum_id + "</td>" +
+								"<td class='text-center'>" + n.reply_id + "</td>" +
+								"<td class='text-center' onclick=on_user_item(" + n.reply_uid + ',' + "'/admin/memberItem'" + ")>" + n.reply_uid + "</td>" +
+								"<td class='text-center'>" + n.reply_content + "</td>" +
+								"<td class='text-center'>" +
+								"<button class='btn btn-danger role_op' onclick=del_reply(" + n.reply_id + ',' + "'" + (n.reply_content.replace(/\s+/g,"")) + "'" + ")>删除</button>" +
+								"</td>" +
+								"</tr>");
+						});
+						var user_role_menu = $("#user_role_menu").val();
+						var user_role_menus = user_role_menu.split(",")
+						var index = $.inArray("/admin/delReply", user_role_menus); //结果：index=1
+						if (index <= 0) {
+							$(".role_op").remove();
+						}
+						console.log(user_role_menus);
+					} else {
+						$("#reply_tbody").prepend("<tr class='no-records-found'><td colspan='6' class='text-center'>没有找到匹配的记录</td></tr>");
+					}
+					$('#select_forum_reply').modal('show')
+				},
+				error: function (rs) {
+					toastr.warning('请求失败');
+				}
+			});
+			return false;
+		})
+
+		$('#pageLimit').bootstrapPaginator({
+			currentPage: $("#page").val(),
+			totalPages: $("#total_page").val(),
+			size: "normal",
+			bootstrapMajorVersion: 3,
+			alignment: "right",
+			numberOfPages: '5',
+			pageUrl: function (type, page, current) {
+				//是每个分页码变成一个超链接
+				return '?page=' + page + '&master_url=/admin/getForumList&token=' + $("#token").val() + '&demo=' + $('#demo').val() + '&uid=' + $('#uid').val();
+			},
+			itemTexts: function (type, page, current) {
+				switch (type) {
+					case "first":
+						return "首页";
+					case "prev":
+						return "上一页";
+					case "next":
+						return "下一页";
+					case "last":
+						return "末页";
+					case "page":
+						return page;
+				}
+			}
+			/*   onPageClicked:function (event, originalEvent, type, page) {
+			       location.href = "?page="+page;
+			   }*/
+		});
+
+		$('#search').click(function () {
+			var demo = $('#demo').val();
+			var token = $('#token').val();
+			var page = $("#page").val();
+			window.location.href = "/admin/getForumList?token=" + token + '&master_url=/admin/getForumList' + '&demo=' + demo + '&uid=' + $('#uid').val();
+		})
+
+		$('.show_img').click(function () {
+			var _this = $(this); //将当前的min_img元素作为_this传入函数
+			imgShow("#outerdiv", "#innerdiv", "#max_img", _this);
+		})
+
+		function del_reply_op() {
+			var reply_id = $("#to_id").val();
+			var master_url = '/admin/delReply'
+			var token = $('#token').val()
+			$.ajax({
+				async: false, //表示请求是否异步处理
+				type: "post", //请求类型
+				url: "/admin/delReply", //请求的 URL地址
+				dataType: "json", //返回的数据类型
+				data: {
+					reply_id: reply_id,
+					master_url: master_url,
+					token: token
+				},
+				success: function (rs) {
+					if (rs.code !== 200) {
+						toastr.warning(rs.msg);
+						return false;
+					}
+					toastr.success(rs.msg);
+					$('#del_reply').modal('hide')
+					$("." + reply_id).remove();
+
+				},
+				error: function (rs) {
+					toastr.warning('请求失败');
+				}
+			});
+			return false;
+		}
+
+		function del_reply(reply_id, reply_content) {
+			$("#to_id").val(reply_id);
+			$('#del_reply').modal('show')
+			$("#del_reply_msg").html(' 您确定要删除评论内容：' + reply_content + ' ? ')
+		}
+
+		function del_forum() {
+			var id = $("#to_id").val();
+			var master_url = '/admin/delForum'
+			var token = $('#token').val()
+			$.ajax({
+				async: false, //表示请求是否异步处理
+				type: "post", //请求类型
+				url: "/admin/delForum", //请求的 URL地址
+				dataType: "json", //返回的数据类型
+				data: {
+					id: id,
+					master_url: master_url,
+					token: token
+				},
+				success: function (rs) {
+					if (rs.code !== 200) {
+						toastr.warning(rs.msg);
+						return false;
+					}
+					toastr.success(rs.msg);
+					setTimeout(location(), 1000); //延迟5秒刷新页面
+
+				},
+				error: function (rs) {
+					toastr.warning('请求失败');
+				}
+			});
+
+			function location() {
+				window.location.href = window.location.href;
+			}
+
+			return false;
+		}
+
+		function imgShow(outerdiv, innerdiv, max_img, _this) {
+			var src = _this.attr("src"); //获取当前点击的min_img元素中的src属性
+			$("#max_img").attr("src", src); //设置#max_img元素的src属性
+
+			/*获取当前点击图片的真实大小，并显示弹出层及大图*/
+			$("<img/>").attr("src", src).load(function () {
+				var windowW = $(window).width(); //获取当前窗口宽度
+				var windowH = $(window).height(); //获取当前窗口高度
+				var realWidth = this.width; //获取图片真实宽度
+				var realHeight = this.height; //获取图片真实高度
+				var imgWidth, imgHeight;
+				var scale = 0.8; //缩放尺寸，当图片真实宽度和高度大于窗口宽度和高度时进行缩放
+
+				if (realHeight > windowH * scale) {
+					imgHeight = windowH * scale;
+					imgWidth = imgHeight / realHeight * realWidth;
+					if (imgWidth > windowW * scale) {
+						imgWidth = windowW * scale;
+					}
+				} else if (realWidth > windowW * scale) {
+					imgWidth = windowW * scale;
+					imgHeight = imgWidth / realWidth * realHeight;
+				} else {
+					imgWidth = realWidth;
+					imgHeight = realHeight;
+				}
+				$("#max_img").css("width", imgWidth); //以最终的宽度对图片缩放
+
+				var w = (windowW - imgWidth) / 2; //计算图片与窗口左边距
+				var h = (windowH - imgHeight) / 2; //计算图片与窗口上边距
+				$(innerdiv).css({
+					"top": h,
+					"left": w
+				}); //设置#innerdiv的top和left属性
+				$(outerdiv).fadeIn("fast"); //淡入显示#outerdiv及.pimg
+			});
+
+			$(outerdiv).click(function () {
+				$(this).fadeOut("fast");
+			});
+		}
+	</script>
+</body>
+
+</html>

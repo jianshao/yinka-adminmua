@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="example">
+                            {if condition="in_array('/admin/equipList',$user_role_menu)"}
+                            <div class="pull-right search form-inline">
+                                <input class="form-control input-outline" type="text"
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                       placeholder="请输入Id" value="{$search_id}"
+                                       id="search_id">
+                                <button type="button" class=" btn btn-primary" id="search">搜索</button>
+                            </div>
+                            {/if}
+                            <div class="example">
+                                {if condition="in_array('/admin/equipAdd',$user_role_menu)"}
+                                <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                    <button type="button" class="btn btn-outline btn-success" id="add_gift">
+                                        <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加装备
+                                    </button>
+<!--                                    <button type="button" class="btn btn-outline btn-success" id="clearCache">-->
+<!--                                        <i class="glyphicon glyphicon-fire" aria-hidden="true"></i>清除缓存-->
+<!--                                    </button>-->
+                                </div>
+                                {/if}
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">ID</th>
+                                    <th class="text-center">类型</th>
+                                    <th class="text-center">名称</th>
+                                    <th class="text-center">价格</th>
+                                    <th class="text-center">装备图片</th>
+                                    <th class="text-center">装备动画</th>
+                                    <th class="text-center">大动画</th>
+                                    <th class="text-center">道具扩展JSON</th>
+                                    <th class="text-center">状态</th>
+                                    <th class="text-center">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($data)"}
+                                {volist name="data" id="list"}
+                                <tr>
+                                    <td class="text-center id" id="id" >{$list.id}</td>
+                                    {if condition="$list.type == 1"}
+                                        <td class="text-center type" value="{$list.type}">头像框</td>
+                                    {elseif condition="$list.type == 2"}
+                                        <td class="text-center type" value="{$list.type}">音波纹</td>
+                                    {else}
+                                        <td class="text-center type" value="{$list.type}">进场特效</td>
+                                    {/if}
+                                    <td class="text-center gift_name" onclick="equipDetails('{$list.id}')" style="color:#1c84c6">{$list.gift_name}</td>
+                                    <td class="text-center gift_coin" >{$list.gift_coin}</td>
+                                    <td class="text-center gift_image" ><img src="{$list.gift_image}" style="width: 50px;" alt=""></td>
+                                    <td class="text-center gift_animation" ><img src="{$list.gift_animation}" style="width: 50px;" alt=""></td>
+                                    <td class="text-center animation" >{$list.animation}</td>
+                                    <td class="text-center prop_info" >{$list.prop_info}</td>
+                                    {if condition="$list.status == 1"}
+                                        <td class="text-center status" value="{$list.status}">上架</td>
+                                    {else}
+                                        <td class="text-center status" value="{$list.status}">下架</td>
+                                    {/if}
+                                    <td class="text-center" style="width: 20%;">
+                                        {if condition="in_array('/admin/equipExid',$user_role_menu)"}
+                                        <button class="btn btn-success editGift" id="editGift">编辑</button>
+                                        <button class="btn btn-success addGiftImage" id="ossFile">添加图片</button>
+                                        {/if}
+                                    </td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page >1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+    <!--添加礼物信息-->
+<div class="modal fade" id="addModal"  role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="addModalLabel">添加装备</h4>
+            </div>
+            <div class="modal-body">
+                <form id='add_form' method="post">
+                    <div class="form-group">
+                        <label class="control-label">名称:</label>
+                        <input type="text" class="form-control" name='gift_name'  value="" required="required">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">价格:</label>
+                        <input type="text" class="form-control" name="gift_coin" value="" required>
+                    </div>
+                    <div class="form-group" id="TypeDiv">
+                        <label class="control-label">礼物类型：</label>
+                        <select class="form-control " id="typeSelect" name="type"  required="" aria-required="true">
+                            <option value="1">头像框</option>
+                            <option value="2">音波纹</option>
+                            <option value="3">进场动画</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">礼物状态：</label>
+                        <select class="form-control " name="status"  required="" aria-required="true">
+                            <option value="2">下架</option>
+                            <option value="1">上架</option>
+                        </select>
+                    </div>
+                    <input type="hidden" value="/admin/equipAdd" name="master_url">
+                    <input type="hidden" value="{$token}" name="token">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="add_info()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--编辑图片-->
+<div class="modal fade" id="uploadFileModal"  role="dialog" aria-labelledby="uploadFileModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="upload-file-name">图片编辑</h4>
+            </div>
+            <div class="modal-body">
+                 <form id='uploads_files' method="post" enctype="multipart/form-data">
+                     <input type="hidden" id="gifts_id" value="">
+                     <div class="form-group">
+                         <label class="control-label">添加礼物图片[PNG]</label>
+                         <input type="file" class="form-control gift_image" name="gift_image" id="gift_image"  value="" required>
+                     </div>
+                     <div class="form-group">
+                         <label class="control-label">添加礼物动画[GIF]:</label>
+                         <input type="file" class="form-control animation" name="animation"  id="animation" value="" required>
+                     </div>
+                     <div class="form-group">
+                         <label class="control-label">添加大动画[SVGA]:</label>
+                         <input type="file" class="form-control gift_animation" name="gift_animation" id="gift_animation" value="" required>
+                     </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="add_imgs()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--编辑装备信息-->
+<div class="modal fade" id="editModal"  role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="editModalLabel">编辑装备信息</h4>
+            </div>
+            <div class="modal-body edit-append">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="edit_info()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 查看装备配置详情-->
+<div class="modal fade" id="GiftPorpInfo">
+    <div class="modal-dialog" style="width:80%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>装备配置详情</h3>
+            </div>
+            {if condition="in_array('/admin/equipAddProp',$user_role_menu)"}
+            <div class="btn-group hidden-xs" role="group" style="padding-left: 1%">
+                <button type="button" class="btn btn-outline btn-success" id="addProp">
+                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>新增配置
+                </button>
+            </div>
+            {/if}
+            <table class="table table-hover" id="table-porp">
+                <thead>
+                <tr>
+                    <th class="text-center">序号</th>
+                    <th class="text-center">礼物ID</th>
+                    <th class="text-center">价格</th>
+                    <th class="text-center">购买时长</th>
+                    <th class="text-center">优惠</th>
+                    <th class="text-center">优惠时长</th>
+                    <th class="text-center">状态</th>
+                    <th class="text-center">创建时间</th>
+                    <th class="text-center">修改时间</th>
+                    <th class="text-center">操作</th>
+                </tr>
+                </thead>
+                <tbody id="prop-tbody">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!--添加装备配置-->
+<div class="modal fade" id="add_prop" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">添加装备配置</h4>
+            </div>
+            <div class="modal-body">
+                <form id='insert_form' method='post'>
+                <div class='form-group'>
+                    <label class='control-label'>价格【单位M豆】：</label>
+                    <input type='number' class='form-control prop_price' name='prop_price'  value='' required='required'>
+                </div>
+                <div class='form-group'>
+                    <label class='control-label'>购买时长【天】0天代表永久：</label>
+                    <input type='number' class='form-control prop_time' name='prop_time'  value='' required='required'>
+                </div>
+                <div class='form-group'>
+                    <label class='control-label'>优惠： </label>
+                    <input type='text' class='form-control prop_discount' name='prop_discount'  value='0' required='required'>
+                    </div>
+                <div class='form-group'>
+                    <label class='control-label'>优惠时长【天】： </label>
+                    <input type='number' class='form-control prop_discount_time' name='prop_discount_time'  value='0' required='required'>
+                    </div>
+                <div class='form-group'>
+                    <label class='control-label'>装备状态:</label>
+                    <label class='radio-inline'>
+                        <input type='radio' name='prop_status' checked class='prop_status'  value='0'>删除
+                    </label>
+                    <label class='radio-inline'>
+                        <input type='radio' name='prop_status' class='prop_status'  value='1'>正常
+                    </label>
+                    </div>
+                <input type='hidden' value='/admin/equipAddProp' name='master_url'>
+                <input type='hidden' value='{$token}' name='token'>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="insert_porp_modal()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--编辑装备配置-->
+<div class="modal fade" id="editPropModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="editPropModalLabel">编辑装备配置</h4>
+            </div>
+            <div class="modal-body edit-prop">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="edit_prop_info()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--操作modal-->
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$token}" name="token" id="token">
+<input type="hidden" value="/admin/ossFile" name="master_url" id="master_url">
+<input type="hidden" value="{$user_role_menu_input}" id="user_role_menu">
+<input type="hidden" value="" id="propId">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script src="/admin/js/trap/fileinput.js" type="text/javascript"></script>
+<script src="/admin/js/trap/fileinput_locale_zh.js" type="text/javascript"></script>
+<script>
+$(document).ready(function(){
+    $("#typeSelect").change(function(){
+        var option = $("#typeSelect option:selected").val();
+        if(option == 2){
+            $("#TypeDiv").append(
+                "<div class=\"form-group\" id='TpyeJSON'>"+
+                "<label class=\"control-label\">道具扩展:</label><br>"+
+                    "颜色扩展："+"<input type=\"color\" class=\"form-control\" name='color'  value=\"\" required=\"required\">"+
+                    " TYPE类型："+"<input type=\"text\" class=\"form-control\" name='types'  value=\"\" required=\"required\" placeholder=\"详情咨询前端开发人员\">"+
+                   "</div>"
+            );
+        }else{
+            $("#TpyeJSON").remove();
+        }
+    })
+});
+    $('body').on('hidden.bs.modal', '#editModal', function () {
+        $("#editModal form").remove();
+    });
+    $('body').on('hidden.bs.modal', '#GiftPorpInfo', function () {
+        $("#prop-tbody tr").remove();
+    });
+    $('body').on('hidden.bs.modal', '#editPropModal', function () {
+        $("#editPropModal form").remove();
+    });
+    //添加或更改图片
+    $('.addGiftImage').on('click',function(){
+        $("#gifts_id").val($(this).parents("tr").find(".id").text());
+        $('#uploadFileModal').modal('show');
+    })
+    function add_imgs(){
+        if($("#gifts_id").val() == ""){
+            toastr.warning('未获得礼物ID');
+            return false;
+        }
+        if($('#gift_image')[0].files[0]){
+            var gift_imageType = $('#gift_image')[0].files[0].name.split('.');
+            if(gift_imageType[1] != 'png'){
+                toastr.warning('礼物图标请选择png格式文件');
+                return false;
+            }
+        }
+        if($('#animation')[0].files[0]){
+            var animationType = $('#animation')[0].files[0].name.split('.');
+            if(animationType[1]!='gif'){
+                toastr.warning('礼物动画请选择gif格式文件');
+                return false;
+            }
+        }
+        if($('#gift_animation')[0].files[0]){
+            var gift_animationType = $('#gift_animation')[0].files[0].name.split('.');
+            if(gift_animationType[1]!='svga'){
+                toastr.warning('礼物大动画请选择svga格式文件');
+                return false;
+            }
+        }
+        var formData = new FormData();
+        formData.append("id", $("#gifts_id").val());
+        formData.append("token", $("#token").val());
+        formData.append("master_url", $("#master_url").val());
+        formData.append("gift_image", $('#gift_image')[0].files[0]);
+        formData.append("animation", $('#animation')[0].files[0]);
+        formData.append("gift_animation", $('#gift_animation')[0].files[0]);
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            cache: false,
+            processData: false,
+            contentType: false,
+            type: "post",    //请求类型
+            url: "/admin/ossFile",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: formData,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+    //清除缓存
+    $("#clearCache").on('click',function(){
+        var master_url = "/admin/clearCache";
+        var token = $("#token").val();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/clearCache",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data:{master_url:master_url,token:token},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 500);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    })
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/equipList&token=' + $("#token").val() + '&gift_id=' + $("#search_id").val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+    });
+    //搜索
+    $("#search").click(function () {
+        var gift_id = $("#search_id").val();
+        if (isNaN(gift_id)) {
+            toastr.warning('请输入正确的Id');
+            return false;
+        }
+        var token = $('#token').val();
+        window.location.href = "/admin/equipList?token=" + token + '&master_url=/admin/equipList&page=1&gift_id=' + gift_id;
+    })
+    //添加装备信息
+    $('#add_gift').on('click',function(){
+        $('#addModal').modal('show');
+    });
+    function add_info(){
+        var add_info = $("#add_form").serializeArray();
+        if (add_info[0]['value'] == '') {
+            toastr.warning('装备名称不能为空');
+            return false;
+        }
+        if (add_info[1]['value'] == '') {
+            toastr.warning('装备价格不能为空');
+            return false;
+        }
+        if(add_info[1]['value'] < 0){
+            toastr.warning('装备价格不能为负数');
+            return false;
+        }
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/equipAdd",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: add_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+    //编辑装备信息
+    $('.editGift').on('click',function(){
+        var type = $(this).parents("tr").find(".type").attr('value');
+        $(".edit-append").prepend(
+            "<form id='edit_form' method='post'>"+
+            " <input type='hidden' value='/admin/exitGift' name='gift_id' class='gift_id'>"+
+                "<div class='form-group'>"+
+                     "<label class='control-label'>" + "装备名称： "+"</label>"+
+                     "<input type='text' class='form-control gift_name' name='gift_name'  value='' required='required'>"+
+                "</div>"+
+                "<div class='form-group'>"+
+                    "<label class='control-label'>"+"装备价格:"+"</label>"+
+                    "<input type='text' class='form-control gift_coin' name='gift_coin' value='' required>"+
+                "</div>"+
+                // "<div class='form-group' id='TypeDivExid'>"+
+                //     "<label class='control-label'>"+"礼物类型:"+"</label>"+
+                //     "<label class='radio-inline'>"+
+                //         "<input type='radio' name='type' class='type'  value='1'>"+" 头像框"+
+                //     "</label>"+
+                //     "<label class='radio-inline'>"+
+                //         "<input type='radio' name='type' class='type'  value='2'>"+" 音波纹"+
+                //     "</label>"+
+                //     "<label class='radio-inline'>"+
+                //         "<input type='radio' name='type' class='type'  value='3'>"+" 进场动画"+
+                //     "</label>"+
+                // "</div>"+
+                "<div class='form-group'>"+
+                    "<label class='control-label'>"+"礼物状态:"+"</label>"+
+                    "<label class='radio-inline'>"+
+                        "<input type='radio' name='status' class='status'  value='1'>"+" 上架"+
+                    "</label>"+
+                    "<label class='radio-inline'>"+
+                        "<input type='radio' name='status' class='status'  value='2'>"+" 下架"+
+                    "</label>"+
+                "</div>"+
+                    " <input type='hidden' value='/admin/equipExid' name='master_url'>"+
+                    "<input type='hidden' value='{$token}' name='token'>"+
+            " </form>"
+        );
+        if(type == 2){
+            $("#TypeDivExid").append(
+                "<div class=\"form-group\" id='TpyeJSON'>"+
+                "<label class=\"control-label\">道具扩展:</label><br>"+
+                "颜色扩展："+"<input type=\"color\" class=\"form-control  color\" name='color'  value=\"\" required=\"required\">"+
+                " TYPE类型："+"<input type=\"text\" class=\"form-control types\" name='types'  value=\"\" required=\"required\" placeholder=\"详情咨询前端开发人员\">"+
+                "</div>"
+            );
+        }
+        var id = $(this).parents("tr").find(".id").text();
+        $(".gift_name").val($(this).parents("tr").find(".gift_name").text());
+        $(".gift_coin").val($(this).parents("tr").find(".gift_coin").text());
+        var KZJSON = $(this).parents("tr").find(".prop_info").text();
+        if(KZJSON != ""){
+            var obj = eval('(' + KZJSON + ')');
+            var types = obj['type'];
+            var color = obj['color'];
+            $(".color").val(color);
+            $(".types").val(types);
+        }
+        $(":radio[name='type'][value="+type+"]").attr("checked","checked");
+        var status = $(this).parents("tr").find(".status").attr('value');
+        $(":radio[name='status'][value="+status+"]").attr("checked","checked");
+        $(".gift_id").val(id);
+        $('#editModal').modal('show');
+    });
+    function edit_info(){
+        var edit_info = $("#edit_form").serializeArray();
+        var gift_coin = edit_info[2]['value'];
+        var gift_name = edit_info[1]['value'];
+        if(gift_name == ""){
+            toastr.warning('装备名称不能为空');
+            return false;
+        }
+        if(gift_coin < 0){
+            toastr.warning('装备价格不能为负数');
+            return false;
+        }
+        if (isNaN(gift_coin)) {
+            toastr.warning('装备价格必须为数字');
+            return false;
+        }
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/equipExid",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: edit_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+    //装备详情
+    function equipDetails(gift_id){
+        $("#propId").val(gift_id);
+        var token = $("#token").val();
+        var master_url = '/admin/equipDetails';
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "get",    //请求类型
+            url: "/admin/equipDetails",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {master_url:master_url,gift_id:gift_id,token:token},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                if (rs.data.length > 0) {
+                    $(rs.data).each(function (i, n) {
+                        $("#prop-tbody").prepend(
+                            "<tr class = " + n.id + ">" +
+                            "<td class='text-center '>" + n.id + "</td>" +
+                            "<td class='text-center gift_ids'>" + n.gift_id + "</td>" +
+                            "<td class='text-center prop_prices'>" + n.prop_price + "</td>" +
+                            "<td class='text-center prop_times'>" + n.prop_times + "</td>" +
+                            "<td class='text-center prop_discounts'>" + n.prop_discount + "</td>" +
+                            "<td class='text-center prop_discount_times'>" + n.prop_discount_times + "</td>" +
+                            "<td class='text-center prop_statuss'>" + n.prop_statuss + "</td>" +
+                            "<td class='text-center'>" + n.createtime + "</td>" +
+                            "<td class='text-center'>" + n.updatetimes + "</td>" +
+                            "<td class='text-center'>" +
+                                "<button class='btn btn-success edit_op' id='edit_propId' onclick=" +
+                            "edit_op("+ n.id +","+ n.prop_price +","+ n.prop_time +","+ n.prop_discount +","+ n.prop_discount_time +","+ n.prop_status +")>修改</button>" +
+                            "</td>" +
+                            "</tr>"
+                        );
+                        if(n.status == 2){
+                            $('.'+n.id).find(".edit_op").remove();
+                        }
+                    });
+                    var user_role_menu = $("#user_role_menu").val();
+                    var user_role_menus = user_role_menu.split(",")
+                    var index = $.inArray("/admin/equipExidProp", user_role_menus);   //结果：index=1
+                    if (index <= 0) {
+                        $(".edit_op").remove();
+                    }
+                } else {
+                    $("#prop-tbody").prepend("<tr class='no-records-found'><td colspan='8' class='text-center'>没有找到匹配的记录</td></tr>");
+                }
+                $('#GiftPorpInfo').modal('show');
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+    }
+    //添加装备配置
+    $("#addProp").click(function(){
+        $("#add_prop").modal('show')
+    });
+    function insert_porp_modal(){
+        var gift_id = $("#propId").val();
+        var insert_form = $("#insert_form").serializeArray();
+        insert_form.push({"name":"gift_id","value":gift_id});
+        if (insert_form[0]['value'] == '') {
+            toastr.warning('装备价格不能为空');
+            return false;
+        }
+        if (insert_form[1]['value'] == '') {
+            toastr.warning('购买时长不能为空');
+            return false;
+        }
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/equipAddProp",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: insert_form,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    };
+    //编辑装备配置
+$("#edit_propId").click(function () {
+    alert($(this).parents("tr").find(".prop_prices").text())
+})
+   function edit_op(id,prop_price,prop_time,prop_discount,prop_discount_time,prop_status){
+        $(".edit-prop").prepend(
+            "<form id='edit_form' method='post'>"+
+            "<div class='form-group'>"+
+                "<label class='control-label'>" + "价格【单位M豆】： "+"</label>"+
+                "<input type='text' class='form-control' id='prop_price' name='prop_price'  value='' required='required'>"+
+            "</div>"+
+            "<div class='form-group'>"+
+                "<label class='control-label'>" + "优惠： "+"</label>"+
+                "<input type='text' class='form-control' id='prop_discount' name='prop_discount'  value='' required='required'>"+
+            "</div>"+
+            "<div class='form-group'>"+
+                "<label class='control-label'>" + "优惠时长【天】： "+"</label>"+
+                "<input type='text' class='form-control' id='prop_discount_time' name='prop_discount_time'  value='' required='required'>"+
+            "</div>"+
+            "<div class='form-group'>"+
+                "<label class='control-label'>" + "购买时长【天】0天代表永久： "+"</label>"+
+                "<input type='text' class='form-control' id='prop_time' name='prop_time'  value='' required='required'>"+
+            "</div>"+
+            "<div class='form-group'>"+
+                "<label class='control-label'>"+"装备状态:"+"</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='prop_status' id='prop_status' class='prop_status'  value='1'>"+" 正常"+
+                "</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='prop_status' id='prop_status' class='prop_status'  value='0'>"+" 删除"+
+                "</label>"+
+            "</div>"+
+            " <input type='hidden' value='/admin/equipExidProp' name='master_url'>"+
+            "<input type='hidden' value='{$token}' name='token'>"+
+            " </form>"
+        );
+        $("#propId").val(id);
+        $("#prop_price").val(prop_price);
+        $("#prop_discount").val(prop_discount);
+        $("#prop_discount_time").val(prop_discount_time);
+        $("#prop_time").val(prop_time);
+        $(":radio[name='prop_status'][value="+prop_status+"]").attr("checked","checked");
+        $('#editPropModal').modal('show');
+    };
+    function edit_prop_info(){
+        var gift_id = $("#propId").val();
+        var edit_info = $("#edit_form").serializeArray();
+        edit_info.push({"name":"id","value":gift_id});
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/equipExidProp",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: edit_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+</script>
+</body>
+</html>

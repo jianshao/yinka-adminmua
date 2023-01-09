@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/time/daterangepicker.css">
+    <style>
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        #demo {
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+        }
+
+        .btn-default {
+            background-color: #fff;
+            border: 1px solid #828080;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: #08c;
+            border: 1px solid #08c;
+            border-radius: 3px;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            background-color: #357ebd;
+        }
+
+    </style>
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="btn-group hidden-xs form-inline">
+                            <div class="form-group">
+                                注册时间查询：
+                                <input type="text" value="{$demo}" id="demo" readonly class="form_datetime form-control input-outline" style="width:190px;">
+                            </div>
+                            &#12288
+
+                            {if condition="$channel_level==1||$channel_level==2"}
+                            <select class="form-control" id="level_2" style="width: 200px;">
+                                <option value="">--请选择--</option>
+                                {volist name="channel_three" id="channel_three"}
+                                <option value="{$channel_three.id}" {if $grade_2== $channel_three.id} echo selected="selected" {/if}>{$channel_three.channel_name}</option>
+                                {/volist}
+                            </select>
+                            &#12288
+                            {if condition="$channel_level==1"}
+                            <select class="form-control" id="level_3" style="width: 200px;">
+                                <option value="">--请选择--</option>
+                            </select>
+                            &#12288
+
+                            {/if}
+                            {/if}
+                            <button type="button" class="btn btn-outline btn-success" style="float:right;" id="daochu">
+                                <i aria-hidden="true"></i>导出
+                            </button>
+                            &#12288
+                            <button type="button" class="btn btn-outline btn-success" style="float:right;" id="search">
+                                <i aria-hidden="true"></i>搜索
+                            </button>
+
+                        </div>
+                        <div class="example">
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">序号</th>
+                                    <th class="text-center">一级渠道</th>
+                                    <th class="text-center level_2_th">二级渠道</th>
+                                    <th class="text-center level_3_th">三级渠道</th>
+                                    <th class="text-center level_3_th">邀请码</th>
+                                    <th class="text-center level_3_th">消费数量</th>
+                                    <th class="text-center level_3_th">消费账号</th>
+                                    <th class="text-center level_3_th">消费金额</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($data)"}
+                                {volist name="data" id="data"}
+                                <tr>
+                                    <td class="text-center id_td" id="id">{$data.id}</td>
+                                    <td class="text-center channel_one_td">{$data.channel_one}</td>
+                                    <td class="text-center channel_two_td">{$data.channel_two}</td>
+                                    <td class="text-center channel_three_td">{$data.channel_three}</td>
+                                    <td class="text-center channel_three_td">{$data.invitcode}</td>
+                                    <td class="text-center channel_three_td">{$data.pennum}</td>
+                                    <td class="text-center channel_three_td">{$data.usernum}</td>
+                                    <td class="text-center channel_three_td">{if $data.rmbnum==''}0{else}{$data.rmbnum}{/if}</td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="9" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page > 1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+
+
+<input type="hidden" value="{$token}" id="token">
+<input type="hidden" value="{$grade_3}" id="grade_3">
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+
+<script src="/time/jquery-1.10.2.js"></script>
+<script src="/time/moment.min.js"></script>
+
+<script src="/time/daterangepicker.min.js"></script>
+<script src="/admin/js/bootstrap.min.js?v=3.3.6"></script>
+<script src="/admin/js/date-select.js"></script>
+<script>
+    $(document).on('change', '#level_1', function () {
+        var id = $(this).val();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "get",    //请求类型
+            url: "/admin/getChannelOfId",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {
+                id: id,
+                master_url: '/admin/Statistics',
+                token: $("#token").val(),
+            },
+            success: function (rs) {
+                var arr = JSON.parse(rs)
+                for (k in arr['data']) {
+                    if (arr.code == 200) {
+                        if (arr['data'][k]['pid'] == id) {
+                            $('#level_2').append("<option value=" + arr['data'][k]['id'] + ">" + arr['data'][k]['channel_name'] + "</option>")
+                        }
+                    }
+                }
+            },
+            error: function (rs) {
+                alert('请求失败');
+            }
+        });
+    });
+    $(document).on('change', '#level_2', function () {
+        var id = $(this).val();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "get",    //请求类型
+            url: "/admin/getChannelOfId",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {
+                id: id,
+                master_url: '/admin/Statistics',
+                token: $("#token").val(),
+            },
+            success: function (rs) {
+                var arr = JSON.parse(rs)
+                for (k in arr['data']) {
+                    if (arr['data'][k]['pid'] == $('#level_2').val()) {
+                        if (arr.code == 200) {
+                            $('#level_3').append(
+                                "<option value=" + arr['data'][k]['id'] + ">" + arr['data'][k]['channel_name'] + "</option>"
+                            )
+                        }
+                    }
+                }
+            },
+            error: function (rs) {
+                alert('请求失败');
+            }
+        });
+        $("#level_3 option[value='"+$('#grade_3').val()+"']").attr("selected","select");
+    });
+
+    $('#search').click(function () {
+        var level_2 = $('#level_2').val();
+        var level_3 = $('#level_3').val();
+        var demo = $('#demo').val();
+        var token = $('#token').val();
+        var page = $("#page").val();
+        window.location.href = "/admin/Statistics?token=" + token + '&master_url=/admin/Statistics&page=' + page + '&demo=' + demo + '&grade_2=' + level_2 + '&grade_3=' + level_3 + '&level=' + $('#level').val();
+
+    })
+
+</script>
+</body>
+</html>

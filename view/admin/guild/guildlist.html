@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        {if condition="in_array('/admin/guildList',$user_role_menu)"}
+                        <div class="pull-right search form-inline">
+                            <input class="form-control input-outline" type="text"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                   placeholder="请输入Id" value="{$search_id}"
+                                   id="search_id">
+                            <button type="button" class=" btn btn-primary" id="search">搜索</button>
+                        </div>
+                        {/if}
+                        <div class="example">
+                            {if condition="in_array('/admin/addGuilds',$user_role_menu)"}
+                            <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                <button type="button" class="btn btn-outline btn-success" id="add_guild">
+                                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>新建工会
+                                </button>
+                            </div>
+                            {/if}
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">Id</th>
+                                    <th class="text-center">会长Id</th>
+                                    <th class="text-center">工会昵称</th>
+                                    <th class="text-center">分成比例(%)</th>
+                                    <th class="text-center">工会人数</th>
+<!--                                    <th class="text-center">余额</th>-->
+                                    <th class="text-center">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($list)"}
+                                {volist name="list" id="lists"}
+                                <tr>
+                                    <td class="text-center" id="guild_id">{$lists.id}</td>
+                                    <td class="text-center" id="user_id" onclick=on_user_item("{$lists.user_id}",'/admin/memberItem')>{$lists.user_id}</td>
+                                    <td class="text-center">{$lists.nickname}</td>
+                                    <td class="text-center exit-proportionally">{$lists.proportionally}</td>
+                                    <td class="text-center">{$lists.totalmember}</td>
+<!--                                    <td class="text-center">{$lists.diamond}</td>-->
+                                    <td class="text-center">
+                                        {if condition="in_array('/admin/guildroomdetail',$user_role_menu)"}
+                                        <button class="btn btn-primary"><a href="{$admin_url}/guildroomdetail?master_url=/admin/guildroomdetail&token={$token}&master_url=/admin/guildroomdetail&page=1&guild_id={$lists.id}&user_id={$lists.user_id}">厅详情</a></button>
+                                        {/if}
+                                        {if condition="in_array('/admin/guildMember',$user_role_menu)"}
+                                        <button class="btn btn-success select_guild_user">查看工会成员</button>
+                                        {/if}
+                                    </td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page >1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+<!--新建工会-->
+<div class="modal fade" id="addGuild" tabindex="-1" role="dialog" aria-labelledby="addGuildModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="addGuildModalLabel">新建工会</h4>
+            </div>
+            <div class="modal-body">
+                <form id='add_form' method="post">
+                    <div class="form-group">
+                        <label class="control-label">工会名称:</label>
+                        <input type="text" class="form-control" name='nickname' required="required">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">会长Id:</label>
+                        <input type="text" class="form-control" name='user_id' required="required">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">工会登录密码:</label>
+                        <input type="text" class="form-control" name='password' required="required">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">工会分成比例(%):</label>
+                        <input type="text" class="form-control" name='proportionally' required="required"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                    </div>
+                    <input type="hidden" name="token" value="{$token}" id="token">
+                    <input type="hidden" name="master_url" value="/admin/addGuilds">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="add_info()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--查看工会用户-->
+<div class="modal fade" id="selectGuildUser">
+    <div class="modal-dialog" style="width:80%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>工会成员</h3>
+            </div>
+            <div class="pull-right search form-inline" style="padding-right: 1%">
+                <input class="form-control input-outline" type="text"
+                       oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                       placeholder="请输入用户Id" value=""
+                       id="search_member_id">
+                <button type="button" class=" btn btn-primary" id="search_member">搜索</button>
+            </div>
+            {if condition="in_array('/admin/insertMember',$user_role_menu)"}
+            <div class="btn-group hidden-xs" role="group" style="padding-left: 1%">
+                <button type="button" class="btn btn-outline btn-success" id="addGuildMember">
+                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>新建成员
+                </button>
+            </div>
+            {/if}
+            <table class="table table-hover table-responsive" id="select_forum_reply_table">
+                <thead>
+                <tr>
+                    <th class="text-center">工会Id</th>
+                    <th class="text-center">用户Id</th>
+                    <th class="text-center">手机号</th>
+                    <th class="text-center">昵称</th>
+                    <th class="text-center" style="height: 10%;width: 10%">用户头像</th>
+                    <th class="text-center">性别</th>
+                    <th class="text-center">分成比例(%)</th>
+                    <th class="text-center">入会时间</th>
+                    <th class="text-center">操作</th>
+                </tr>
+                </thead>
+                <tbody id="member_tbody">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!--删除工会成员-->
+<div class="modal fade" id="del_guild_member">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>删除操作</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <i class="fa fa-trash-o" id="del_guild_member_msg"></i>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger" data-btn-danger="modal" onclick="del_guild_member_op()">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--确认是否修改工会比例-->
+<div class="modal fade" id="exit_guild_propor">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>修改公会分成比例</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <i class="fa fa-trash-o" id="exit_guild_propor_msg"></i>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger" data-btn-danger="modal" onclick="exit_guild_propor_on()">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--确认是否修改工会比例-->
+<div class="modal fade" id="exit_user_socity">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>修改公会成员分成比例</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <i class="fa fa-trash-o" id="exit_user_socity_msg"></i>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger" data-btn-danger="modal" onclick="exit_user_socity_on()">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--新建工会成员-->
+<div class="modal fade" id="insertMember" tabindex="-1" role="dialog" aria-labelledby="addGuildModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            {if condition="in_array('/admin/insertMember',$user_role_menu)"}
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">新建工会成员</h4>
+                </div>
+            {/if}
+            <div class="modal-body">
+                <form id='add_member_form' method="post">
+                    <div class="form-group">
+                        <label class="control-label">用户Id:</label>
+                        <input type="text" class="form-control" name='user_id'
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="add_member_info()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+{include file="../view/admin/common/userItem.html"}
+<input type="hidden" id="to_id" value="">
+<input type="hidden" id="del_guild_id" value="">
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$user_role_menu_input}" id="user_role_menu">
+<input type="hidden" value="" id="form_guild_id">
+<input type="hidden" id="exit-propor-hidden">
+<input type="hidden" id="socity-hidden">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<style>
+</style>
+<script>
+    $('body').on('hidden.bs.modal', '#selectGuildUser', function () {
+        $("#member_tbody tr").remove();
+    });
+
+    $("#add_guild").click(function () {
+        $("#addGuild").modal("show");
+    })
+
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/guildList&token=' + $("#token").val() + '&id=' + $("#search_id").val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+    });
+
+    //点击修改工会分成比例
+    $('.exit-proportionally').on('click',function(){
+        var user_role_menu = $("#user_role_menu").val();
+        var user_role_menus = user_role_menu.split(",");
+        var index = $.inArray("/admin/guildEdit", user_role_menus);   //结果：index=1
+        if (index <= 0) {
+            return false;
+        }else{
+            var oldPropor = $(this).text(); //修改之前的值
+            $(this).text('');
+            $(this).append('<input type="text">'); //增加input输入框
+            $(this).children('input').focus(); //获取焦点
+            $(this).unbind('clcik'); //绑定click事件
+            var child = $(this).children('input');
+            var that = $(this);
+            var guild_id = $(this).parents("tr").find("#guild_id").text(); //修改的工会ID
+            var field = 'proportionally'; //修改的字段
+            var master_url = '/admin/guildEdit';
+            var token = $('#token').val();
+            var newPropor = child.val(); //修改后的值
+            child.blur(function(){ //鼠标失焦事件
+                that.text(oldPropor);
+                return;
+            });
+            child.bind('keyup',function(e){ //回车确认事件
+                var key = e.which;
+                if(key == 13){
+                    $('#exit_guild_propor').modal('show');
+                    $("#exit_guild_propor_msg").html(' 【如果修改的公会比例低于成员的比例，成员的比例将统一修改为工会比例】');
+                    var guild_id = $(this).parents("tr").find("#guild_id").text(); //修改的工会ID
+                    var newPropor = child.val(); //修改后的值
+                    $("#exit-propor-hidden").val(guild_id);
+                    $("#exit-propor-hidden").text(newPropor);
+                }else{
+                    return;
+                }
+            });
+        }
+    });
+
+    function exit_guild_propor_on() {
+            var field = 'proportionally'; //修改的字段
+            var master_url = '/admin/guildEdit';
+            var token = $('#token').val();
+            var guild_id = $("#exit-propor-hidden").val();
+            var newPropor = $("#exit-propor-hidden").text();
+            $.ajax({
+                async: false,    //表示请求是否异步处理
+                type: "post",    //请求类型
+                url: "/admin/guildEdit",//请求的 URL地址
+                dataType: "json",//返回的数据类型
+                data: {value:newPropor,field:field,guild_id:guild_id,master_url: master_url, token: token},
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 500);   //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('修改失败');
+                    setTimeout(location, 500);   //延迟5秒刷新页面
+                }
+            });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+
+    $(".select_guild_user").click(function () {
+        // $('#select_forum_reply').off().on('show','hidden.bs.modal');
+        var guild_id = $(this).parents("tr").find("#guild_id").text();
+        $("#form_guild_id").val(guild_id);
+        var user_id = $(this).parents("tr").find("#user_id").text();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/guildMember",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {
+                guild_id: guild_id,
+                master_url: '/admin/guildMember',
+                token: $("#token").val(),
+                page: 1,
+                user_id: user_id
+            },
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                if (rs.data.length > 0) {
+                    $(rs.data).each(function (i, n) {
+                        $("#member_tbody").prepend("<tr class = " + n.user_id + ">" +
+                            "<td class='text-center' id='guild_id'>" + n.guild_id + "</td>" +
+                            "<td class='text-center' id='user_id' onclick=on_user_item(" + n.user_id + ',' + "'/admin/memberItem'" + ")>" + n.user_id + "</td>" +
+                            "<td class='text-center'>" + n.username + "</td>" +
+                            "<td class='text-center'>" + n.nickname + "</td>" +
+                            // "<td class='text-center'>" + n.avatar + "</td>" +
+                            "<td class='text-center'>" +
+                            "<img src =" + n.avatar + " style='width: 50%'>" +
+                            "</td>" +
+                            "<td class='text-center'>" + n.sex + "</td>" +
+                            "<td class='text-center exit-socity"+ n.user_id + "' onclick=exit_socity(" + n.user_id + ','  + n.guild_id + ',' + n.socity + ")>" + n.socity + "</td>" +
+                            // "<td class='text-center' onclick=exit_socity(" + n.user_id + ','  + n.guild_id + ',' + n.socity + ")>" + n.socity + "</td>" +
+                            "<td class='text-center'>" + n.addtime + "</td>" +
+                            "<td class='text-center'>" +
+                            "<button class='btn btn-danger role_op' onclick=del_guild_member(" + n.user_id + ',' + "'" + n.nickname + "'," + n.guild_id + ")>删除</button>" +
+                            "</td>" +
+                            "</tr>"
+                        );
+                    });
+                    var user_role_menu = $("#user_role_menu").val();
+                    var user_role_menus = user_role_menu.split(",")
+                    var index = $.inArray("/admin/delGuildMember", user_role_menus);   //结果：index=1
+                    if (index <= 0) {
+                        $(".role_op").remove();
+                    }
+                } else {
+                    $("#member_tbody").prepend("<tr class='no-records-found'><td colspan='9' class='text-center'>没有找到匹配的记录</td></tr>");
+                }
+                $('#selectGuildUser').modal('show')
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        return false;
+    });
+    //点击修改工会成员比例
+    function exit_socity(user_id,guild_id,socity){
+        var user_role_menu = $("#user_role_menu").val();
+        var user_role_menus = user_role_menu.split(",");
+        var index = $.inArray("/admin/exitMember", user_role_menus);   //结果：index=1
+        if (index <= 0) {
+            return false;
+        }else{
+            $(".exit-socity"+user_id).text('');
+            $(".exit-socity"+user_id).prepend('<input type="text">'); //增加input输入框
+            $(".exit-socity"+user_id).children('input').focus(); //获取焦点
+            $(".exit-socity"+user_id).unbind('clcik'); //绑定click事件
+            var child = $(".exit-socity"+user_id).children('input');
+            var field = 'socity'; //修改的字段
+            var master_url = '/admin/exitMember';
+            var token = $('#token').val();
+            child.blur(function(){ //鼠标失焦事件
+                $(".exit-socity"+user_id).text(socity);
+                return;
+            });
+            child.bind('keyup',function(e){ //回车确认事件
+                var key = e.which;
+                if(key == 13){
+                    $('#exit_user_socity').modal('show');
+                    $("#exit_user_socity_msg").html(' 【如果修改的公会比例低于成员的比例，成员的比例将统一修改为工会比例】');
+                    $("#socity-hidden").text(guild_id + ','+ user_id + ','+ child.val());
+                }else{
+                    return;
+                }
+            });
+        }
+    }
+    function exit_user_socity_on() {
+        var field = 'socity'; //修改的字段
+        var master_url = '/admin/exitMember';
+        var token = $('#token').val();
+        var arr = $("#socity-hidden").text();
+        var array = arr.split(',');
+        var guild_id = array[0];
+        var user_id = array[1];
+        var socity = array[2];
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/exitMember",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {value:socity,field:field,guild_id:guild_id,user_id:user_id,master_url: master_url, token: token},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                $(".exit-socity"+user_id).text(socity);
+                $('#exit_user_socity').modal('hide')
+                // setTimeout(location, 500);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('修改失败');
+                setTimeout(location, 500);   //延迟5秒刷新页面
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+    function add_info() {
+        var add_info = $("#add_form").serializeArray();
+        if (add_info[0]['value'] == '') {
+            toastr.warning('工会名称不可为空');
+            return false;
+        }
+        if (add_info[1]['value'] == '') {
+            toastr.warning('会长Id不可为空');
+            return false;
+        }
+        if (add_info[2]['value'] == '') {
+            toastr.warning('工会登录密码不可为空');
+            return false;
+        }
+        if (add_info[3]['value'] == '' || isNaN(add_info[3]['value'])) {
+            toastr.warning('请正确输入工会分成比例');
+            return false;
+        }
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/addGuilds",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: add_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+    }
+
+    $("#search").click(function () {
+        var id = $("#search_id").val();
+        if (isNaN(id)) {
+            toastr.warning('请输入正确的Id');
+            return false;
+        }
+        var token = $('#token').val();
+        window.location.href = "/admin/guildList?token=" + token + '&master_url=/admin/guildList&page=1&id=' + id;
+    })
+
+    $("#search_member").click(function () {
+        var user_id = $("#search_member_id").val();
+        var datas = $("#member_tbody").find("tr");
+        $("#member_tbody").children('tr').show();
+        if (user_id != '') {
+            $(datas).each(function (i, n) {
+                if ($(n).attr("class") != user_id) {
+                    $('.' + $(n).attr("class")).hide();
+                }
+
+            })
+        } else {
+            $("#member_tbody").children('tr').show();
+        }
+
+        //获取当前表格所有的class
+        return false;
+        // if (isNaN($id)) {
+        //     toastr.warning('请输入正确的Id');
+        //     return false;
+        // }
+    })
+
+    function del_guild_member(user_id, nickname, guild_id) {
+        $("#to_id").val(user_id);
+        $("#del_guild_id").val(guild_id);
+        $('#del_guild_member').modal('show')
+        $("#del_guild_member_msg").html(' 您确定要删除工会成员：' + nickname + ' ? ')
+    }
+
+    function del_guild_member_op() {
+        var user_id = $("#to_id").val();
+        var guild_id = $("#del_guild_id").val();
+        var master_url = '/admin/delGuildMember'
+        var token = $('#token').val()
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/delGuildMember",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {user_id: user_id, master_url: master_url, token: token, guild_id: guild_id},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                $('#del_guild_member').modal('hide')
+                $("." + user_id).remove();
+                if($("#member_tbody > tr").length==0){
+                    $("#member_tbody").prepend("<tr class='no-records-found'><td colspan='9' class='text-center'>没有找到匹配的记录</td></tr>");
+                }
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        return false;
+    }
+
+    $("#addGuildMember").click(function () {
+        $("#insertMember").modal("show")
+    })
+
+    function add_member_info() {
+        var add_member_form = $("#add_member_form").serializeArray();
+        if (add_member_form[0]['value'] == '') {
+            toastr.warning('用户Id不可为空');
+            return false;
+        }
+        var user_id = add_member_form[0]['value'];
+        var guild_id = $("#form_guild_id").val();
+        var master_url = '/admin/insertMember';
+        var token = $("#token").val();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/insertMember",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {user_id:user_id,guild_id:guild_id,master_url:master_url,token:token},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                $.ajax({
+                    async: false,    //表示请求是否异步处理
+                    type: "post",    //请求类型
+                    url: "/admin/guildMember",//请求的 URL地址
+                    dataType: "json",//返回的数据类型
+                    data: {
+                        guild_id: guild_id,
+                        master_url: '/admin/guildMember',
+                        token: $("#token").val(),
+                        page: 1,
+                        user_id: user_id
+                    },
+                    success: function (rs) {
+                        if (rs.code !== 200) {
+                            toastr.warning(rs.msg);
+                            return false;
+                        }
+                        if (rs.data.length > 0) {
+                            $(rs.data).each(function (i, n) {
+                                if(n.user_id == user_id){
+                                    $("#member_tbody").prepend("<tr class = " + n.user_id + ">" +
+                                        "<td class='text-center'>" + n.guild_id + "</td>" +
+                                        "<td class='text-center'>" + n.user_id + "</td>" +
+                                        "<td class='text-center'>" + n.username + "</td>" +
+                                        "<td class='text-center'>" + n.nickname + "</td>" +
+                                        // "<td class='text-center'>" + n.avatar + "</td>" +
+                                        "<td class='text-center'>" +
+                                        "<img src =" + n.avatar + " style='width: 50%'>" +
+                                        "</td>" +
+
+                                        "<td class='text-center'>" + n.sex + "</td>" +
+                                        "<td class='text-center'>" + n.socity + "</td>" +
+                                        "<td class='text-center'>" + n.addtime + "</td>" +
+                                        "<td class='text-center'>" +
+										"<button class='btn btn-danger role_op' onclick=del_guild_member(" + n.user_id + ',' + "'" + n.nickname + "'," + n.guild_id + ")>删除</button>" +
+                                        "</td>" +
+                                        "</tr>"
+                                    );
+                                }
+
+                            });
+                            var user_role_menu = $("#user_role_menu").val();
+                            var user_role_menus = user_role_menu.split(",")
+                            var index = $.inArray("/admin/delGuildMember", user_role_menus);   //结果：index=1
+                            if (index <= 0) {
+                                $(".role_op").remove();
+                            }
+                        }
+                    },
+                    error: function (rs) {
+                        toastr.warning('请求失败');
+                    }
+                });
+                $("#insertMember").modal('hide')
+                return false;
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+    }
+</script>
+
+</body>
+
+</html>

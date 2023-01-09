@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>提现</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<link href="/web/css/withdrawal.css" rel="stylesheet" type="text/css" media="all">
+	<style>
+		#shelter_layer{
+			position: absolute;
+			top:0;
+			left: 0;
+			z-index: 99;
+			background-color: rgba(0,0,0,.5);
+			width: 100%;
+			height: 100%;
+			display: none;
+		}
+		#layer{
+			width: 95%;
+			height: 20%;
+			padding:5% 15% 10% 15%;
+			position: fixed;
+			background-color: #ECECEC;
+			top:30%;
+			z-index: 100;
+			box-sizing: border-box;
+			border-radius: 0.9375rem;
+			display: none;
+		}
+		#layer > button{
+			font-size: 16px;
+			width: 40%;
+			border: 0;
+			border-radius: 0.9375rem;
+			background-color: #FF80AA;
+			color: white;
+			margin-left: 30%;
+			margin-bottom: 5%;
+			padding: 2% 0;
+			box-sizing: border-box;
+		}
+	</style>
+</head>
+<body>
+<div class="card-body">
+	<div calss="card-header" style="width: 94%;height:12.125rem;margin: 0 auto;background: url(http://image.fqparty.com/image/card.png) no-repeat;background-size:100% 100% ;">
+		<div calss="card-header-top" style="display: flex;flex-direction: row;height:6.0625rem; ">
+			<img src="{$user_info.avatar}" class="card-header-user-img" alt="">
+			<div style="display: flex; flex-direction: column;justify-content:center;width: 55%;">
+				<span class="card-header-user-nickname">{$user_info.nickname}</span>
+				<span class="card-header-user-id">用户 ID:&nbsp;<span>{$user_info.id}</span></span>
+			</div>
+			<button class="card-header-user-detail" id="user-detail">明细</button>
+		</div>
+		<div class="card-header-bottom" style="	display: flex;flex-direction: row;">
+			<div style="display: flex;flex-direction: column;justify-content :center;width: 50%;text-align: center;">
+				<div style="color: #FFFFFF;">当前钻石</div>
+				<div style="color: #FFFFFF;font-weight: bold;">{$user_info.diamond}</div>
+
+			</div>
+			<div style="display: flex;flex-direction: column;justify-content :center;width: 50%;text-align: center;">
+				<div style="color: #FFFFFF;" >折算余额(元)</div>
+				<div style="color: #FFFFFF;font-weight: bold;" id="residue-money">{$user_info.money}</div>
+			</div>
+		</div>
+	</div>
+	{if !empty($user_info.diamond_msg)}
+	<p style="font-size: 12px;">{$user_info.diamond_msg}</p>
+	{/if}
+	<div class="withdrawal-body-form">
+		<input type="text" name="" id="money" style="padding:0px"  oninput="this.value = this.value.replace(/[^0-9]/g, '');" class="withdrawal-money input" placeholder="&nbsp;&nbsp;请输入提现金额">
+		{if $user_info.pay_type.alipayment == 1}
+		<button class="withdrawal-select" id="w1">&nbsp;&nbsp;
+			<img src="/web/images/ali.png" class="corner-mark" style="width: 8%;float: left;padding: 0.5rem;" alt="">
+			<span style="padding-left: 0.3125rem;line-height: 2.8125rem" class="numberAccounts">{$user_info.pay_type.accounts}</span>
+		</button>
+		{else}
+		<button class="withdrawal-select" id="withdrawal-select">&nbsp;&nbsp;
+			{if  $user_info.pay_type.accounts == 0}
+			<span class="numberAccounts">输入提现账号信息</span>
+			{/if}
+			{if  $user_info.pay_type.accounts != 0 && $user_info.pay_type.type == 0}
+			<img src="/web/images/ali.png" class="corner-mark" style="width: 8%;float: left;padding: 0.5rem;" alt="">
+			<span style="padding-left: 0.3125rem;line-height: 2.8125rem" class="numberAccounts">{$user_info.pay_type.accounts}</span>
+			{/if}
+			{if  $user_info.pay_type.accounts != 0 && $user_info.pay_type.type == 1}
+			<img src="/web/images/wechat.png" class="corner-mark" style="width: 8%;float: left;padding: 0.5rem;" alt="">
+			<span style="padding-left: 0.3125rem;line-height: 2.8125rem" class="numberAccounts">{$user_info.pay_type.accounts}</span>
+			{/if}
+		</button>
+		{/if}
+		<!-- <div class="withdrawal-tag">1、今日剩余可提现额度<span style="color:#FF769C ;" class="moneyCount">{$user_info.user_money_count}</span>元</div> -->
+		<!-- <div class="withdrawal-tag">2、每日累计可提现额度2万</div> -->
+		<div class="withdrawal-tag">1、提现金额必须是100或100的倍数</div>
+		<div class="withdrawal-tag">2、单笔提现最低100元最高50000元</div>
+		<div class="withdrawal-tag">3、已提现过,更改提现账户请联系客服</div>
+	</div>
+	<div class="withdrawal-submit">
+		<button class="withdrawal-submit-botton" id="withdrawal-submit"  disabled="disabled" >提现</button>
+	</div>
+	<p style="font-size: 12px;text-align: center;color: #999999">该页面不支持分享</p>
+	<!--     选择支付弹窗      -->
+	<div class="Withdrawal-options-card" id="select-option" style="display: none;" >
+		<button class="Withdrawal-options-card-option"  id="wechat-content" style="border-bottom: 0.0625rem solid #BBBBBB;"  disabled="disabled">
+			<img src="http://image.fqparty.com/image/wechat1.png" class="wechat-img" alt="">
+			<div class="wechat-content">微信支付</div>
+		</button>
+		<button class="Withdrawal-options-card-option" id="ali-content">
+			<img src="http://image.fqparty.com/image/ali.png" class="ali-img" alt="">
+			<div class="ali-content">支付宝支付</div>
+		</button>
+	</div>
+	<!--   输 入号码弹窗            -->
+	<div class="Withdrawal-options-card" id="input-number" style="display: none;">
+		<input type="text" name="" id="number" class="Withdrawal-pay-number" placeholder="请输入提现账号" />
+		<input type="text" name="" id="xingming" class="Withdrawal-pay-number" placeholder="请输入支付宝认证姓名" />
+		<button class="Withdrawal-pay-sub" id="check-number" disabled="disabled">确定</button>
+	</div>
+	<!--     确定提醒弹窗      -->
+	<div class="Withdrawal-options-card" id="check-submit" style="display: none;">
+		<div class="Withdrawal-options-check" id="options-check">是否确认提现<span id="input-money"></span>元到
+			<span id="input-accounts">{$user_info.pay_type.accounts}</span>账户中？</div>
+		<button class="Withdrawal-options-check-no" id="check-no">取消</button>
+		<button class="Withdrawal-options-check-yes" id="check-yes">确定</button>
+	</div>
+	<!--      最后确认框     -->
+	<div class="Withdrawal-options-card" style="display: none;" id="layer">
+		<p></p>
+		<button class="shuaxin">确定</button>
+	</div>
+	<!-- 透明遮挡层 -->
+	<div id="shelter_layer"></div>
+	<!--    弹窗结束    -->
+</div>
+<input type="hidden" id="type">
+{if  $user_info.pay_type.accounts != 0}
+<input type="hidden" value="{$user_info.pay_type.type}" id="pay_type">
+{/if}
+</body>
+</html>
+<script type="text/javascript" src="/web/js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" src="/web/js/master/dist/dialog.js"></script>
+<script type="text/javascript">
+
+	$(".Withdrawal-pay-number").bind("input propertychange",function(event){
+		if($("#number").val() ==""){
+			$(".Withdrawal-pay-sub").attr("disabled",true);
+			$(".Withdrawal-pay-sub").css('background-color','#BBBBBB');
+		}else{
+			$(".Withdrawal-pay-sub").attr("disabled",false);
+			$(".Withdrawal-pay-sub").css('background-color','#FF87A2');
+		}
+	});
+	$("#money").bind("input propertychange",function(event){
+		if($("#money").val() ==""){
+			$(".withdrawal-submit-botton").attr("disabled",true);
+			$(".withdrawal-submit-botton").css('background-color','#BBBBBB');
+		}else{
+			$(".withdrawal-submit-botton").attr("disabled",false);
+			$(".withdrawal-submit-botton").css('background-color','#FF87A2');
+		}
+	});
+	$(function(){
+		$("#shelter_layer").bind("click",function(){
+			$("#select-option").hide();
+			$("#input-number").hide();
+			$("#check-submit").hide();
+			$("#shelter_layer").hide();
+			$("#layer").hide();
+		});
+		$("#withdrawal-select").bind("click", function (e) {
+			if(checkShow("#select-option")){
+				$("#select-option").show();
+				$("#shelter_layer").show();
+			}else{
+				$("#select-option").hide();
+				$("#shelter_layer").hide();
+			}
+			return false;
+		});
+		$("#withdrawal-submit").bind("click", function (e) {
+			if(checkShow("#select-option")){
+				if($(".numberAccounts").text() == "输入提现账号信息"){
+					alerts('请输入提现账号信息');
+					return false;
+				}
+				$("#input-accounts").text($(".numberAccounts").text());
+				$("#input-money").text($("#money").val());
+				$("#check-submit").show();
+				$("#shelter_layer").show();
+			}else{
+				$("#check-submit").hide();
+				$("#shelter_layer").hide();
+			}
+			return false;
+		});
+		//选择微信支付
+		$("#wechat-content").bind("click", function (e) {
+			$("#select-option").hide();
+			$("#input-number").show();
+			$("#type").val(1);
+			return false;
+		});
+		//选择支付宝支付
+		$("#ali-content").bind("click", function (e) {
+			$("#select-option").hide();
+			$("#input-number").show();
+			$("#type").val(0);
+			return false;
+		});
+		$("#check-number").bind('click', function (e) {
+			var number = $("#number").val();
+			var accounts = $("#type").val();
+			if(accounts == 0){
+				$("#withdrawal-select").empty();
+				$("#withdrawal-select").append("<img src=\"/web/images/ali.png\" class=\"corner-mark\" style=\"width: 8%;float: left;padding: 0.5rem;\" alt=\"\">\n" +
+						"<span style=\"padding-left: 0.3125rem;line-height: 2.8125rem\" class=\"numberAccounts\">"+number+"</span>");
+			}else{
+				$("#withdrawal-select").empty();
+				$("#withdrawal-select").append("<img src=\"/web/images/wechat.png\" class=\"corner-mark\" style=\"width: 8%;float: left;padding: 0.5rem;\" alt=\"\">\n" +
+						"<span style=\"padding-left: 0.3125rem;line-height: 2.8125rem\" class=\"numberAccounts\">"+number+"</span>");
+			}
+			$("#input-number").hide();
+			$("#shelter_layer").hide();
+			// $("#check-submit").show();
+			return false;
+		});
+		//最后确认
+		$("#check-yes").bind("click", function (e) {
+			var number = $("#input-accounts").text();
+			var money = $("#input-money").text();
+			var xingming = $("#xingming").val();
+			if( $("#pay_type").val() == undefined){
+				var type = $("#type").val();
+			}else{
+				var type =  $("#pay_type").val();
+			}
+			var regs = new RegExp("[\\u4E00-\\u9FFF]+","g");
+			if(regs.test(number)){
+				$("#layer p").text('请输入正确的支付宝账号');
+				$("#layer").show();
+				$("#check-submit").hide();
+				return;
+			}
+			if(number == '输入提现账号信息'){
+				$("#layer p").text('请输入提现账号信息');
+				$("#layer").show();
+				$("#check-submit").hide();
+				return;
+			}
+			// if(xingming == '请输入支付宝认证姓名'){
+			// 	$("#layer p").text('请输入支付宝认证姓名');
+			// 	$("#layer").show();
+			// 	$("#check-submit").hide();
+			// 	return;
+			// }
+			if(type = ""){
+				$("#layer p").text('请选择正确的提现方式');
+				$("#layer").show();
+				$("#check-submit").hide();
+				return;
+			}
+			if(money == ""){
+				$("#layer p").text('提现金额不能为空');
+				$("#layer").show();
+				$("#check-submit").hide();
+				return;
+			}
+			if(money%100 != 0){
+				$("#layer p").text('提现金额必须是100或者100的倍数');
+				$("#layer").show();
+				$("#check-submit").hide();
+				return;
+			}
+			var moneyCount = $(".moneyCount").text();
+			if(eval(money) > eval(moneyCount)){
+				$("#layer p").text('提现金额超过剩余可提现金额');
+				$("#layer").show();
+				$("#check-submit").hide();
+				return;
+			}
+			var residue = $("#residue-money").text();
+			if(eval(money) > eval(residue)){
+				$("#layer p").text('当前余额不足，请重新输入提现金额');
+				$("#layer").show();
+				$("#check-submit").hide();
+				return;
+			}
+			if(money < 100 ){
+				$("#layer p").text('提现金额必须大于100元');
+				$("#layer").show();
+				$("#check-submit").hide();
+				return;
+			}
+			if(money > 50000 ){
+				$("#layer p").text('一次提现最高为50000元');
+				$("#layer").show();
+				$("#check-submit").hide();
+				return;
+			}
+			var reg = /^\+?[1-9][0-9]*$/;
+			if(!reg.test(money)){
+				$("#layer p").text('提现金额必须是整数');
+				$("#layer").show();
+				$("#check-submit").hide();
+				return;
+			}
+			$.ajax({
+				type:"post",
+				dataType:"json",
+				data:{accounts:number,money:money,type:type,xingming:xingming},
+				url:"/web/webUserWithdrawal/webUserWithdrawalOperation",
+				success: function (rs) {
+					if(rs.code !== 200){
+						$("#check-submit").hide();
+						$("#layer p").text(rs.msg);
+						$("#layer").show();
+						return false;
+					}
+					$("#check-submit").hide();
+					$("#layer p").text('操作成功,系统将在3个工作日内处理提现操作');
+					$("#layer").show();
+					return false;
+				},
+				error:function (rs) {
+					$("#check-submit").hide();
+					$("#layer p").text(rs.msg);
+					$("#layer").show();
+					return false;
+				},
+			});
+			return false;
+
+		});
+		$("#check-no").bind("click", function (e) {
+			$("#check-submit").hide();
+			$("#shelter_layer").hide();
+			return false;
+		});
+		//取消确认
+		$("#layer").bind("click", function (e) {
+			$("#layer").hide();
+			$("#shelter_layer").hide();
+			return false;
+		});
+	});
+	function checkShow(domId) {
+		return $(domId).css('display') === 'none'
+	}
+	$("#user-detail").bind('click',function(){
+		window.location.href="/web/webUserWithdrawal/userWithdrawalDetail";
+		return false;
+	})
+	//弹出框
+	function alerts(content){
+		var hint = dialog({
+			content: content
+		});
+		hint.show();
+		setTimeout(function () {
+			hint.close().remove();
+		}, 2000);
+	}
+
+	$('.shuaxin').click(function () {
+		window.location.reload();
+	})
+</script>

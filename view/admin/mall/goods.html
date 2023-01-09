@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+
+    <style>
+        .form-control:focus {
+            border-color: #66afe9;
+            outline: 0;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, 0.6);
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, 0.6);
+        }
+
+        .propHide {
+            display: none;
+        }
+
+        .giftHide {
+            display: none;
+        }
+
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+
+</head>
+
+<body class="gray-bg">
+
+    <!--数据表格-->
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <!-- Panel Other -->
+        <div class="ibox float-e-margins">
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <!-- Example Events -->
+                        <div class="example-wrap">
+                            <!--                            搜索-->
+                            {if condition="in_array('/admin/listGoods',$user_role_menu)"}
+                            <div class="pull-right search form-inline">
+                                </select>
+                                <button type="button" class=" btn btn-primary" id="search">搜索</button>
+                            </div>
+                            {/if}
+                            <div class="example">
+                                <!--                            添加-->
+                                <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                    <button type="button" class="btn add btn-outline btn-success">
+                                        <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加
+                                    </button>
+                                </div>
+
+                                <table class="table table-hover table-responsive" id="data_table">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center" width="50">ID</th>
+                                            <th class="text-center">商品分类名称</th>
+                                            <th class="text-center">图片</th>
+                                            <th class="text-center">状态</th>
+                                            <th class="text-center">排序</th>
+                                            <th class="text-center">操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {if condition="!empty($list)"}
+                                        {volist name="list" id="item"}
+                                        <tr>
+                                            <td class="text-center id">{$item.id}</td>
+                                            <td class="text-center  name">{$item.name}</td>
+                                            <td class="text-center img_url"><img src="{$app_url}{$item.img_url}"
+                                                    width="30" heght="30" img_url="{$item.img_url}"></td>
+                                            {if $item.is_show==1}
+                                            <td class="text-center is_show" is_show="1">开启</td>
+                                            {else}
+                                            <td class="text-center is_show" is_show="0">关闭</td>
+                                            {/if}
+                                            <td class="text-center sort">{$item.sort}</td>
+                                            <td class="text-center">
+                                                <div class="btn-group hidden-xs form-inline">
+                                                    <button class="btn btn-success delete" id="{$item.id}">删除</button>
+                                                </div>
+                                                <div class="btn-group hidden-xs form-inline">
+                                                    <button class="btn btn-success" id="{$item.id}"
+                                                        onclick='editInfo(<?php echo json_encode($item)?>)'>修改</button>
+                                                </div>
+                                                <div class="btn-group hidden-xs form-inline">
+                                                    <!-- <button class="btn btn-success addGiftImage" id="ossFile">添加图片</button> -->
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {/volist}
+                                        {else}
+                                        <tr class="no-records-found">
+                                            <td colspan="7" class="text-center">没有找到匹配的记录</td>
+                                        </tr>
+                                        {/if}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {if condition = "$page.total_page >1"}
+                        <div id="Paginator" style="text-align: center">
+                            <ul id="pageLimit"></ul>
+                        </div>
+                        {/if}
+                        <!-- End Example Events -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Panel Other -->
+    </div>
+    <!--添加信息-->
+    <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true"
+                            onclick="empty()">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="addModalLabel">添加</h4>
+                </div>
+                <div class="modal-body add-append">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="add_info()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--编辑信息-->
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true"
+                            onclick="empty()">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="editModalLabel">编辑信息</h4>
+                </div>
+                <div class="modal-body edit-append">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="save">修改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--删除-->
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="deleteModalLabel">删除信息</h4>
+                </div>
+                <div class="modal-body delete-append">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="delete_info()">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--操作modal-->
+    <input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+    <input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+    <input type="hidden" value="{$token}" name="token" id="token">
+    <input type="hidden" value="/admin/listGoods" name="master_url" id="master_url">
+
+    <!-- 全局js -->
+    {include file="../view/admin/common/jsHeader.html"}
+
+    <script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+    <script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+    <script>
+        //添加或更改图片
+        $('.addGiftImage').on('click', function () {
+            $("#gifts_id").val($(this).parents("tr").find(".id").text());
+            $('#uploadFileModal').modal('show');
+        })
+
+        function add_imgs() {
+            if ($("#gifts_id").val() == "") {
+                toastr.warning('未获得礼物ID');
+                return false;
+            }
+            if ($('#gift_image')[0].files[0]) {
+                var gift_imageType = $('#gift_image')[0].files[0].name.split('.');
+                if (gift_imageType[1] != 'png') {
+                    toastr.warning('礼物图标请选择png格式文件');
+                    return false;
+                }
+            }
+            if ($('#animation')[0].files[0]) {
+                var animationType = $('#animation')[0].files[0].name.split('.');
+                if (animationType[1] != 'gif') {
+                    toastr.warning('礼物动画请选择gif格式文件');
+                    return false;
+                }
+            }
+            // if($('#gift_animation')[0].files[0]){
+            //     var gift_animationType = $('#gift_animation')[0].files[0].name.split('.');
+            //     if(gift_animationType[1]!='svga'){
+            //         toastr.warning('礼物大动画请选择svga格式文件');
+            //         return false;
+            //     }
+            // }
+
+            var formData = new FormData();
+            formData.append("id", $("#gifts_id").val());
+            formData.append("token", $("#token").val());
+            formData.append("master_url", $("#master_url").val());
+            formData.append("gift_image", $('#gift_image')[0].files[0]);
+            formData.append("animation", $('#animation')[0].files[0]);
+            // formData.append("gift_animation", $('#gift_animation')[0].files[0]);
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                cache: false,
+                processData: false,
+                contentType: false,
+                type: "post", //请求类型
+                url: "/admin/ossGoodsFile", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: formData,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000); //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        }
+        //分页
+        $('#pageLimit').bootstrapPaginator({
+            currentPage: $("#page").val(),
+            totalPages: $("#total_page").val(),
+            size: "normal",
+            bootstrapMajorVersion: 3,
+            alignment: "right",
+            numberOfPages: '5',
+            pageUrl: function (type, page, current) {
+                //是每个分页码变成一个超链接
+                return '?page=' + page + '&master_url=/admin/listGoods&token=' + $("#token").val() +
+                    '&is_show=' + $("#is_show").val()
+            },
+            itemTexts: function (type, page, current) {
+                switch (type) {
+                    case "first":
+                        return "首页";
+                    case "prev":
+                        return "上一页";
+                    case "next":
+                        return "下一页";
+                    case "last":
+                        return "末页";
+                    case "page":
+                        return page;
+                }
+            }
+        });
+
+        var gifts = JSON.parse('<?php echo json_encode($gifts)?>');
+        var giftsItems = '';
+        $.each(gifts, function (key, gift) {
+            giftsItems += "<option value='" + gift.id + "'>" + gift.gift_name + "</option>";
+        });
+
+        var propTypes = JSON.parse('<?php echo json_encode($propTypes)?>');
+        var propTypesItems = '';
+
+        for (var key in propTypes) {
+            var item = propTypes[key];
+            propTypesItems += "<option value='" + key + "'>" + item + "</option>";
+        }
+
+
+        function changeType(type) {
+            let type_value = $(type).get(0).value
+            if (type_value == 2) {
+                $('.gift_ids').addClass('propHide')
+                $('.prop_types').parent().removeClass('propHide')
+
+                var str = '';
+                var prop_list = props['avatar']
+                $.each(prop_list, function (key, prop) {
+                    str += "<option value='" + prop.id + "'>" + prop.name + "</option>";
+                });
+
+                $(type).parent().parent().find('#giftid_or_propid').empty();
+                $(type).parent().parent().find('#giftid_or_propid').prepend(str);
+
+                var sku_info = getSkuInfo(3);
+                $(type).parent().parent().find('#sku_info').empty();
+                $(type).parent().parent().find('#sku_info').prepend(sku_info);
+            } else {
+                $(type).parent().parent().find('#giftid_or_propid').empty();
+                $(type).parent().parent().find('#giftid_or_propid').prepend(giftsItems);
+
+                var sku_info = getSkuInfo(1);
+                $(type).parent().parent().find('#sku_info').empty();
+                $(type).parent().parent().find('#sku_info').prepend(sku_info);
+
+                $('.gift_ids').removeClass('propHide');
+            }
+        }
+
+        function getSkuInfo(num){
+            let str = '';
+            for (let index = 1; index <= num; index++) {
+                str += '<tr>' +
+                    '<td class="text-center">' +
+                    "<input type='num' class='form-control' name='units[]' value='' required>" +
+                    '</td>' +
+                    '<td class="text-center">' +
+                    "<input type='num' class='form-control' name='count[]' value='' required>" +
+                    '</td>' +
+                    '<td class="text-center">' +
+                    "<input type='num' class='form-control' name='price[]' value='' required>" +
+                    '</td>' +
+                    '<td class="text-center">' +
+                    "<input type='num' class='form-control' name='now_price[]' value='' required>" +
+                    '</td>' +
+                    '</tr>';
+            }
+
+            return str;
+        }
+
+        var props = JSON.parse('<?php echo json_encode($props)?>');
+
+        function changePropType(type_value) {
+            let prop_type = $(type_value).get(0).value
+            var str = '';
+            var prop_list = props[prop_type]
+            $.each(prop_list, function (key, prop) {
+                str += "<option value='" + prop.id + "'>" + prop.name + "</option>";
+            });
+
+            $(type).parent().parent().find('.giftid_or_propid').empty()
+            $(type).parent().parent().find('.giftid_or_propid').prepend(str)
+            $(type).parent().parent().find('.giftid_or_propid').empty()
+            $(type).parent().parent().find('.giftid_or_propid').prepend(str)
+        }
+
+        var categories = JSON.parse('<?php echo json_encode($all)?>');
+
+        function changeFisrtLevel(item) {
+            var str = '';
+            level = item.options[item.selectedIndex].value;
+            console.log(level)
+
+            var level_list = categories[level]
+            if (categories[level] != undefined) {
+                $.each(level_list, function (key, prop) {
+                    str += "<option value='" + prop.id + "'>" + prop.category_name + "</option>";
+                });
+            }
+            var select2 = $(item).parent().next().find('.level_2')
+            select2.empty()
+            select2.prepend(str)
+            item.prepend(str)
+        }
+
+
+        var first_categories = JSON.parse('<?php echo json_encode($first_categories)?>');
+        var level_1 = '';
+
+        var first_categories_map = {};
+        $.each(first_categories, function (key, category) {
+            level_1 += "<option value='" + category.id + "'>" + category.category_name + "</option>";
+            first_categories_map[category.id] = category.category_name;
+        });
+
+        //添加信息
+        $('.add').on('click', function () {
+            $(".add-append").empty();
+            $(".add-append").prepend(
+                "<form id='add_form' method='post' >" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "商品名称:" + "</label>" +
+                "<input type='text' id='name' class='form-control name' name='name' value='' required>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "是否可购买:" + "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='is_buy' class='is_buy' checked value='1'>" + " 是" +
+                "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='is_buy' class='is_buy'  value='0'>" + " 否" +
+                "</label>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "类别:" + "</label>" +
+                "<select class='form-control type' name='type' id='type' onchange='changeType(this)'>" +
+                "<option value='1'>礼物</option>" +
+                "<option value='2'>道具</option>" +
+                "</select>" +
+                "</div>" +
+
+                "<div class='form-group propHide'>" +
+                "<label class='control-label'>" + "道具分类:" + "</label>" +
+                "<select class='form-control prop_types' name='prop_types' id='prop_types' onchange='changePropType(this)'>" +
+                propTypesItems +
+                "</select>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "选择礼物或者道具ID:" + "</label>" +
+                "<select class='form-control giftid_or_propid' name='giftid_or_propid' id='giftid_or_propid'>" +
+                giftsItems +
+                "</select>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "货币类型:" + "</label>" +
+                "<select class='form-control currency_id' name='currency_id' id='currency_id'>" +
+                "<option value='1'>金币</option>" +
+                "</select>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>商品描述:</label>" +
+                "<textarea type='' class='form-control desc' id='desc' name='desc' value='' required></textarea>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>商品封面图片:</label>" +
+                "<input type='file' class='form-control img_url' id='img_url' value='' required>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>商品标签图:</label>" +
+                "<input type='file' class='form-control tag_url' id='tag_url' value='' required>" +
+                "</div>" +
+
+                "<div id='type1'>" +
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "排序:" + "</label>" +
+                "<input type='number' id='sort' oninput=\"if(value.length > 6)value = value.slice(0, 6)\"  class='form-control' name='sort' value='' required>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "是否可上架:" + "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='is_show' class='is_show' checked value='1'>" + " 是" +
+                "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='is_show' class='is_show'  value='0'>" + " 否" +
+                "</label>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "是否可赠送:" + "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='is_givable' class='is_givable' checked value='1'>" + " 是" +
+                "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='is_givable' class='is_givable'  value='0'>" + " 否" +
+                "</label>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "上架到商城分类:" + "</label>" +
+                '<table><tr><td class="text-center">' +
+                '</td><td class="text-center">' +
+                "<select class='form-control level_1' name='level_1[]' id='level_1' onchange='changeFisrtLevel(this)'><option value='0'>请选择</option>" +
+                level_1 +
+                "</select>" +
+                '</td><td class="text-center">' +
+                "<select class='form-control level_2' name='level_2[]' id='level_2'>" +
+                "</select>" +
+                '</td><td class="text-center">' +
+                '<button type="button" class="btn  btn-outline btn-success addinput"><i class="glyphicon glyphicon-plus" aria-hidden="true"></i></button>' +
+                '<button type="button" class="btn  btn-outline btn-success delinput"><i class="glyphicon glyphicon-minus" aria-hidden="true"></i></button></td></tr></table>' +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "SKU信息:" + "</label>" +
+                "<table class='table table-hover table-responsive' id='data_table' style='word-wrap: break-word; word-break: break-all;'>" +
+                "<thead>" +
+                "<tr>" +
+                "<th class='text-center'>单位</th>" +
+                "<th class='text-center' style='width:100px'>数量</th>" +
+                "<th class='text-center'>原价</th>" +
+                "<th class='text-center'>现价</th>" +
+                "</tr>" +
+                "</thead>" +
+                "<tbody id='sku_info'>" +
+                '<tr class="prop_types1">' +
+                '<td class="text-center">' +
+                "<input type='num' class='form-control' name='units[]' value='' required>" +
+                '</td>' +
+                '<td class="text-center">' +
+                "<input type='num' class='form-control' name='count[]' value='' required>" +
+                '</td>' +
+                '<td class="text-center">' +
+                "<input type='num' class='form-control' name='price[]' value='' required>" +
+                '</td>' +
+                '<td class="text-center">' +
+                "<input type='num' class='form-control' name='now_price[]' value='' required>" +
+                '</td>' +
+                '</tr>' +
+                "<tbody>" +
+                "<table>" +
+                "</div>" +
+                "<input type='hidden' value='{$token}' name='token'>" +
+                "<input type='hidden' value='/admin/addGoods' id='master_url' name='master_url'>" +
+                " </form>"
+            );
+            $('#addModal').modal('show');
+        });
+
+        $(document).on("click", ".delinput", function () {
+            $(this).parent().parent().remove();
+        });
+
+        //追加框
+        $(document).on("click", ".addinput", function () {
+            $(this).parent().parent().parent().append(
+                '<tr><td class="text-center">' +
+                '</td><td class="text-center">' +
+                "<select class='form-control level_1' name='level_1[]' id='level_1' onchange='changeFisrtLevel(this)'><option value='0'>请选择</option>" +
+                level_1 +
+                "</select>" +
+                '</td><td class="text-center">' //礼物ID
+                +
+                "<select class='form-control level_2' name='level_2[]' id='level_2'>" +
+                "</select>" +
+                '</td><td class="text-center">' +
+                '<button type="button" class="btn  btn-outline btn-success addinput"><i class="glyphicon glyphicon-plus" aria-hidden="true"></i></button>' +
+                '<button type="button" class="btn  btn-outline btn-success delinput"><i class="glyphicon glyphicon-minus" aria-hidden="true"></i></button></td></tr>'
+            );
+        });
+
+        //图片上传
+        $(document).on("change", "#img_url", function () {
+            if ($('#img_url')[0].files[0]) {
+                var animationType = $('#img_url')[0].files[0].name.split('.');
+                if (animationType[1] != "bmp" && animationType[1] != "png" && animationType[1] != "gif" &&
+                    animationType[1] != "jpg" && animationType[1] != "jpeg" && animationType[1] != "svga") {
+                    toastr.warning("文件只限图片");
+                    return false;
+                }
+            }
+            var formData = new FormData();
+            formData.append("token", $("#token").val());
+            formData.append("master_url", $("#master_url").val());
+            formData.append("image", $('#img_url')[0].files[0]);
+
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                cache: false,
+                processData: false,
+                contentType: false,
+                type: "post", //请求类型
+                url: "/admin/ossAttireFile", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: formData,
+                success: function (rs) {
+                    if (rs.status !== 1) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    $('#img_url').parent().append("<input type='hidden' name='img_url'  value=" + rs
+                        .image + ">");
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        })
+
+        //动图上传
+        $(document).on("change", "#tag_url", function () {
+            if ($('#tag_url')[0].files[0]) {
+                var tag_urlType = $('#tag_url')[0].files[0].name.split('.');
+                if (tag_urlType[1] != "bmp" && tag_urlType[1] != "png" && tag_urlType[1] != "gif" &&
+                    tag_urlType[1] != "jpg" && tag_urlType[1] != "jpeg" && tag_urlType[1] != "svga") {
+                    toastr.warning("文件只限图片");
+                    return false;
+                }
+            }
+            var formData = new FormData();
+            formData.append("token", $("#token").val());
+            formData.append("master_url", $("#master_url").val());
+            formData.append("image", $('#tag_url')[0].files[0]);
+
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                cache: false,
+                processData: false,
+                contentType: false,
+                type: "post", //请求类型
+                url: "/admin/ossAttireFile", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: formData,
+                success: function (rs) {
+                    if (rs.status !== 1) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    $('#tag_url').parent().append(
+                        "<input type='hidden' name='tag_url'  value=" + rs.image + ">");
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        })
+
+
+
+        //添加执行
+        function add_info() {
+            var add_info = $("#add_form").serializeArray();
+            if ($('#name').val() == '') {
+                toastr.warning('名称不可为空');
+                return false;
+            }
+            if ($('#sort').val() == '') {
+                toastr.warning('排序必填');
+                return false;
+            }
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                url: "/admin/addGoods", //请求的 URL地址
+                token: $("#token").val(),
+                dataType: "json", //返回的数据类型
+                data: add_info,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000); //延迟5秒刷新页面
+
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+
+            return false;
+        }
+
+        //搜索
+        $("#search").click(function () {
+            var token = $('#token').val();
+        })
+
+        function editInfo(item) {
+            $(".edit-append").empty();
+            $(".edit-append").prepend(
+                "<form id='edit_form' method='post' >" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "商品名称:" + "</label>" +
+                "<input type='text' id='name' class='form-control name' name='name' value='' required>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "是否可购买:" + "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='is_buy' class='is_buy' checked value='1'>" + " 是" +
+                "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='is_buy' class='is_buy'  value='0'>" + " 否" +
+                "</label>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "类别:" + "</label>" +
+                "<select class='form-control type' name='type' readonly='readonly' id='type'>" +
+                "<option value='1'>礼物</option>" +
+                "<option value='2'>道具</option>" +
+                "</select>" +
+                "</div>" +
+
+                "<div class='form-group propHide'>" +
+                "<label class='control-label'>" + "道具分类:" + "</label>" +
+                "<select class='form-control prop_types' name='prop_types' id='prop_types' onchange='changePropType(this)'>" +
+                propTypesItems +
+                "</select>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "选择礼物或者道具ID:" + "</label>" +
+                "<select class='form-control giftid_or_propid' name='giftid_or_propid' id='giftid_or_propid'>" +
+                giftsItems +
+                "</select>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "货币类型:" + "</label>" +
+                "<select class='form-control currency_id' name='currency_id' id='currency_id'>" +
+                "<option value='1'>金币</option>" +
+                "</select>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>商品描述:</label>" +
+                "<textarea type='' class='form-control desc' id='desc' name='desc' value='' required></textarea>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>商品封面图片:</label>" +
+                "<input type='file' class='form-control img_url' id='img_url' value='' required>" +
+                "<input name='img_url' value='' type='hidden'>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>商品标签图:</label>" +
+                "<input type='file' class='form-control tag_url' id='tag_url' value='' required>" +
+                "<input name='tag_url' value='' type='hidden'>" +
+                "</div>" +
+
+                "<div id='type1'>" +
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "排序:" + "</label>" +
+                "<input type='number' id='sort' oninput=\"if(value.length > 6)value = value.slice(0, 6)\"  class='form-control' name='sort' value='' required>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "是否可上架:" + "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='is_show' class='is_show' checked value='1'>" + " 是" +
+                "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='is_show' class='is_show'  value='0'>" + " 否" +
+                "</label>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "是否可赠送:" + "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='is_givable' class='is_givable' checked value='1'>" + " 是" +
+                "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='is_givable' class='is_givable'  value='0'>" + " 否" +
+                "</label>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "上架到商城分类:" + "</label>" +
+                '<table class="category"></table>' +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "SKU信息:" + "</label>" +
+                "<table class='table table-hover table-responsive' id='data_table' style='word-wrap: break-word; word-break: break-all;'>" +
+                "<thead>" +
+                "<tr>" +
+                "<th class='text-center'>单位</th>" +
+                "<th class='text-center' style='width:100px'>数量</th>" +
+                "<th class='text-center'>原价</th>" +
+                "<th class='text-center'>现价</th>" +
+                "</tr>" +
+                "</thead>" +
+                "<tbody id='sku_info'>" +
+                '<tr>' +
+                '<td class="text-center">' +
+                "<input type='num' class='form-control' name='units[]' value='' required>" +
+                '</td>' +
+                '<td class="text-center">' +
+                "<input type='num' class='form-control' name='count[]' value='' required>" +
+                '</td>' +
+                '<td class="text-center">' +
+                "<input type='num' class='form-control' name='price[]' value='' required>" +
+                '</td>' +
+                '<td class="text-center">' +
+                "<input type='num' class='form-control' name='now_price[]' value='' required>" +
+                '</td>' +
+                '</tr>' +
+                "<tbody>" +
+                "<table>" +
+                "</div>" +
+
+                "<input type='hidden' value='{$token}' name='token'>" +
+                "<input type='hidden' class='id' name='id'>" +
+                "<input type='hidden' value='/admin/saveGoods' id='master_url' name='master_url'>" +
+                " </form>"
+            );
+
+            console.log(item.name)
+            $('#edit_form').find(".id").val(item.id);
+            $('#edit_form').find(".name").val(item.name);
+            $('#edit_form').find(".desc").val(item.desc);
+            $('#edit_form').find(".type option[value='" + item.type + "']").attr("selected", "select");
+
+            if (item.type == 2) {
+                $('#edit_form').find('.gift_ids').addClass('propHide')
+                $('#edit_form').find('.prop_types').parent().removeClass('propHide')
+                $('#edit_form').find('#sku_info').find('.prop_types2').removeClass('propHide')
+
+                var prop_str = '';
+                var prop_list = props[item.prop_types]
+                $.each(prop_list, function (key, prop) {
+                    prop_str += "<option value='" + prop.id + "'>" + prop.name + "</option>";
+                });
+                $('#edit_form').find('.giftid_or_propid').empty()
+                $('#edit_form').find('.giftid_or_propid').prepend(prop_str)
+
+            } else {
+                $('#edit_form').find('.gift_ids').removeClass('propHide')
+                $('#edit_form').find('.prop_types').parent().addClass('propHide')
+                $('#edit_form').find('#sku_info').find('.prop_types2').addClass('propHide')
+            }
+
+            $('#edit_form').find("#prop_types option[value='" + item.prop_types + "']").attr("selected", "select");
+            $('#edit_form').find(".currency_id option[value='" + item.currency_id + "']").attr("selected", "select");
+            $('#edit_form').find("#giftid_or_propid option[value='" + item.giftid_or_propid + "']").attr("selected",
+                "select");
+
+            $('#edit_form').find("#sort").val(item.sort);
+
+            $('#edit_form').find(":radio[name='is_show'][value=" + item.is_show + "]").attr("checked", "checked");
+            $('#edit_form').find(":radio[name='is_givable'][value=" + item.is_givable + "]").attr("checked", "checked");
+
+            var mall_str = '';
+            var mall_ids = JSON.parse(item.mall_ids)
+
+            $.each(mall_ids, function (key, mall_id) {
+                let mall_level_1 = mall_id.level_1;
+                let mall_level_2 = mall_id.level_2;
+
+                let select_level_1 = '';
+                $.each(first_categories, function (key, category) {
+                    if (mall_level_1 == category.id) {
+                        select_level_1 += "<option selected value='" + category.id + "'>" + category
+                            .category_name + "</option>";
+                    } else {
+                        select_level_1 += "<option value='" + category.id + "'>" + category
+                            .category_name + "</option>";
+                    }
+                })
+
+                let level2_str = '';
+                let level2_list = categories[mall_level_1]
+                if (categories[mall_level_1] != undefined) {
+                    $.each(level2_list, function (key, level2) {
+                        level2_str += "<option value='" + level2.id + "'>" + level2.category_name +
+                            "</option>";
+                    });
+                }
+
+                mall_str += '<tr><td class="text-center">' +
+                    '</td><td class="text-center">' +
+                    "<select class='form-control level_1' name='level_1[]' id='level_1' onchange='changeFisrtLevel(this)'><option value='0'>请选择</option>" +
+                    select_level_1 +
+                    "</select>" +
+                    '</td><td class="text-center">' +
+                    "<select class='form-control level_2' name='level_2[]' id='level_2'>" + level2_str +
+                    "</select>" +
+                    '</td><td class="text-center">' +
+                    '<button type="button" class="btn  btn-outline btn-success addinput"><i class="glyphicon glyphicon-plus" aria-hidden="true"></i></button>' +
+                    '<button type="button" class="btn  btn-outline btn-success delinput"><i class="glyphicon glyphicon-minus" aria-hidden="true"></i></button></td></tr>';
+            });
+
+
+            var mall_sku_str = '';
+            var mall_sku_ids = JSON.parse(item.goods_sku)
+            $.each(mall_sku_ids, function (key, sku_info) {
+                console.log(sku_info)
+                mall_sku_str += '<tr>' +
+                    '<td class="text-center">' +
+                    "<input type='num' class='form-control' name='units[]' value='"+sku_info['units'] + "' required>" +
+                    '</td>' +
+                    '<td class="text-center">' +
+                    "<input type='num' class='form-control' name='count[]' value='"+sku_info['count'] + "' required>" +
+                    '</td>' +
+                    '<td class="text-center">' +
+                    "<input type='num' class='form-control' name='price[]' value='" + sku_info['price'] + "' required>" +
+                    '</td>' +
+                    '<td class="text-center">' +
+                    "<input type='num' class='form-control' name='now_price[]' value='"+ sku_info['now_price'] + "' required>" +
+                    '</td>' +
+                    '</tr>';
+            });
+
+            $('#edit_form').find('#sku_info').empty()
+            $('#edit_form').find('#sku_info').prepend(mall_sku_str)
+
+            $('#edit_form').find('input[name="img_url"]').attr('value', item.img_url);
+            $('#edit_form').find('input[name="tag_url"]').attr('value', item.tag_url);
+            $('#editModal').modal('show');
+        }
+
+
+
+
+        //修改按钮
+        $('#save').click(function () {
+            var info = $("#edit_form").serializeArray();
+            console.log(info)
+            if ($('#name').val() == '') {
+                toastr.warning('名称不可为空');
+                return false;
+            }
+            if ($('#sort').val() == '') {
+                toastr.warning('排序必填');
+                return false;
+            }
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                url: "/admin/saveGoods", //请求的 URL地址
+                token: $("#token").val(),
+                dataType: "json", //返回的数据类型
+                data: info,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000); //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+
+        })
+
+        //删除
+        $('.delete').on('click', function () {
+            var id = $(this).parents("tr").find(".id").text();
+            $('.delete-append').empty();
+            $(".delete-append").prepend(
+                "<h4 class='modal-title' id='deleteModalLabel'>确认删除当前分类及子分类吗?</h4>" +
+                "<form id='delete_form' method='post'>" +
+                "<input type='hidden' value='/admin/delGoods' name='master_url'>" +
+                "<input type='hidden' value='{$token}' name='token'>" +
+                "<input type='hidden' name='id' value=''>" +
+                "</form>"
+            );
+            $("#delete_form").find('input[name=id]').val(id);
+            $('#deleteModal').modal('show');
+        });
+
+
+        function delete_info() {
+            var delete_info = $("#delete_form").serializeArray();
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                url: "/admin/delGoods", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: delete_info,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000); //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        }
+
+        //清除缓存
+        $("#clearCache").on('click', function () {
+            var master_url = "/admin/clearGoldEmoti";
+            var token = $("#token").val();
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                url: "/admin/clearGoldEmoti", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: {
+                    master_url: master_url,
+                    token: token
+                },
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 500); //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        })
+    </script>
+</body>
+
+</html>

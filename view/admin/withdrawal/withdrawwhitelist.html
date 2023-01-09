@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/admin/layui/css/layui.css" media="all">
+    <script src="/admin/js/jquery.min.js"></script>
+    <style>
+      /*  数据自适应*/
+        .layui-table-cell {
+            height: auto;
+            white-space: normal;
+        }
+
+
+      th {
+          background-color: #2F4056; /* MediumSeaGreen */
+          color: #fff;
+          font-weight: bold
+      }
+
+    </style>
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+</head>
+<body>
+
+
+<div style="padding:5px;">
+    <div class="demoTable">
+        <form class="layui-form" onsubmit="return false;" id="myform">
+
+
+            <div class="layui-inline">
+                <input class="layui-input" name="user_id" id="s_user_id" style="width:120px" placeholder="用户id">
+            </div>
+
+
+            <div class="layui-inline">
+                <select name="modules" lay-verify="required" lay-search="" id="s_enable">
+                    <option value="-1">状态</option>
+                    <option value="0">禁用</option>
+                    <option value="1">启动</option>
+                </select>
+
+            </div>
+
+            <button class="layui-btn" data-type="reload">搜索</button>
+
+        </form>
+    </div>
+
+    <table id="datatable" lay-filter="test"></table>
+</div>
+
+<script src="/admin/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+<script>
+
+
+    layui.use(['table', 'form', 'layer', 'laydate', 'jquery'], function () {
+
+        var $ = layui.jquery
+            , form = layui.form
+            , laydate = layui.laydate
+            , table = layui.table;
+
+        //日期
+        laydate.render({
+             elem: '#date_range'
+            ,range: true
+        });
+
+        table.render({
+            elem: '#datatable'
+            , totalRow: true
+            , url: '/admin/withdrawWhiteList?master_url=/admin/withdrawWhiteList&token={$token}&isRequest=1' //数据接口
+            , toolbar: '#addTemplate' //开启头部工具栏，并为其绑定左侧模板
+            , page: true //开启分页
+            , cols: [[ //表头
+                {field: 'id', title: 'ID', width: '10%',hide:false}
+                , {field: 'user_id', title: '用户ID', width: '10%'}
+                , {field: 'nickname', title: '用户昵称', width: '15%'}
+                , {field: 'guild_id', title: '工会ID', width: '10%'}
+                , {field: 'g_nickname', title: '工会名称', width: '15%'}
+                , {field: 'enable', title: '状态', width: '10%'}
+                , {field: 'create_time', title: '创建时间', width: '20%'}
+                , {field: 'admin_id', title: '操作ID', width: '10%'}
+            ]]
+            , id: 'tablereload'
+            , limits: [20, 50, 100]
+            , limit: 20 //每页默认显示的数量
+            //, cellMinWidth: 200
+            , where: {}
+            , done: function (res, curr, count) {
+            }
+        });
+
+
+        var $ = layui.$, active = {
+            reload: function () {
+                //执行重载
+                table.reload('tablereload', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    , where:getRequestParams()
+                });
+            }
+        };
+
+        $('.demoTable .layui-btn').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+        //头工具栏事件
+        table.on('toolbar(test)', function (obj) {
+            switch (obj.event) {
+                case 'add_template':
+                    //页面层-自定义
+                    $("#sendform")[0].reset();
+                    layer.open({
+                        type: 1,
+                        title: "新增或编辑",
+                        //closeBtn: true,
+                        shift: 2,
+                        area: ['600px', '300px'],
+                        shadeClose: true,
+                        content: $("#add-main2"),
+                        success: function (layero, index) {
+                        },
+                        yes: function () {
+                        }
+                    });
+
+            }
+        });
+
+
+        //监听提交
+        form.on('submit(myform)', function (data) {
+            var fields = $(data.form).serialize();
+            $.post("/admin/withdrawWhiteListAdd?master_url=/admin/withdrawWhiteListAdd&token={$token}", fields, function (resp) {
+                var res  = eval("("+resp+")");
+                if (res['code'] != 0) {
+                    layer.msg(res['msg'], {
+                        time: 20000, //20s后自动关闭
+                        btn: ['ok'],
+                        btnAlign: 'c',
+                    }, function () {
+                        window.location.reload();
+                    });
+                } else {
+                    window.location.reload();
+                }
+
+            })
+            return false;
+        });
+    });
+
+
+    function getRequestParams(){
+        return {
+            enable: $('#s_enable').val(),
+            user_id: $('#s_user_id').val()
+        }
+    }
+
+</script>
+
+<script type="text/html" id="format_created_time">
+    <div>{{layui.util.toDateString(d.created_time*1000,'yyyy-MM-dd HH:mm:ss')}}</div>
+</script>
+
+
+<script type="text/html" id="addTemplate">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="add_template">新增或编辑白名单</button>
+    </div>
+</script>
+
+
+<script>
+
+function seekdetail(this_x){
+    parent.childMenu(this_x)
+}
+
+
+
+</script>
+
+
+<div id="add-main2" style="display: none;">
+    <form class="layui-form" id="sendform" action="" style="padding:10px;">
+        <div class="layui-form-item" style="margin-top:20px;">
+            <label class="layui-form-label">用户ID</label>
+            <div class="layui-input-block">
+                <input type="text" id="user_id" name="user_id" required value="" lay-verify="required"
+                       placeholder="用户ID" autocomplete="off" class="layui-input">
+            </div>
+            <div style="clear: both;height:10px;"></div>
+        </div>
+
+
+        <div style="clear: both;height:10px;"></div>
+        <label class="layui-form-label">是否启动</label>
+        <div class="layui-input-block">
+            <select name="enable" lay-verify="required" lay-search="" id="enable">
+                <option value="1">启用</option>
+                <option value="0">禁用</option>
+            </select>
+        </div>
+        <div style="clear: both;height:10px;"></div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit="" lay-filter="myform">立即提交</button>
+                <button type="reset" class="layui-btn layui-btn-primary" id="closeBtn">重置</button>
+            </div>
+        </div>
+    </form>
+
+</div>
+
+
+
+
+</body>
+</html>

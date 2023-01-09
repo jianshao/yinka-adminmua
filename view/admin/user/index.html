@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        {if condition="in_array('/admin/adminUserLists',$user_role_menu)"}
+                        <div class="pull-right search form-inline">
+							<div class="form-group">
+								角色：<select class="form-control" id="role_id" style="width: 200px;">
+									<option value="">--请选择--</option>
+									{volist name="role_list" id="role"}
+									<option value="{$role.id}"{if $role_id== $role.id} echo selected="selected" {/if}>{$role.name}</option>
+									{/volist}
+								</select>
+							</div>
+							<div class="form-group">
+								<input class="form-control input-outline" type="text" value="{$username}"
+									placeholder="管理员名称"
+									id="search_name">
+								<button type="button" class=" btn btn-primary" id="search">搜索</button>
+							</div>
+                        </div>
+                        {/if}
+                        <div class="example">
+                            {if condition="in_array('/admin/addAdminUser',$user_role_menu)"}
+                            <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                <button type="button" class="btn btn-outline btn-success" id="add_admin_user">
+                                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加管理员
+                                </button>
+                            </div>
+                            {/if}
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">ID</th>
+                                    <th class="text-center">管理员名称</th>
+                                    <th class="text-center">管理员角色</th>
+                                    <th class="text-center">登录次数</th>
+                                    <th class="text-center">上次登录ip</th>
+                                    <th class="text-center">上次登录时间</th>
+                                    <th class="text-center">状态</th>
+                                    <th class="text-center">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($user_list)"}
+                                {volist name="user_list" id="list"}
+                                {if $list.id != $id}
+                                <tr>
+                                    <td class="text-center" id="id">{$list.id}</td>
+                                    <td class="text-center" id="username">{$list.username}</td>
+                                    <td class="text-center">{$list.role_name}</td>
+                                    <td class="text-center">{$list.login_num}</td>
+                                    <td class="text-center">{$list.login_last_ip}</td>
+                                    <td class="text-center">{$list.login_last_time}</td>
+                                    <td class="text-center">{$list.status}</td>
+                                    <td class="text-center">
+                                        {if condition="in_array('/admin/editAdminUserInfo',$user_role_menu)"}
+                                        <button class="btn btn-success editRole">编辑</button>
+                                        {/if}
+                                        {if condition="in_array('/admin/delAdminUser',$user_role_menu)"}
+                                        <button class="btn btn-danger delRole">删除</button>
+                                        {/if}
+                                    </td>
+                                </tr>
+                                {else}
+                                    {if $login_info.id == $list.id}
+                                    <tr>
+                                        <td class="text-center" id="id">{$list.id}</td>
+                                        <td class="text-center" id="username">{$list.username}</td>
+                                        <td class="text-center">{$list.role_name}</td>
+                                        <td class="text-center">{$list.login_num}</td>
+                                        <td class="text-center">{$list.login_last_ip}</td>
+                                        <td class="text-center">{$list.login_last_time}</td>
+                                        <td class="text-center">{$list.status}</td>
+                                        <td class="text-center">
+                                            {if condition="in_array('/admin/editAdminUserInfo',$user_role_menu)"}
+                                            <button class="btn btn-success editRole">编辑</button>
+                                            {/if}
+                                            {if condition="in_array('/admin/delAdminUser',$user_role_menu)"}
+                                            <button class="btn btn-danger delRole">删除</button>
+                                            {/if}
+                                        </td>
+                                    </tr>
+                                    {/if}
+                                {/if}
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page >1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+<!--添加管理员-->
+<div class="modal fade" id="addUser" tabindex="-1" role="dialog" aria-labelledby="addUserModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="addUserModalLabel">添加管理员</h4>
+            </div>
+            <div class="modal-body">
+                <form id='add_form' method="post">
+                    <div class="form-group">
+                        <label class="control-label">管理员名称:</label>
+                        <input type="text" class="form-control" name='username' required="required">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">管理员角色:</label>
+                        <select class="form-control m-b" name="role_id">
+                            {volist name="role_list" id="list"}
+                            <option value="{$list.id}">{$list.name}</option>
+                            {/volist}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">登录密码:</label>
+                        <input type="text" class="form-control" name='password' required="required">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">确认密码:</label>
+                        <input type="text" class="form-control" name='passwords' required="required">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">是否启用:</label>
+                        <label class="radio-inline">
+                            <input type="radio" value="1" name="status" checked="checked">启用
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" value="2" name="status">禁用
+                        </label>
+                    </div>
+                    <input type="hidden" name="token" value="{$token}" id="token">
+                    <input type="hidden" name="master_url" value="/admin/addAdminUser">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="add_info()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--编辑管理员-->
+<div class="modal fade" id="editUser" tabindex="-1" role="dialog" aria-labelledby="editUserModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="editUserModalLabel">添加管理员</h4>
+            </div>
+            <div class="modal-body">
+                <form id='edit_form' method="post">
+                    <div class="form-group">
+                        <label class="control-label">管理员名称:</label>
+                        <input type="text" class="form-control" name='username' required="required" id="edit_username">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">管理员角色:</label>
+                        <select class="form-control m-b" name="role_id" id="edit_role_id">
+                            {volist name="role_list" id="list"}
+                            <option value="{$list.id}">{$list.name}</option>
+                            {/volist}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">登录密码:</label>
+                        <input type="text" class="form-control" name='password' required="required" id="password">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">确认密码:</label>
+                        <input type="text" class="form-control" name='passwords' required="required" id="passwords">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">是否启用:</label>
+                        <label class="radio-inline">
+                            <input type="radio" value="1" name="status" checked="checked">启用
+                        </label>
+                        <label class="radio-inline">
+                            <input type="radio" value="2" name="status" >禁用
+                        </label>
+                    </div>
+                    <input type="hidden" name="master_url" value="/admin/editAdminUserInfo">
+                    <input type="hidden" name="type" value="2">
+                    <input type="hidden" name="token" value="{$token}">
+                    <input type="hidden" name="username_master" value="" id="username_master">
+                    <input type="hidden" name="id" value="" id="edit_id">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="edit_info()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--删除管理员-->
+<div class="modal fade" id="del_user">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>删除操作</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <i class="fa fa-trash-o" id="del_msg"></i>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger" data-btn-danger="modal" onclick="del_user()">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+<input type="hidden" id="to_id" value="">
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<style>
+</style>
+<script>
+    $("#add_admin_user").click(function () {
+        $("#addUser").modal("show");
+    })
+
+    $(".delRole").click(function () {
+        var id = $(this).parents("tr").find("#id").text();
+        $("#to_id").val(id);
+        var username = $(this).parents("tr").find("#username").text();
+        $('#del_user').modal('show')
+        $("#del_msg").html(' 您确定要删除管理员：' + username + ' ? ')
+    })
+
+    $(".editRole").click(function () {
+        var id = $(this).parents("tr").find("#id").text();
+        $("#to_id").val(id);
+        //获取点击管理员详情
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/editAdminUserInfo",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {id: id, master_url: '/admin/editAdminUserInfo', token: $("#token").val(), type: 1},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                console.log(rs)
+                $('#editUser').modal('show')
+                $('#edit_username').val(rs.data.username)
+                $('#username_master').val(rs.data.username)
+                $('#edit_role_id').val(rs.data.role_id)
+                $('#password').val(rs.data.password)
+                $('#passwords').val(rs.data.password)
+                $('#edit_id').val(rs.data.id)
+
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+    })
+
+    $('#search').click(function () {
+        var name = $("#search_name").val();
+        // if (name == '') {
+        //     toastr.warning('请输入管理员名称再进行搜索');
+        //     return false;
+        // }
+        var token = $('#token').val();
+        var role_id = $('#role_id').val();
+        window.location.href = "/admin/adminUserLists?token=" + token + '&master_url=/admin/getRoleLists&page=1' + '&user_name=' + name + '&role_id=' + role_id;
+    })
+
+    function add_info() {
+        var add_info = $("#add_form").serializeArray();
+        if (add_info[0].value == '') {
+            toastr.warning('管理员名称不可为空');
+            return false;
+        }
+        if (add_info[2].value == '') {
+            toastr.warning('登录密码不可为空');
+            return false;
+        }
+        if (add_info[3].value == '') {
+            toastr.warning('确认密码不可为空');
+            return false;
+        }
+        if (add_info[3].value != add_info[2].value) {
+            toastr.warning('两次密码不相同');
+            return false;
+        }
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/addAdminUser",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: add_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    }
+
+    function del_user() {
+        var id = $("#to_id").val();
+        var master_url = '/admin/delAdminUser'
+        var token = $('#token').val()
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/delAdminUser",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {id: id, master_url: master_url, token: token},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location(), 1000);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    }
+
+    function edit_info() {
+        var edit_info = $("#edit_form").serializeArray();
+        if (edit_info[0].value == '') {
+            toastr.warning('管理员名称不可为空');
+            return false;
+        }
+        if (edit_info[2].value == '') {
+            toastr.warning('登录密码不可为空');
+            return false;
+        }
+        if (edit_info[3].value == '') {
+            toastr.warning('确认密码不可为空');
+            return false;
+        }
+        if (edit_info[3].value != edit_info[2].value) {
+            toastr.warning('两次密码不相同');
+            return false;
+        }
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/editAdminUserInfo",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: edit_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+    }
+
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/adminUserLists&token=' + $("#token").val() + '&user_name=' + $("#search_name").val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+        /*   onPageClicked:function (event, originalEvent, type, page) {
+               location.href = "?page="+page;
+           }*/
+    });
+</script>
+
+</body>
+
+</html>

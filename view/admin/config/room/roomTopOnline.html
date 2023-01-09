@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/time/daterangepicker.css">
+
+    <style>
+        .form-control:focus {
+            border-color: #66afe9;
+            outline: 0;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, 0.6);
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, 0.6);
+        }
+    </style>
+
+</head>
+
+<body class="gray-bg">
+    <div class="ibox-content">
+        <div class="row row-lg">
+            <div class="modal-dialog" role="document">
+                <div class="example-wrap">
+                    <!-- 导航 -->
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab"
+                                data-toggle="tab">
+                                <h4 class="modal-title" id="attireModalLabel">房间最高在线人数配置</h4>
+                            </a></li>
+                    </ul>
+                    <!-- 带显示效果的内容 -->
+                    <div class="tab-content">
+                        <div role="tabpanel" class="tab-pane fade in active" id="home">
+                            <div class="modal-content">
+                                <div class="modal-body attire-append">
+                                    <form id='edit_form_1' method='post'>
+                                        <label class='control-label'>房间最高在线人数:															</label>
+                                        <div class='form-group'>
+											<input type='text' class='form-control timeSelector1'
+											oninput="this.value = this.value.replace(/[^0-9]/g, '');" name='count'
+											value="{$count}" required='required'>
+											<!-- <table class='table table-hover table-responsive' id='data_table' style='word-wrap: break-word; word-break: break-all;'>
+												<thead>
+													<tr>
+														<th class='text-center'>房间最高在线人数</th>
+													</tr>
+												</thead>
+												<tbody id="room_photo_gifts">
+													<tr>
+														<td class='text-center select_gift_id'>
+
+														</td>
+													</tr>
+												<tbody>
+											</table> -->
+                                        </div>
+                                        <!-- <button class='addinput' type='button'
+                                            class='btn  btn-outline btn-success'>
+                                            <i class='glyphicon glyphicon-plus' aria-hidden='true'></i>
+                                        </button>
+                                        <button class='delinput' type='button'
+                                            class='btn  btn-outline btn-success'>
+                                            <i class='glyphicon glyphicon-minus' aria-hidden='true'></i>
+                                        </button> -->
+                                        <input type='hidden' value='/admin/roomTopOnlineSave' name='master_url'>
+                                        <input type='hidden' value='{$token}' name='token'>
+                                        <input type='hidden' value='1' name='action'>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary"
+                                        onclick="save('edit_form_1')">保存</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--操作modal-->
+    <input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+    <input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+    <input type="hidden" value="{$token}" name="token" id="token">
+
+    <!-- 全局js -->
+    <script src="/admin/js/jquery.min.js?v=2.1.4"></script>
+    <script src="/admin/js/bootstrap.min.js?v=3.3.6"></script>
+    <script src="/admin/js/plugins/toastr/toastr.min.js"></script>
+    <script src="/admin/js/plugins/pagination/bootstrap-paginator.js"></script>
+    <script>
+        function save(form_id) {
+            var edit_info = $("#" + form_id).serializeArray();
+            console.log(edit_info);
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                url: "/admin/roomTopOnlineSave", //请求的 URL地址
+                token: $("#token").val(),
+                dataType: "json", //返回的数据类型
+                data: edit_info,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000); //延迟5秒刷新页面
+
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+
+            return false;
+        }
+
+		var gifts = JSON.parse('<?php echo json_encode($gifts)?>');
+        var str = '';
+        $.each(gifts, function (gfit_id, gfit_name) {
+            str += "<option value='" + gfit_id + "'>" + gfit_id + '(' + gfit_name + ')' + "</option>";
+        });
+		console.log(str)
+        $('.addinput').on('click', function () {
+            $(this).parent().find('#room_photo_gifts').append(
+				"<tr>" +
+					"<td class='text-center select_gift_id'>" +
+						"<select name='gifts[]' id=''>" +
+							"<option value='0'>请选择</option>" +
+							str +
+						"</select>" +
+					"</td>" +
+				"</tr>"
+            );
+        });
+
+        $('.delinput').on('click', function () {
+            $(this).parent().find('#room_photo_gifts').children(':last-child').remove();
+        });
+
+        $('.delinputTwo').on('click', function () {
+            $(this).parent().find('.form-group table tbody').children(':last-child').remove();
+        });
+
+
+        $('.addinputTwo').on('click', function () {
+            $(this).parent().find('.form-group table tbody').append(
+                '<tr>' +
+                    '<td><input type="text" class="form-control timeSelector1" oninput="this.value = this.value.replace(/[^0-9]/g, ");" name="room[]" value="" required="required"></td>' +
+                    '<td><input type="text" class="form-control timeSelector1" oninput="this.value = this.value.replace(/[^0-9]/g, ");" name="count[]" value="" required="required"></td>' + 
+                '</tr>'
+            );
+        });
+    </script>
+    <script>
+        $('a[data-toggle="tab"]').on('hide.bs.tab', function (e) {
+            // e.target // 新选项卡对象
+            // e.relatedTarget // 老选项卡对象
+            console.log("老选项卡隐藏之前");
+        })
+        $('a[data-toggle="tab"]').on('show.bs.tab', function (e) {
+            // e.target // 新选项卡对象
+            // e.relatedTarget // 老选项卡对象
+            console.log("新选项卡显示之前");
+        })
+        $('a[data-toggle="tab"]').on('hidden.bs.tab', function (e) {
+            // e.target // 新选项卡对象
+            // e.relatedTarget // 老选项卡对象
+            console.log("老选项卡隐藏之后");
+        })
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            console.log(e.target.nodeName); //获取事件触发元素标签名（li，p，div，img，button…）
+            console.log(e.target.id); //获取事件触发元素id
+            console.log(e.target.className); //获取事件触发元素classname
+            console.log(e.target.innerHTML); //获取事件触发元素的内容（li）
+            console.log(e.relatedTarget) // 老选项卡对象
+            console.log("新选项卡显示之后");
+        })
+    </script>
+</body>
+
+</html>

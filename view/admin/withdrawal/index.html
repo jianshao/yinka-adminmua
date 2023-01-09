@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+    <style>
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="btn-group hidden-xs form-inline">
+                            <div class="form-group">
+                                <select class="form-control" id="select_id" name="type">
+                                    <option value="-1">==选择状态==</option>
+                                    <option value="0" {if $type == 0} echo selected="selected" {/if}>待审核</option>
+                                    <option value="1" {if $type == 1} echo selected="selected" {/if}>打款中</option>
+                                    <option value="2" {if $type == 2} echo selected="selected" {/if}>打款失败</option>
+                                    <option value="3" {if $type == 3} echo selected="selected" {/if}>打款成功</option>
+                                    <option value="4" {if $type == 4} echo selected="selected" {/if}>拒绝</option>
+                                    <option value="5" {if $type == 5} echo selected="selected" {/if}>已取消</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" value="{$start_time}" id="datetimeStart" readonly
+                                       class="form_datetime form-control input-outline"> --
+                                <input type="text" value="{$end_time}" id="datetimeEnd" readonly
+                                       class="form_datetime form-control input-outline">(当日)
+                            </div>
+                            <div class="form-group">
+                                <input class="form-control input-outline" type="text"
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                       placeholder="请输入用户ID" value="{$user_id}" id="user_id">
+                            </div>
+                            <div class="form-group">
+                                <select class="form-control" id="pay_type" name="pay_type">
+                                    <option value="-1">提现方式</option>
+                                    <option value="0" {if $pay_type == 0} echo selected="selected" {/if}>支付宝</option>
+                                    <option value="2" {if $pay_type == 2} echo selected="selected" {/if}>银行卡</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <select class="form-control" id="user_role" name="user_role">
+                                    <option value="-1">用户性质</option>
+                                    <option value="1" {if $user_role == 1} echo selected="selected" {/if}>白名单</option>
+                                    <option value="2" {if $user_role == 2} echo selected="selected" {/if}>普通用户</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <select class="form-control" id="is_online" name="is_online">
+                                    <option value="-1">打款方式</option>
+                                    <option value="1" {if $is_online == 1} echo selected="selected" {/if}>线上打款</option>
+                                    <option value="0" {if $is_online == 0} echo selected="selected" {/if}>线下打款</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <button type="button" class="btn btn-outline btn-success" style="float:right;"
+                                        id="search">
+                                    <i aria-hidden="true"></i>搜索
+                                </button>
+                            </div>
+                            <div class="form-group">
+                                <button type="button" class="btn btn-outline btn-success"
+                                        id="aproveAll">
+                                    <i aria-hidden="true"></i>批量审核
+                                </button>
+                            </div>
+                            <div class="form-group">
+                                <button type="button" class="btn btn-outline btn-success" id="daochu">
+                                    <i aria-hidden="true"></i>导出
+                                </button>
+                            </div>
+                        </div>
+                        <div class="example">
+                            <div style="height:20px;padding:20px;">白名单待提现：{$daishenhe_white_user_money}    普通用户待提现：{$daishenhe_user_money} 白名单提现成功：{$shenhe_white_user_money}    普通用户提现成功：{$shenhe_user_money} </div>
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center" style="width:5%">全选 <input type="checkbox" id="choseAll"></th>
+                                    <th class="text-center" style="width:5%">ID</th>
+                                    <th class="text-center" style="width:10%">创建时间</th>
+                                    <th class="text-center" style="width:5%">用户ID</th>
+                                    <th class="text-center" style="width:5%">所属工会</th>
+                                    <th class="text-center" style="width:5%">手机号</th>
+                                    <th class="text-center" style="width:10%">提现账号</th>
+                                    <th class="text-center" style="width:5%">账号姓名</th>
+                                    <th class="text-center" style="width:10%">用户昵称</th>
+                                    <th class="text-center" style="width:5%">提现金额</th>
+                                    <th class="text-center" style="width:5%">提现体系</th>
+                                    <th class="text-center" style="width:5%">提现状态</th>
+                                    <th class="text-center" style="width:5%">白名单</th>
+                                    <th class="text-center" style="width:10%">备注</th>
+                                    <th class="text-center" style="width:10%">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($list)"}
+                                {volist name="list" id="lists"}
+                                <tr>
+                                    <td class="text-center chose"><input type="checkbox" onclick="choseOne(this)"></td>
+                                    <td class="text-center id">{$lists.id}</td>
+                                    <td class="text-center">{$lists.created_time}</td>
+                                    <input type="hidden" value="{$lists.id}" id="id">
+                                    <td class="text-center" id="uid"
+                                        onclick=on_user_item("{$lists.uid}",'/admin/memberItem')>{$lists.uid}
+                                    </td>
+                                    <td class="text-center">{$lists.g_nickname}</td>
+                                    <td class="text-center">{$lists.mobile}</td>
+                                    <td class="text-center">{$lists.accounts}</td>
+                                    <td class="text-center">{$lists.username}</td>
+                                    <td class="text-center">{$lists.nickname}</td>
+                                    <td class="text-center">{$lists.money}</td>
+                                    <td class="text-center" value="{$lists.type}">{$lists.type_info}</td>
+                                    <td class="text-center" value="{$lists.status}">{$lists.status_info}</td>
+                                    <td class="text-center">{$lists.user_role_info}</td>
+                                    <td class="text-center">{$lists.message_detail}</td>
+                                    <td class="text-center">
+                                        {if condition="$lists.status eq 0"}
+
+                                            {if condition="(in_array('/admin/manMadeTransfer',$user_role_menu)) and ($lists.user_role eq 1)"}
+                                                   <button class="btn  btn btn-danger manMadeTransfer">线下转账</button>
+                                            {/if}
+
+                                            {if condition="in_array('/admin/agreeMake',$user_role_menu)"}
+                                                <button class="btn  btn btn-success agreeMake">同意</button>
+                                                {if condition="($lists.user_role eq 2) || ($lists.user_role eq 1 and $lists.type eq 0 ) "}
+                                                {/if}
+                                            {/if}
+
+                                            {if condition="in_array('/admin/refuseMake',$user_role_menu)"}
+                                                    <button class="btn  btn btn-danger refuseMake">拒绝</button>
+                                            {/if}
+
+                                        {elseif condition="$lists.status eq 4"}
+                                            <button class="btn btn-danger" disabled="disabled">已拒绝</button>
+                                        {elseif condition="$lists.status eq 2"}
+                                            <button class="btn btn-default" disabled="disabled">打款失败</button>
+                                        {elseif condition="$lists.status eq 5"}
+                                            <button class="btn btn-default" disabled="disabled">已取消</button>
+                                        {else}
+                                        {/if}
+                                    </td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="9" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page > 1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+<!--同意-->
+<div class="modal fade" id="agreeMake">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>同意用户提现</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <i class="fa fa-trash-o" id="agreeMake_msg"></i>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger" data-btn-danger="modal" id="agree" onclick="agreeMake_op()">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--手动转账成功-->
+<div class="modal fade" id="manMadeTransfer">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>同意转账成功</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <i class="fa fa-trash-o" id="manMadeTransfer_msg"></i>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger" data-btn-danger="modal" id="manMadeTransfer"
+                        onclick="manMadeTransfer_op()">确认
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--拒绝-->
+<div class="modal fade" id="refuseMake">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>拒绝用户提现</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <i class="fa fa-trash-o" id="refuseMake_msg"></i>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger" data-btn-danger="modal" id="refuse" onclick="refuseMake_op()">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="confirmAllModal" tabindex="-1" role="dialog" aria-labelledby="confirmAllModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">确认信息</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">×</span></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirMsg"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="all-refuse">全部拒绝</button>
+                <button type="button" class="btn btn-primary" id="all-confirm">全部通过</button>
+            </div>
+        </div>
+    </div>
+</div>
+{include file="../view/admin/common/userItem.html"}
+<input type="hidden" value="{$token}" id="token">
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$user_role_menu_input}" id="user_role_menu">
+<input type="hidden" value="" id="wid">
+<input type="hidden" value="" id="wuid">
+<input type="hidden" value="" id="time">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<script>
+    $('#choseAll').prop('checked', false);
+    $('.chose input').prop('checked', false);
+    $('#choseAll').click(function () {
+        if (typeof $(this).attr('checked') === "undefined") {
+            $(this).attr('checked', 'checked');
+            $(this).parent().parent().parent().parent().find('.chose input').prop('checked', true);
+            $(this).parent().parent().parent().parent().find('.chose input').attr('checked', 'checked');
+        } else {
+            $(this).removeAttr('checked', 'checked');
+            $(this).parent().parent().parent().parent().find('.chose input').prop('checked', false);
+            $(this).parent().parent().parent().parent().find('.chose input').removeAttr('checked', 'checked');
+        }
+    });
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/withdrawalList&token=' + $("#token").val() + '&user_id=' + $("#user_id").val() + '&type=' + $("#select_id").val() + '&start_time=' + $("#datetimeStart").val() + '&end_time=' + $("#datetimeEnd").val()+'&is_online='+$('#is_online').val() + '&pay_type='+$('#pay_type').val() + '&user_role='+$("#user_role").val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+    });
+    $('#search').click(function () {
+        var type = $('#select_id').val();
+        var is_online = $('#is_online').val();
+        var user_role = $('#user_role').val();
+        var pay_type = $('#pay_type').val();
+        var user_id = $('#user_id').val();
+        var start_time = $('#datetimeStart').val();
+        var end_time = $('#datetimeEnd').val();
+        var token = $('#token').val();
+        if (start_time > end_time) {
+            toastr.warning('开始时间不能大于结束时间');
+            return false;
+        }
+        window.location.href = "/admin/withdrawalList?token=" + token + '&master_url=/admin/withdrawalList&page=1&type=' + type + '&user_id=' + user_id + '&start_time=' + start_time + '&end_time=' + end_time + '&is_online='+is_online + '&pay_type='+pay_type+'&user_role='+user_role;
+    });
+
+    $('#daochu').click(function () {
+        var type = $('#select_id').val();
+        var is_online = $('#is_online').val();
+        var user_role = $('#user_role').val();
+        var pay_type = $('#pay_type').val();
+        var user_id = $('#user_id').val();
+        var start_time = $('#datetimeStart').val();
+        var end_time = $('#datetimeEnd').val();
+        var token = $('#token').val();
+        if (start_time > end_time) {
+            toastr.warning('开始时间不能大于结束时间');
+            return false;
+        }
+        window.location.href = "/admin/withdrawalList?token=" + token + '&master_url=/admin/withdrawalList&page=1&type=' + type + '&user_id=' + user_id + '&start_time=' + start_time + '&end_time=' + end_time + '&daochu=1&is_online='+is_online + '&pay_type='+pay_type + '&user_role='+user_role;
+    });
+    //同意
+    $('.agreeMake').click(function () {
+        var id = $(this).parents("tr").find("#id").val();
+        $("#wid").val(id);
+        var uid = $(this).parents("tr").find("#uid").text();
+        $("#wuid").val(uid);
+        $("#agreeMake_msg").html(' 您确定要同意 用户 ' + uid + ' 的提现请求吗');
+        $("#agreeMake").modal('show');
+    })
+
+    $('#aproveAll').on('click', function () {
+        var ids_arr = [];
+        var len = 0;
+        var choses = $('.chose input[checked="checked"]').parent().parent().find('.id');
+        $.each(choses, function (index, obj) {
+            ids_arr.push($(obj).text())
+        });
+        len = ids_arr.length;
+        var ids = ids_arr.toString();
+        console.log(ids);
+        $("#wid").attr('value', ids);
+        $('#confirmAllModal #confirMsg').html('当前选中<span style="color:#3399cc">' + len + '</span>条数据,确认通过吗？');
+        $('#confirmAllModal').modal('show');
+    });
+
+    $('#all-confirm').click(function () {
+        agreeMake_op();
+    })
+
+    $('#all-refuse').click(function () {
+        refuseMake_op();
+    })
+
+
+    function choseOne(obj) {
+        if (typeof $(obj).attr('checked') === "undefined") {
+            $(obj).attr('checked', 'checked');
+        } else {
+            $(obj).removeAttr('checked', 'checked');
+        }
+    }
+
+    function agreeMake_op() {
+        $("#agree").attr("disabled", true);
+        var id = $("#wid").val();
+        var master_url = '/admin/agreeMake';
+        var token = $("#token").val();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/agreeMake",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {id: id, master_url: master_url, token: token},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    $("#agree").attr("disabled", false);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning(rs.msg);
+                $("#agree").attr("disabled", false);
+                return false;
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    }
+
+    //手动转账成功
+    $('.manMadeTransfer').click(function () {
+        var id = $(this).parents("tr").find("#id").val();
+        $("#wid").val(id);
+        var uid = $(this).parents("tr").find("#uid").text();
+        $("#wuid").val(uid);
+        $("#manMadeTransfer_msg").html(' 您确定要标记 用户 ' + uid + ' 的提现转账成功吗');
+        $("#manMadeTransfer").modal('show');
+    });
+
+    function manMadeTransfer_op() {
+        $("#agree").attr("disabled", true);
+        var id = $("#wid").val();
+        var uid = $("#wuid").val();
+        var master_url = '/admin/manMadeTransfer';
+        var token = $("#token").val();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/manMadeTransfer",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {id: id, uid: uid, master_url: master_url, token: token,},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    $("#agree").attr("disabled", false);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning(rs.msg);
+                $("#agree").attr("disabled", false);
+                return false;
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    }
+
+    //拒绝
+    $('.refuseMake').click(function () {
+        var id = $(this).parents("tr").find("#id").val();
+        $("#wid").val(id);
+        var uid = $(this).parents("tr").find("#uid").text();
+        $("#wuid").val(uid);
+        $("#refuseMake_msg").html(' 您确定要拒绝 用户 ' + uid + ' 的提现请求吗');
+        $("#refuseMake").modal('show');
+    });
+
+    function refuseMake_op() {
+        $("#refuse").attr("disabled", true);
+        var id = $("#wid").val();
+        var master_url = '/admin/refuseMake';
+        var token = $("#token").val();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/refuseMake",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {id: id, master_url: master_url, token: token},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    $("#refuse").attr("disabled", false);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning(rs.msg);
+                $("#refuse").attr("disabled", false);
+                return false;
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    }
+
+    function mamMade_op() {
+        $("#refuse").attr("disabled", true);
+        var id = $("#wid").val();
+        var master_url = '/admin/refuseMake';
+        var token = $("#token").val();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/refuseMake",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {id: id, master_url: master_url, token: token},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    $("#refuse").attr("disabled", false);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning(rs.msg);
+                $("#refuse").attr("disabled", false);
+                return false;
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    }
+
+    $("#datetimeStart").datetimepicker({
+        weekStart: 1,
+        todayBtn: true,
+        todayHighlight: 1,
+        startView: 2,
+        forceParse: 0,
+        showMeridian: 1,
+        format: 'yyyy-mm-dd',
+        minView: '3',
+        language: 'zh-CN',
+        autoclose: true,
+        startDate: '-10y,-10m,-10d',
+    }).on("click", function () {
+        $("#datetimeStart").datetimepicker("setStartDate")
+    });
+    $("#datetimeEnd").datetimepicker({
+        weekStart: 1,
+        todayBtn: true,
+        todayHighlight: 1,
+        startView: 2,
+        forceParse: 0,
+        showMeridian: 1,
+        format: 'yyyy-mm-dd ',
+        minView: '3',
+        language: 'zh-CN',
+        autoclose: true,
+        startDate: '-10y,-10m,-10d'
+    }).on("click", function () {
+        $("#datetimeEnd").datetimepicker("setEndDate")
+    });
+</script>
+</body>
+</html>

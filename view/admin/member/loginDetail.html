@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        {if condition="in_array('/admin/loginDetail',$user_role_menu)"}
+                        <div class="pull-right search form-inline">
+                            <input class="form-control input-outline" type="text" value="{$search_id}"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                   placeholder="用户Id"
+                                   id="user_id">
+                            <input class="form-control input-outline" type="text" value="{$device_id}"
+                                   placeholder="设备Id"
+                                   id="device_id">
+                            <input class="form-control input-outline" type="text" value="{$imei}"
+                                   placeholder="设备唯一识别码"
+                                   id="imei">
+                            <input class="form-control input-outline" type="text" value="{$login_ip}"
+                                   placeholder="登录IP"
+                                   id="login_ip">
+                            <button type="button" class=" btn btn-primary" id="search">搜索</button>
+                            <button type="button" class=" btn btn-primary" id="导出">导出</button>
+                        </div>
+                        {/if}
+                        <div class="example">
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">ID</th>
+                                    <th class="text-center">用户</th>
+                                    <th class="text-center">收集方式</th>
+                                    <th class="text-center">登陆时间</th>
+                                    <th class="text-center">登录渠道</th>
+                                    <th class="text-center" style="width: 350px;">设备id</th>
+                                    <th class="text-center" style="width: 350px;">设备唯一识别码</th>
+                                    <th class="text-center">登录ip</th>
+                                    <th class="text-center">手机型号</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($data)"}
+                                {volist name="data" id="list"}
+                                <tr>
+                                    <td class="text-center">{$list.id}</td>
+                                    <td class="text-center">{$list.user_id}</td>
+                                    <td class="text-center">{if $list.ext_param_1 == 1}注册{else}登录{/if}</td>
+                                    <td class="text-center">{$list.ctime}</td>
+                                    <td class="text-center">{$list.channel}</td>
+                                    <td class="text-center">{$list.device_id}</td>
+                                    <td class="text-center">{$list.imei}</td>
+                                    <td class="text-center">{$list.login_ip}</td>
+                                    <td class="text-center">{$list.mobile_version}</td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page >1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+{include file="../view/admin/common/userItem.html"}
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$token}" id="token">
+<input type="hidden" value="{$user_role_menu_input}" id="user_role_menu">
+<input type="hidden" value="/admin/avatarOssFile" name="master_url" id="master_url">
+<input type="hidden" value="/admin/prettyavatarOssFile" name="masters_url" id="masters_url">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script>
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/loginDetail&token=' + $("#token").val() + '&user_id='+$('#user_id').val()+'&device_id='+$('#device_id').val()+'&login_ip='+$('#login_ip').val()+'&imei='+$('#imei').val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+        /*   onPageClicked:function (event, originalEvent, type, page) {
+               location.href = "?page="+page;
+           }*/
+    });
+
+    $('#search').click(function () {
+        var user_id = $("#user_id").val();
+        var pretty_id = $("#pretty_id").val();
+        var token = $('#token').val();
+        var mobile = $('#mobile').val();
+        var head_frame = $('#head_frame').val();
+        window.location.href = "/admin/loginDetail?token=" + token + '&master_url=/admin/loginDetail&page=1&user_id='+$('#user_id').val()+'&device_id='+$('#device_id').val()+'&login_ip='+$('#login_ip').val()+'&imei='+$('#imei').val();
+    })
+
+</script>
+
+</body>
+
+</html>

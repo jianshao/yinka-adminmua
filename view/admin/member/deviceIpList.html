@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example">
+                        <div class="pull-right search form-inline">
+                            封禁状态:<select class="form-control" id="status">
+                            <option value="1" {if $status == 1} echo selected="selected" {/if}>封禁</option>
+                            <option value="2" {if $status == 2} echo selected="selected" {/if}>解禁</option>
+                        </select>
+                            <input class="form-control input-outline" type="text" value="{$blackinfo}" placeholder="IP" id="blackinfo">
+                            <button type="button" class=" btn btn-primary" id="search">搜索</button>
+                            <button type="button" class=" btn btn-primary" id="add_gift">添加</button>
+                            <button type="button" class=" btn btn-primary" id="refresh">重置</button>
+                        </div>
+                    </div>
+                    <div class="example-wrap">
+
+                        <table class="table table-hover table-responsive" id="data_table">
+                            <thead>
+                            <tr>
+                                <th class="text-center">封禁时间</th>
+                                <th class="text-center">封禁参数</th>
+                                <th class="text-center">封禁状态</th>
+                                <th class="text-center">封禁理由</th>
+                                <th class="text-center">操作人员</th>
+                                <th class="text-center">操作时间</th>
+                                <th class="text-center">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {if condition="!empty($data)"}
+                            {volist name="data" id="list"}
+                            <tr>
+                                <td class="text-center">{$list.end_time}</td>
+                                <td class="text-center">{$list.blackinfo}</td>
+                                <td class="text-center">{$list.statuss}</td>
+                                <td class="text-center">{$list.reason}</td>
+                                <td class="text-center">{$list.admin_user}</td>
+                                <td class="text-center">{$list.create_time}</td>
+                                <td class="text-center">
+                                    {if condition="$list.statuss == '封禁'"}
+                                    <button class="btn btn-success unlock" uid="{$list.user_id}"; blackinfo="{$list.blackinfo}" type="{$list.type}">解封</button>
+                                    {else}
+                                    <button class="btn btn-success banned" blackinfo="{$list.blackinfo}"; blackinfo="{$list.blackinfo}" type="{$list.type}">封禁</button>
+                                    {/if}
+                                </td>
+                            </tr>
+                            {/volist}
+                            {else}
+                            <tr class="no-records-found">
+                                <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                            </tr>
+                            {/if}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {if condition = "$page.total_page >1"}
+                <div id="Paginator" style="text-align: center">
+                    <ul id="pageLimit"></ul>
+                </div>
+                {/if}
+                <!-- End Example Events -->
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Panel Other -->
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="addModalLabel">添加</h4>
+            </div>
+            <div class="modal-body">
+                <form id='add_form' method="post">
+                    <div class="form-group">
+                        <label class="control-label">IP:</label>
+                        <input type="text" class="form-control" name='blackinfo'  value="" required="required">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">备注:</label>
+                        <input type="text" class="form-control" name='reason'  value="" required="required">
+                    </div>
+                    <input type="hidden" value="/admin/deviceIpAdd" name="master_url">
+                    <input type="hidden" value="{$token}" name="token">
+                    <input type="hidden" value="1" name="type">
+                    <input type="hidden" value="-1" name="time">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="add_info()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$token}" id="token">
+<input type="hidden" value="{$user_role_menu_input}" id="user_role_menu">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+
+<script>
+
+    $('#add_gift').on('click',function(){
+        $('#addModal').modal('show');
+    });
+
+    function add_info(){
+        var add_info = $("#add_form").serializeArray();
+
+        if ( add_info[0]['value'] == 'null' ||  add_info[0]['value']  == '' ) {
+            toastr.warning('IP不能为空');
+            return false;
+        }
+
+        if ( add_info[1]['value'] == 'null' ||  add_info[1]['value']  == '' ) {
+            toastr.warning('备注不能为空');
+            return false;
+        }
+
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "get",    //请求类型
+            url: "/admin/deviceIpAdd",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: add_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/deviceIpList&token=' + $("#token").val()+'&user_id='+$('#user_id').val()+'&status='+$("#status").val()+'&blackinfo='+$("#blackinfo").val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+    });
+    $('#search').click(function () {
+        window.location.href = "/admin/deviceIpList?token=" + $('#token').val() + '&master_url=/admin/deviceIpList&page=1&user_id=' + $("#user_id").val()+'&status='+$("#status").val()+'&blackinfo='+$("#blackinfo").val();
+    })
+    $('#refresh').click(function () {
+        $("#status").val(1)
+        $("#blackinfo").val('')
+    })
+
+    //  解封
+    $('.unlock').click(function () {
+        if(confirm("奥利给！确定要解封此封禁吗？")){
+            $.ajax({
+                async: false,    //表示请求是否异步处理
+                type: "post",    //请求类型
+                url: "/admin/memberUnsealings",//请求的 URL地址
+                token: $("#token").val(),
+                dataType: "json",//返回的数据类型
+                data: {token:$('#token').val(),master_url:'/admin/memberUnsealings',blackinfo:$(this).attr('blackinfo'),id:$(this).attr('uid'),type:$(this).attr('type')},
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000);   //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        }else{
+            window.location.reload()
+        }
+    })
+
+    //  封禁
+    $('.banned').click(function () {
+        if(confirm("确定要封禁此用户吗？")){
+            $.ajax({
+                async: false,    //表示请求是否异步处理
+                type: "get",    //请求类型
+                url: "/admin/deviceIpAdd",//请求的 URL地址
+                token: $("#token").val(),
+                dataType: "json",//返回的数据类型
+                data: {token:$('#token').val(),master_url:'/admin/deviceIpAdd',blackinfo:$(this).attr('blackinfo'),type:$(this).attr('type'),reason:'违规',time:-1},
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000);   //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        }else{
+            window.location.reload()
+        }
+    })
+</script>
+
+</body>
+
+</html>

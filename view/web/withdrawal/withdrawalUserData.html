@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>提现账号信息</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="/web/css/withdrawal.css" rel="stylesheet" type="text/css" media="all">
+    <style>
+        #shelter_layer{
+            position: absolute;
+            top:0;
+            left: 0;
+            z-index: 99;
+            background-color: rgba(0,0,0,.5);
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+        #layer{
+            width: 95%;
+            height: 20%;
+            padding:5% 15% 10% 15%;
+            position: fixed;
+            background-color: #ECECEC;
+            top:30%;
+            z-index: 100;
+            box-sizing: border-box;
+            border-radius: 0.9375rem;
+            display: none;
+        }
+        #layer > button{
+            font-size: 16px;
+            width: 40%;
+            border: 0;
+            border-radius: 0.9375rem;
+            background-color: #FF80AA;
+            color: white;
+            margin-left: 30%;
+            margin-bottom: 5%;
+            padding: 2% 0;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<style>
+    .submit-botton{
+        margin-top: 10%;
+        margin-left: 4%;
+        font-family: 'Microsoft Yahei';
+        color: #FFFFFF;
+        font-size: 16px;
+        width: 90%;
+        height: 3rem;
+        border:none;
+        border-radius:3.125rem;
+        background-color: #BBBBBB;
+    }
+</style>
+<body>
+<div class="card-body">
+
+    {if !empty($user_info.diamond_msg)}
+    <p style="font-size: 12px;">{$user_info.diamond_msg}</p>
+    {/if}
+    <div class="withdrawal-body-form">
+        <input type="hidden" name="uid" id="uid" value="{$user_info.id}">
+        <input type="text" name="name" id="name" style="padding:0px"  class="withdrawal-money input" placeholder="&nbsp;&nbsp;请输入开户人姓名">
+        <input type="text" name="mobileno" id="mobileno" style="padding:0px"  oninput="this.value = this.value.replace(/[^0-9]/g, '');" class="withdrawal-money input" placeholder="&nbsp;&nbsp;请输入开户人手机号">
+        <input type="text" name="bankcardno" id="bankcardno" style="padding:0px"  oninput="this.value = this.value.replace(/[^0-9]/g, '');" class="withdrawal-money input" placeholder="&nbsp;&nbsp;请输入您的银行卡号">
+        <input type="text" name="bankof" id="bankof" style="padding:0px" class="withdrawal-money input" placeholder="&nbsp;&nbsp;请输入开户银行（具体到某支行）">
+
+        <!-- <div class="withdrawal-tag">1、今日剩余可提现额度<span style="color:#FF769C ;" class="moneyCount">{$user_info.user_money_count}</span>元</div> -->
+        <!-- <div class="withdrawal-tag">2、每日累计可提现额度2万</div> -->
+        <div class="withdrawal-tag">已通过平台内实名认证的姓名、身份证号需与提现的银行卡开户人姓</div>
+        <div class="withdrawal-tag">名、身份证号一致才可提现成功。平台内实名认证成功后将无法修改</div>
+        <div class="withdrawal-tag">。请您仔细确认所提供的资料的一致性。</div>
+    </div>
+    <div class="withdrawal-submit">
+        <button class="submit-botton" id="confirm"  disabled="disabled" >点击已确认</button>
+        <button class="withdrawal-submit-botton" id="withdrawal-submit"  disabled="disabled" >下一步</button>
+    </div>
+    <p style="font-size: 12px;text-align: center;color: #999999">该页面不支持分享</p>
+
+
+    <!-- 透明遮挡层 -->
+    <!--    弹窗结束    -->
+</div>
+<input type="hidden" id="type">
+<input type="hidden" id="bankofSave" value="{$bankofSave}">
+{if  $user_info.pay_type.accounts != 0}
+<input type="hidden" value="{$user_info.pay_type.type}" id="pay_type">
+{/if}
+</body>
+</html>
+<script type="text/javascript" src="/web/js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" src="/web/js/master/dist/dialog.js"></script>
+<script type="text/javascript">
+
+    $(".submit-botton").attr("disabled", false);
+    $(".submit-botton").css('background-color', '#FF87A2');
+
+    $(function() {
+        $('#confirm').click(function () {
+            var mobileno = $('#mobileno').val()
+            var name = $('#name').val()
+            var bankcardno = $('#bankcardno').val()
+            var bankof = $('#bankof').val()
+            var ret = /^[\u4e00-\u9fa5]{2,6}$/;
+            if(!name){
+                alerts('姓名必填');
+                return false
+            }
+            if(!ret.test(name)){
+                alerts('姓名格式错误');
+                return false
+            }
+            var ret = /^[\d]{5,20}$/;
+            if(!mobileno){
+                alerts('手机号必填');
+                return false
+            }
+            if(!ret.test(mobileno)){
+                alerts('手机号格式错误');
+                return false
+            }
+            if(!bankcardno)
+            {
+                alerts("银行卡必填");
+                return false
+            }
+            if( !bankof)
+            {
+                alerts("开户行必填");
+                return false
+            }
+            alerts('您已确认请点击下一步');
+            if ($('#mobileno').val() && $('#name').val() && $('#bankcardno').val() && $('#bankof').val()) {
+                $(".withdrawal-submit-botton").attr("disabled", false);
+                $(".withdrawal-submit-botton").css('background-color', '#FF87A2');
+            } else {
+                $(".withdrawal-submit-botton").attr("disabled", true);
+                $(".withdrawal-submit-botton").css('background-color', '#BBBBBB');
+            }
+            return false
+        })
+        $("#withdrawal-submit").click(function () {
+            var mobileno = $('#mobileno').val()
+            var name = $('#name').val()
+            var bankcardno = $('#bankcardno').val()
+            var bankof = $('#bankof').val()
+            var uid = $('#uid').val()
+            var bankofSave = $('#bankofSave').val()
+            
+            if(bankofSave==1){
+                //更改银行卡
+                $.ajax({
+                    async: false,    //表示请求是否异步处理
+                    type: "get",    //请求类型
+                    url: "/web/webUserWithdrawal/updateBankCard4Factors",//请求的 URL地址
+                    token: $("#token").val(),
+                    dataType: "json",//返回的数据类型
+                    data: {mobileno:mobileno,name:name,bankcardno:bankcardno,bankof:bankof,uid:uid},
+                    success: function (rs) {
+                        if (rs.code == 200) {
+                            alerts(rs.msg);
+                            setTimeout(function(){
+                                window.location.href='/web/webUserWithdrawal/userWithdrawalOption?bankofSave=0';//刷新当前页面.
+                            },1000)
+                        }
+                        alerts(rs.msg);
+                        return false;
+                    },
+                });
+            }else{
+                //实名认证
+                $.ajax({
+                    async: false,    //表示请求是否异步处理
+                    type: "get",    //请求类型
+                    url: "/web/webUserWithdrawal/RealNameAuthentication",//请求的 URL地址
+                    token: $("#token").val(),
+                    dataType: "json",//返回的数据类型
+                    data: {mobileno:mobileno,name:name,bankcardno:bankcardno,bankof:bankof,uid:uid},
+                    success: function (rs) {
+                        if (rs.code == 200) {
+                            alerts(rs.msg);
+                            window.location.href=rs.url;   //跳转
+                        }
+                        alerts(rs.msg);
+                        return false;
+                    },
+                });
+            }
+
+        })
+    })
+
+    //弹出框
+    function alerts(content){
+        var hint = dialog({
+            content: content
+        });
+        hint.show();
+        setTimeout(function () {
+            hint.close().remove();
+        }, 2000);
+    }
+
+</script>

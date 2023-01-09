@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+    <style>
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+    </style>
+
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="btn-group hidden-xs form-inline">
+                           
+                            <input class="form-control input-outline" type="text"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                   placeholder="（金）第一名礼物id" value="" id="coin1">
+                            &#12288
+                            <input class="form-control input-outline" type="text"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                   placeholder="（金）第二名礼物id" value="" id="coin2">
+                            &#12288
+                            <input class="form-control input-outline" type="text"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                   placeholder="（金）第三名礼物id" value="" id="coin3">
+                            &#12288
+                            <button type="button" class="btn btn-outline btn-success" style="float:right;" id="search">
+                                <i aria-hidden="true"></i>修改
+                            </button>
+                        </div>
+                        <div class="btn-group hidden-xs form-inline">
+                           
+                            <input class="form-control input-outline" type="text"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                   placeholder="（银）第一名礼物id" value="" id="coin4">
+                            &#12288
+                            <input class="form-control input-outline" type="text"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                   placeholder="（银）第二名礼物id" value="" id="coin5">
+                            &#12288
+                            <input class="form-control input-outline" type="text"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                   placeholder="（银）第三名礼物id" value="" id="coin6">
+                            &#12288
+                            <button type="button" class="btn btn-outline btn-success" style="float:right;" id="search2">
+                                <i aria-hidden="true"></i>修改
+                            </button>
+                        </div>
+                        <div class="example">
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">箱子类型</th>
+                                    <th class="text-center">名次</th>
+                                    <th class="text-center">礼物ID</th>
+                                    <th class="text-center">礼物名称</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($resjin)"}
+                                {volist name="resjin" id="lists"}
+                                <tr>
+                                    <td class="text-center" id="id">金箱子</td>
+                                    <td class="text-center" id="id">{$lists.rank}</td>
+                                    <td class="text-center" id="id">{$lists.giftid}</td>
+                                    <td class="text-center" id="id">{$lists.giftname}</td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="4" class="text-center">金箱子暂无配置</td>
+                                </tr>
+                                {/if}
+                                {if condition="!empty($resyin)"}
+                                {volist name="resyin" id="lists"}
+                                <tr>
+                                    <td class="text-center" id="id">银箱子</td>
+                                    <td class="text-center" id="id">{$lists.rank}</td>
+                                    <td class="text-center" id="id">{$lists.giftid}</td>
+                                    <td class="text-center" id="id">{$lists.giftname}</td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="4" class="text-center">银箱子暂无配置</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+
+
+
+
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<input type="hidden" value="{$token}" id="token">
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<script>
+   
+
+   
+    $('#search2').click(function () {
+        var coin4 = $('#coin4').val();
+        var coin5 = $('#coin5').val();
+        var coin6 = $('#coin6').val();
+
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/editegggift",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {
+                coin1: coin4,
+                coin2: coin5,
+                coin3: coin6,
+                type: 2,
+                master_url: '/admin/editegggift',
+                token: $("#token").val(),
+            },
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 200);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        // function location() {
+        //     window.location.href = window.location.href;
+        // }
+
+    })
+
+    $('#search').click(function () {
+        var coin1 = $('#coin1').val();
+        var coin2 = $('#coin2').val();
+        var coin3 = $('#coin3').val();
+
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/editegggift",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {
+                coin1: coin1,
+                coin2: coin2,
+                coin3: coin3,
+                type: 1,
+                master_url: '/admin/editegggift',
+                token: $("#token").val(),
+            },
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 200);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        // function location() {
+        //     window.location.href = window.location.href;
+        // }
+
+    })
+
+</script>
+</body>
+</html>

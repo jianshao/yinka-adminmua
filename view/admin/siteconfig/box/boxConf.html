@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+
+<div class="modal-dialog" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="modal-title" id="addModalLabel">宝箱配置</h4>
+        </div>
+
+        <div class="modal-body">
+            <button type="button" class="btn btn-outline btn-success" id="counts">
+                <i class="glyphicon glyphicon-fire" aria-hidden="true"></i>次数
+            </button>
+            <button type="button" class="btn btn-outline btn-success" id="silver">
+                <i class="glyphicon glyphicon-fire" aria-hidden="true"></i>银箱子
+            </button>
+            <button type="button" class="btn btn-outline btn-success" id="gold">
+                <i class="glyphicon glyphicon-fire" aria-hidden="true"></i>金箱子
+            </button>
+            <button type="button" class="btn btn-outline btn-success" id="clearCache">
+                <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>更新
+            </button>
+
+
+            <form id='edit_form' method="post">
+                {if condition="$list['type'] == 1"}
+                <input type="hidden" name="type" value="1">
+                {volist name="list['val']" id="counts"}
+                <div class="form-group">
+                    <input type="text" class="form-control" name="count[]" value="{$counts}" required>
+                </div>
+                {/volist}
+
+                {elseif condition="$list['type'] == 2"}
+                <div class="form-group">
+                    <input type="hidden" name="type" value="2">
+                    {volist name="$list['val']['gifts']" id="gifts"}
+                    <div class="form-group">
+                        {$gifts.name}：
+                        <input type="text" class="form-control " name="giftId[]" value="{$gifts.giftId}" required>
+                        <input type="text" class="form-control " name="weight[]" value="{$gifts.weight}" required>
+                    </div>
+                    {/volist}
+                </div>
+
+                {elseif condition="$list['type'] == 3"}
+                <div class="form-group">
+                    <input type="hidden" name="type" value="3">
+                    {volist name="$list['val']['gifts']" id="gifts"}
+                    <div class="form-group">
+                        {$gifts.name}：
+                        <input type="text" class="form-control " name="giftId[]" value="{$gifts.giftId}" required>
+                        <input type="text" class="form-control " name="weight[]" value="{$gifts.weight}" required>
+                    </div>
+                    {/volist}
+                </div>
+                {/if}
+                <input type="hidden" value="/admin/addGift" name="master_url">
+                <input type="hidden" value="{$token}" name="token">
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            <button type="button" class="btn btn-primary" onclick="edit_info()">保存</button>
+        </div>
+    </div>
+</div>
+</body>
+<input type="hidden" value="{$token}" name="token" id="token">
+<input type="hidden" value="/admin/ossAttireFile" name="master_url" id="master_url">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script>
+    //添加执行
+    function edit_info(){
+        var edit_info = $("#edit_form").serializeArray();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/boxConfSave",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data: edit_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    }
+
+    //搜索
+    $("#counts").click(function () {
+        window.location.href = "/admin/boxConf?token=" + $('#token').val() + '&master_url=/admin/boxConf&key=counts'
+    })
+    $("#silver").click(function () {
+        window.location.href = "/admin/boxConf?token=" + $('#token').val() + '&master_url=/admin/boxConf&key=silver'
+    })
+    $("#gold").click(function () {
+        window.location.href = "/admin/boxConf?token=" + $('#token').val() + '&master_url=/admin/boxConf&key=gold'
+    })
+    //清除缓存
+    $("#clearCache").on('click',function(){
+        var master_url = "/admin/clearCache";
+        var token = $("#token").val();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/clearCache",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data:{master_url:master_url,token:token,type:'box_conf'},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 500);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    })
+</script>

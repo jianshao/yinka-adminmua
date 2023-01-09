@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+
+<div class="modal-dialog" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="modal-title" id="addModalLabel">金币抽奖</h4>
+        </div>
+        <button type="button" class="btn btn-outline btn-success" id="clearCache">
+            <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>更新
+        </button>
+        <div class="modal-body">
+
+            <form id='add_form' method="post">
+                {if condition="$list['type'] == 1"}
+                <h3>登录任务:</h3>
+                {volist name="list['val']" id="daily"}
+                <div class="form-group">
+                    <input type="text" class="form-control " value="{$daily.name}" required>
+                    <input type="text" class="form-control " value="{$daily.desc}" required>
+                    <input type="text" class="form-control " value="{$daily.count}" required>
+                    <input type="text" class="form-control " value="{$daily.inspectorsType}" required>
+                    <button type="button" class="btn btn-outline btn-success reward" keyId="{$daily.id}">
+                        <i aria-hidden="true"></i>奖励
+                    </button>
+                </div>
+                {/volist}
+
+                {elseif condition="$list['type'] == 2"}
+
+                <h3>奖励:</h3>
+                {volist name="list['val']" id="rewards"}
+                <div class="form-group">
+                    <input type="text" class="form-control " value="{$rewards.assetId}" required>
+                    <input type="text" class="form-control " value="{$rewards.count}" required>
+                    <input type="text" class="form-control " value="{$rewards.name}" required>
+                    <img src="{$rewards.img}" alt="">
+                </div>
+                {/volist}
+
+                {/if}
+                <input type="hidden" value="/admin/addGift" name="master_url">
+                <input type="hidden" value="{$token}" name="token">
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            <button type="button" class="btn btn-primary" onclick="add_info()">保存</button>
+        </div>
+    </div>
+</div>
+</body>
+<input type="hidden" value="{$token}" name="token" id="token">
+<input type="hidden" value="/admin/ossAttireFile" name="master_url" id="master_url">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script>
+    //搜索
+    $(".reward").click(function () {
+        window.location.href = "/admin/dailyConf?token=" + $('#token').val() + '&master_url=/admin/dailyConf&key=reward&keyId='+$(this).attr('keyId')
+    })
+    //清除缓存
+    $("#clearCache").on('click',function(){
+        var master_url = "/admin/clearCache";
+        var token = $("#token").val();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/clearCache",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data:{master_url:master_url,token:token,type:'daily_conf'},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 500);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    })
+</script>

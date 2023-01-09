@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+    <style>
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+    </style>
+
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+
+                    <div class="example-wrap">
+                        <div class="example">
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">id</th>
+                                    <!--<th class="text-center">房间类型</th>-->
+                                    <th class="text-center">背景图</th>
+                                    <th class="text-center" width="20%">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($list)"}
+                                {volist name="list" id="lists"}
+                                <tr>
+                                    <input type="hidden" value="{$room_id}" id="room_id">
+                                    <td class="text-center id" id="idByType">{$lists.id}</td>
+                                    <!--<td class="text-center rooms_type" id="room_mode">{$lists.room_mode}</td>-->
+                                    <td class="text-center"><img src="{$lists.image}" style="width: 50px;"></td>
+                                    <td class="text-center">
+                                        {if condition="in_array('/admin/roomChoiceType',$user_role_menu)"}
+                                        <button class="btn btn-success choiceImage">选择</button>
+                                        {/if}
+                                    </td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="7" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page > 1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+<!--选择背景-->
+<div class="modal fade" id="choiceImage">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>选择背景</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <i class="glyphicon glyphicon-question-sign" id="choiceImage_msg"></i>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger" data-btn-danger="modal" onclick="choice_yes()">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{include file="../view/admin/common/userItem.html"}
+<input type="hidden" value="{$token}" id="token">
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="" id="to_id">
+<input type="hidden" value="" id="to_roomid">
+<input type="hidden" value="{$user_role_menu_input}" id="user_role_menu">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<script src="/admin/js/trap/fileinput.js" type="text/javascript"></script>
+<script src="/admin/js/trap/fileinput_locale_zh.js" type="text/javascript"></script>
+<script>
+    $('body').on('hidden.bs.modal', '#editModal', function () {
+        $("#editModal form").remove();
+    });
+    $('body').on('hidden.bs.modal', '#selectVsitorExternnumber', function () {
+        $("#a_tbody tr").remove();
+    });
+    $('body').on('hidden.bs.modal', '#room_channel_modal', function () {
+        $("input[name='checkbox_id']").attr("checked", false);
+    });
+
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/roomBackgroundChoice&token=' + $("#token").val() + '&room_id=' + $("#room_id").val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+    });
+    //选择背景
+    $(".choiceImage").click(function () {
+        var id = $(this).parents("tr").find("#idByType").text();
+        $("#to_id").val(id);
+        $('#choiceImage').modal('show');
+        $("#choiceImage_msg").html(' 确定选择此背景吗：' + id )
+    })
+
+    function choice_yes() {
+        var type_id = $("#to_id").val();
+        var master_url = '/admin/roomChoiceType';
+        var token = $('#token').val();
+        var room_id = $("#room_id").val();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/roomChoiceType",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {type_id: type_id, room_id: room_id, master_url: master_url, token: token},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 500);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        //刷新页面
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+</script>
+</body>
+</html>

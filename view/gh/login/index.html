@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<!-- saved from url=(0063)http://ghtest.muayuyin.com/index.php/chair/login/quitlogin.html -->
+<html class="x-admin-sm"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <title>MUA语音公会后台登录</title>
+    <meta name="renderer" content="webkit|ie-comp|ie-stand">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi">
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <link rel="stylesheet" href="/gh/css/font.css">
+    <link rel="stylesheet" href="/gh/css/login.css">
+    <link rel="stylesheet" href="/gh/css/xadmin.css">
+    <script type="text/javascript" src="/gh/js/jquery.min.js"></script>
+    <script src="/gh/js/layui.js" charset="utf-8"></script>
+    <!--[if lt IE 9]>
+    <script src="/gh/js/html5.min.js"></script>
+    <script src="/gh/js/respond.min.js"></script>
+    <![endif]-->
+    <link id="layuicss-layer" rel="stylesheet" href="/gh/css//layer.css" media="all"></head>
+<body class="login-bg">
+
+<div class="login layui-anim layui-anim-up">
+    <div class="message">MUA语音公会后台登录</div>
+    <div id="darkbannerwrap"></div>
+
+    <form method="post" class="layui-form">
+        <input name="phone" placeholder="手机号" type="text" lay-verify="phone" class="layui-input">
+        <hr class="hr15">
+        <input name="password" lay-verify="pwd" placeholder="密码" type="password" class="layui-input">
+        <hr class="hr15">
+        <input value="登录" lay-submit="" lay-filter="login" style="width:100%;" type="submit">
+        <hr class="hr20">
+    </form>
+    <input type="hidden" value="/index.php/chair/login/login.html" id="error">
+    <input type="hidden" value="/index.php/chair/home/index.html" id="success">
+</div>
+<script>
+    $(function  () {
+        layui.use('form', function(){
+            var form = layui.form;
+            // 自定义验证规则
+            form.verify({
+                phone: [
+                    /^1[\d]{10}/
+                    ,'手机号格式不正确'
+                ]
+                ,pwd: [
+                    /^[\S]{6,12}$/
+                    ,'密码必须6到12位，且不能出现空格'
+                ]
+            });
+            //监听提交
+            var success = $("#success").val();
+            var error = $("#error").val();
+            form.on('submit(login)', function(data){
+                $.post("/index.php/chair/login/dologin.html",data.field,function(res){
+                    if(res.code == "200"){
+                        layer.msg(res.msg);
+                        window.location.href = success;
+                    }else{
+                        layer.alert(res.msg);
+                        return false;
+                    }
+                },'json');
+                return false;
+            });
+
+        });
+    })
+</script>
+
+</body></html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="example">
+                            <div class="example">
+                                <div class="pull-right search form-inline">
+                                    类型:<select class="form-control" id="status">
+                                    <option value="0" {if $status == 0} echo selected="selected" {/if}>svip</option>
+                                    <option value="1" {if $status == 1} echo selected="selected" {/if}>vip</option>
+                                </select>
+                                    <button type="button" class=" btn btn-primary" id="search">搜索</button>
+                                    <button type="button" class="btn btn-outline btn-success" id="clearCache">
+                                        <i class="glyphicon glyphicon-fire" aria-hidden="true"></i>清除缓存
+                                    </button>
+                                </div>
+                                <table class="table table-hover table-responsive" id="data_table" style="word-wrap: break-word; word-break: break-all;">
+                                    <thead>
+                                    <tr>
+                                        <th class="text-center">权限</th>
+                                        <th class="text-center">图标</th>
+                                        <th class="text-center">预览图标</th>
+                                        <th class="text-center">文案</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {if condition="!empty($list['privilegeDesc'])"}
+                                    {volist name="list['privilegeDesc']" id="list"}
+                                    <tr>
+                                        <td style="width: 20px;" class="text-center" >{$list.title}</td>
+                                        <td style="width: 20px;" class="text-center" ><img src="{$list.pic}" width="50px" alt=""></td>
+                                        <td style="width: 20px;" class="text-center" ><img src="{$list.previewPic}" width="100px" alt="" class="show_img"></td>
+                                        <td style="width: 20px;" class="text-center" >{$list.content}</td>
+                                    </tr>
+                                    {/volist}
+                                    {else}
+                                    <tr class="no-records-found">
+                                        <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                    </tr>
+                                    {/if}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- End Example Events -->
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!-- End Panel Other -->
+    </div>
+</div>
+<input type="hidden" value="{$token}" name="token" id="token">
+<div id="outerdiv"
+     style="position:fixed;top:0;left:0;background:rgba(0,0,0,0.7);z-index:2;width:100%;height:100%;display:none;">
+    <div id="innerdiv" style="position:absolute;">
+        <img id="max_img" style="border:5px solid #fff;" src=""/>
+    </div>
+</div>
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script>
+    //清除缓存
+    $("#clearCache").on('click',function(){
+        var master_url = "/admin/clearCache";
+        var token = $("#token").val();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/clearCache",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data:{master_url:master_url,token:token,type:'vip_conf'},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 500);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    })
+    $('.show_img').click(function () {
+        var _this = $(this);//将当前的min_img元素作为_this传入函数
+        imgShow("#outerdiv", "#innerdiv", "#max_img", _this);
+    })
+
+    //搜索
+    $("#search").click(function () {
+        window.location.href = "/admin/vipConf?token=" + $('#token').val() + '&master_url=/admin/vipConf&status=' + $("#status").val()
+    })
+
+    function imgShow(outerdiv, innerdiv, max_img, _this) {
+        var src = _this.attr("src");//获取当前点击的min_img元素中的src属性
+        $("#max_img").attr("src", src);//设置#max_img元素的src属性
+
+        /*获取当前点击图片的真实大小，并显示弹出层及大图*/
+        $("<img/>").attr("src", src).load(function () {
+            var windowW = $(window).width();//获取当前窗口宽度
+            var windowH = $(window).height();//获取当前窗口高度
+            var realWidth = this.width;//获取图片真实宽度
+            var realHeight = this.height;//获取图片真实高度
+            var imgWidth, imgHeight;
+            var scale = 0.8;//缩放尺寸，当图片真实宽度和高度大于窗口宽度和高度时进行缩放
+
+            if (realHeight > windowH * scale) {
+                imgHeight = windowH * scale;
+                imgWidth = imgHeight / realHeight * realWidth;
+                if (imgWidth > windowW * scale) {
+                    imgWidth = windowW * scale;
+                }
+            } else if (realWidth > windowW * scale) {
+                imgWidth = windowW * scale;
+                imgHeight = imgWidth / realWidth * realHeight;
+            } else {
+                imgWidth = realWidth;
+                imgHeight = realHeight;
+            }
+            $("#max_img").css("width", imgWidth);//以最终的宽度对图片缩放
+
+            var w = (windowW - imgWidth) / 2;//计算图片与窗口左边距
+            var h = (windowH - imgHeight) / 2;//计算图片与窗口上边距
+            $(innerdiv).css({"top": h, "left": w});//设置#innerdiv的top和left属性
+            $(outerdiv).fadeIn("fast");//淡入显示#outerdiv及.pimg
+        });
+
+        $(outerdiv).click(function () {
+            $(this).fadeOut("fast");
+        });
+    }
+</script>

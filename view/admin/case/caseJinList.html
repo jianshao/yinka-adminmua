@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="example">
+                            <div  class="el-alert el-alert--info is-center is-light" style="text-align:center">
+                                <div class="el-alert__content">
+                                    <p class="el-alert__description" style="color: #FF0000;">当前砸金箱子奖池</p>
+                                </div>
+                            </div>
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">ID</th>
+                                    <th class="text-center">权重（奖池个数）</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($data)"}
+                                    {volist name="data" id="list"}
+                                        <tr>
+                                            <td class="text-center" id="id">{$list.gift_name}</td>
+                                            <td class="text-center">{$list.number}</td>
+                                        </tr>
+                                    {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="2" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script>
+
+</script>
+
+</body>
+
+</html>

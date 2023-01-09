@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/time/daterangepicker.css">
+
+    <style>
+
+        .form-control:focus {
+            border-color: #66afe9;
+            outline: 0;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
+            box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
+        }
+
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        input {
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+        }
+
+        .btn-default {
+            background-color: #fff;
+            border: 1px solid #828080;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: #08c;
+            border: 1px solid #08c;
+            border-radius: 3px;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            background-color: #357ebd;
+        }
+    </style>
+
+</head>
+<body class="gray-bg">
+<div class="daterangepicker ltr show-ranges show-calendar opensright"
+     style="display: none; top: 54px; left: 8px; right: auto;">
+    <div class="ranges">
+        <ul>
+            <li data-range-key="今日" class="active">今日</li>
+            <li data-range-key="昨日" class="">昨日</li>
+            <li data-range-key="最近7日" class="">最近7日</li>
+            <li data-range-key="最近30日" class="">最近30日</li>
+            <li data-range-key="本月" class="">本月</li>
+            <li data-range-key="上月">上月</li>
+            <li data-range-key="自定义">自定义</li>
+        </ul>
+    </div>
+    <div class="drp-calendar left">
+        <div class="calendar-table">
+            <table class="table-condensed">
+                <thead>
+                <tr>
+                    <th class="prev available"><span></span></th>
+                    <th colspan="5" class="month">六月 2020</th>
+                    <th></th>
+                </tr>
+                <tr>
+                    <th>一</th>
+                    <th>二</th>
+                    <th>三</th>
+                    <th>四</th>
+                    <th>五</th>
+                    <th>六</th>
+                    <th>日</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td class="off ends available" data-title="r0c0">25</td>
+                    <td class="off ends available" data-title="r0c1">26</td>
+                    <td class="off ends available" data-title="r0c2">27</td>
+                    <td class="off ends available" data-title="r0c3">28</td>
+                    <td class="off ends available" data-title="r0c4">29</td>
+                    <td class="weekend off ends available" data-title="r0c5">30</td>
+                    <td class="weekend off ends available" data-title="r0c6">31</td>
+                </tr>
+                <tr>
+                    <td class="available" data-title="r1c0">1</td>
+                    <td class="available" data-title="r1c1">2</td>
+                    <td class="available" data-title="r1c2">3</td>
+                    <td class="available" data-title="r1c3">4</td>
+                    <td class="available" data-title="r1c4">5</td>
+                    <td class="weekend available" data-title="r1c5">6</td>
+                    <td class="weekend available" data-title="r1c6">7</td>
+                </tr>
+                <tr>
+                    <td class="available" data-title="r2c0">8</td>
+                    <td class="available" data-title="r2c1">9</td>
+                    <td class="available" data-title="r2c2">10</td>
+                    <td class="available" data-title="r2c3">11</td>
+                    <td class="available" data-title="r2c4">12</td>
+                    <td class="weekend available" data-title="r2c5">13</td>
+                    <td class="weekend available" data-title="r2c6">14</td>
+                </tr>
+                <tr>
+                    <td class="available" data-title="r3c0">15</td>
+                    <td class="available" data-title="r3c1">16</td>
+                    <td class="available" data-title="r3c2">17</td>
+                    <td class="available" data-title="r3c3">18</td>
+                    <td class="available" data-title="r3c4">19</td>
+                    <td class="weekend available" data-title="r3c5">20</td>
+                    <td class="weekend available" data-title="r3c6">21</td>
+                </tr>
+                <tr>
+                    <td class="available" data-title="r4c0">22</td>
+                    <td class="available" data-title="r4c1">23</td>
+                    <td class="available" data-title="r4c2">24</td>
+                    <td class="available" data-title="r4c3">25</td>
+                    <td class="available" data-title="r4c4">26</td>
+                    <td class="weekend available" data-title="r4c5">27</td>
+                    <td class="weekend available" data-title="r4c6">28</td>
+                </tr>
+                <tr>
+                    <td class="available" data-title="r5c0">29</td>
+                    <td class="available" data-title="r5c1">30</td>
+                    <td class="off ends available" data-title="r5c2">1</td>
+                    <td class="off ends available" data-title="r5c3">2</td>
+                    <td class="off ends available" data-title="r5c4">3</td>
+                    <td class="weekend off ends available" data-title="r5c5">4</td>
+                    <td class="weekend off ends available" data-title="r5c6">5</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="calendar-time" style="display: none;"></div>
+    </div>
+    <div class="drp-calendar right">
+        <div class="calendar-table">
+            <table class="table-condensed">
+                <thead>
+                <tr>
+                    <th></th>
+                    <th colspan="5" class="month">七月 2020</th>
+                    <th class="next available"><span></span></th>
+                </tr>
+                <tr>
+                    <th>一</th>
+                    <th>二</th>
+                    <th>三</th>
+                    <th>四</th>
+                    <th>五</th>
+                    <th>六</th>
+                    <th>日</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td class="off ends available" data-title="r0c0">29</td>
+                    <td class="off ends available" data-title="r0c1">30</td>
+                    <td class="available" data-title="r0c2">1</td>
+                    <td class="available" data-title="r0c3">2</td>
+                    <td class="available" data-title="r0c4">3</td>
+                    <td class="weekend available" data-title="r0c5">4</td>
+                    <td class="weekend available" data-title="r0c6">5</td>
+                </tr>
+                <tr>
+                    <td class="available" data-title="r1c0">6</td>
+                    <td class="available" data-title="r1c1">7</td>
+                    <td class="available" data-title="r1c2">8</td>
+                    <td class="available" data-title="r1c3">9</td>
+                    <td class="available" data-title="r1c4">10</td>
+                    <td class="weekend available" data-title="r1c5">11</td>
+                    <td class="weekend available" data-title="r1c6">12</td>
+                </tr>
+                <tr>
+                    <td class="today active start-date active end-date available" data-title="r2c0">13</td>
+                    <td class="available" data-title="r2c1">14</td>
+                    <td class="available" data-title="r2c2">15</td>
+                    <td class="available" data-title="r2c3">16</td>
+                    <td class="available" data-title="r2c4">17</td>
+                    <td class="weekend available" data-title="r2c5">18</td>
+                    <td class="weekend available" data-title="r2c6">19</td>
+                </tr>
+                <tr>
+                    <td class="available" data-title="r3c0">20</td>
+                    <td class="available" data-title="r3c1">21</td>
+                    <td class="available" data-title="r3c2">22</td>
+                    <td class="available" data-title="r3c3">23</td>
+                    <td class="available" data-title="r3c4">24</td>
+                    <td class="weekend available" data-title="r3c5">25</td>
+                    <td class="weekend available" data-title="r3c6">26</td>
+                </tr>
+                <tr>
+                    <td class="available" data-title="r4c0">27</td>
+                    <td class="available" data-title="r4c1">28</td>
+                    <td class="available" data-title="r4c2">29</td>
+                    <td class="available" data-title="r4c3">30</td>
+                    <td class="available" data-title="r4c4">31</td>
+                    <td class="weekend off ends available" data-title="r4c5">1</td>
+                    <td class="weekend off ends available" data-title="r4c6">2</td>
+                </tr>
+                <tr>
+                    <td class="off ends available" data-title="r5c0">3</td>
+                    <td class="off ends available" data-title="r5c1">4</td>
+                    <td class="off ends available" data-title="r5c2">5</td>
+                    <td class="off ends available" data-title="r5c3">6</td>
+                    <td class="off ends available" data-title="r5c4">7</td>
+                    <td class="weekend off ends available" data-title="r5c5">8</td>
+                    <td class="weekend off ends available" data-title="r5c6">9</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="calendar-time" style="display: none;"></div>
+    </div>
+    <div class="drp-buttons"><span class="drp-selected">2020-07-13 - 2020-07-13</span>
+        <button class="cancelBtn btn btn-sm btn-default" type="button">取消</button>
+        <button class="applyBtn btn btn-sm btn-primary" type="button">确定</button>
+    </div>
+</div>
+<!--数据表格-->
+<div class="wrapper wrapper-content animated fadeInRight" >
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <!--搜索-->
+                        {if condition="in_array('/admin/BoxGiftList',$user_role_menu)"}
+                        <div class="pull-right search form-inline">
+                            <div class="form-group">
+                                <button style="background-color:#006400;" type="button" class="btn btn-primary" style="float:right;">{$PoolNumPropKey_G}:个人金宝箱</button>
+                                <button style="background-color:#228B22;" type="button" class="btn btn-primary" style="float:right;">{$PoolNumPropFullKey_G}:全局金宝箱</button>
+                                <button style="background-color:#2E8B57;" type="button" class="btn btn-primary" style="float:right;">{$PoolNumPropKey_S}:个人银宝箱</button>
+                                <button style="background-color:#20B2AA;" type="button" class="btn btn-primary" style="float:right;">{$PoolNumPropFullKey_S}:全局银宝箱</button>
+                            </div>
+                            <div class="form-group">
+                                <!--                                        PoolNumPropKey_G  个人金宝箱-->
+                                <!--                                        PoolNumPropFullKey_G  全局金宝箱-->
+                                <!--                                        PoolNumPropKey_S   个人银宝箱-->
+                                <!--                                        PoolNumPropFullKey_S  全局银宝箱-->
+                                使用时间查询:<input type="checkbox" id="is_time" class="form-control" {if $is_time=="on"} echo checked="checked" {/if} >
+                                <input id="demo"  value="{$demo}">
+
+                            </div>
+
+                            <input class="form-control input-outline" type="text" placeholder="请输入礼物名称" value="{$gift_name}" id="gift_name">
+                            金银宝箱:<select class="form-control" id="type">
+                            <option value="0" {if empty($type)} echo selected="selected" {/if}>全部</option>
+                            <option value="1" {if $type == 1} echo selected="selected" {/if}>金宝箱</option>
+                            <option value="2" {if $type == 2} echo selected="selected" {/if}>银宝箱</option>
+                        </select>
+                            <button type="button" class="btn btn-primary" style="float:right;" id="search">
+                                <i aria-hidden="true"></i>搜索
+                            </button>
+                        </div>
+                        {/if}
+                        <div class="example">
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <!-- <th class="text-center" >ID</th> -->
+                                    <th class="text-center">礼物ID</th><!--giftid-->
+                                    <th class="text-center">礼物名称</th><!--gift_name-->
+                                    <th class="text-center">礼物个数</th><!--num-->
+                                    <!-- <th class="text-center" >创建时间</th>create_time-->
+                                     <th class="text-center" >状态</th><!--type -->
+                                    <!-- <th class="text-center">操作</th> -->
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($list)"}
+                                {volist name="list" id="lists"}
+                                <tr>
+                                    <td class="text-center  giftid">{$lists.giftid}</td>
+                                    <td class="text-center  gift_name">{$lists.gift_name}</td>
+                                    <td class="text-center num">{$lists.num}</td>
+                                    {if $lists.type==1}
+                                    <td class="text-center is_buy" is_buy="1" >金宝箱</td>
+                                    {else}
+                                    <td class="text-center is_buy" is_buy="0" >银宝箱</td>
+                                    {/if}
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="7" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page >1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+
+
+<!--操作modal-->
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$token}" name="token" id="token">
+<input type="hidden" value="/admin/ossAttireFile" name="master_url" id="master_url">
+
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+
+<!--<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>-->
+<script src="/time/jquery-1.10.2.js"></script>
+<script src="/time/jquery.min1.js"></script>
+<script src="/time/moment.min.js"></script>
+<script src="/time/daterangepicker.min.js"></script>
+
+
+
+<!--<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>-->
+<script>
+
+    //搜索
+    $("#search").click(function () {
+        if($('input:checkbox:checked').val()=='on'){
+            window.location.href = "/admin/BoxGiftList?token=" + $('#token').val() + '&master_url=/admin/BoxGiftList&page=1&demo=' + $('#demo').val()+'&gift_name=' +$('#gift_name').val()+'&type=' + $('#type').val()+'&is_time=' + $('input:checkbox:checked').val();
+        }else{
+            window.location.href = "/admin/BoxGiftList?token=" + $('#token').val() + '&master_url=/admin/BoxGiftList&page=1&gift_name=' +$('#gift_name').val()+'&type=' + $('#type').val()+'&is_time=' + $('input:checkbox:checked').val();
+        }
+    })
+
+</script>
+
+<script>
+        $(function () {
+            var locale = {
+                "format": 'YYYY-MM-DD',
+                "separator": " - ",
+                "applyLabel": "确定",
+                "cancelLabel": "取消",
+                "fromLabel": "起始时间",
+                "toLabel": "结束时间'",
+                "customRangeLabel": "自定义",
+                "weekLabel": "W",
+                "daysOfWeek": ["日", "一", "二", "三", "四", "五", "六"],
+                "monthNames": ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"],
+                "firstDay": 1
+            };
+            $('#demo').daterangepicker({
+                'locale': locale,
+                ranges: {
+                    '今日': [moment(), moment()],
+                    '昨日': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    '最近7日': [moment().subtract(6, 'days'), moment()],
+                    '最近30日': [moment().subtract(29, 'days'), moment()],
+                    '本月': [moment().startOf('month'), moment().endOf('month')],
+                    '上月': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month')
+                        .endOf('month')
+                    ]
+                },
+                "alwaysShowCalendars": true,
+                "opens": "right",
+            }, function (start, end, label) {
+                console.log('New date range selected: ' + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD') + ' (predefined range: ' + label + ')');
+            });
+        })
+
+</script>
+
+</body>
+</html>
+</body>
+</html>

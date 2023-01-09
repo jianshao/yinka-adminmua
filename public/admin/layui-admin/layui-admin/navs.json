@@ -1,0 +1,458 @@
+{
+  "contentManagement": [
+    {
+      "title": "管理员管理",
+      "icon": "icon-text",
+      "href": "index.php?act=admin&op=admin_list",
+      "spread": false
+    },
+    {
+      "title": "数据备份",
+      "icon": "&#xe634;",
+      "href": "index.php?act=databackup&op=backBackup",
+      "spread": false
+    },
+    {
+      "title": "关于我们",
+      "icon": "&#xe630;",
+      "href": "index.php?act=aboutus&op=setting",
+      "spread": false
+    },
+    {
+      "title": "排序算法",
+      "icon": "&#xe630;",
+      "href": "index.php?act=sort&op=indexStroll",
+      "spread": false
+    },
+
+    {
+      "title": "后台操作日志",
+      "icon": "&#xe630;",
+      "href": "index.php?act=adminlog&op=list",
+      "spread": false
+    },
+
+    {
+      "title": "消保金处理",
+      "icon": "&#xe630;",
+      "href": "index.php?act=setting&op=setdeposit",
+      "spread": false
+    },
+
+    {
+      "title": "黑名单关键词",
+      "icon": "&#xe630;",
+      "href": "index.php?act=setting&op=blackword",
+      "spread": false
+    },
+
+    {
+      "title": "批量push消息",
+      "icon": "&#xe630;",
+      "href": "index.php?act=setting&op=sendmsg",
+      "spread": false
+    },
+    {
+      "title": "屏蔽售假商家",
+      "icon": "&#xe630;",
+      "href": "index.php?act=setting&op=filteruser",
+      "spread": false
+    }
+  ],
+  "auctionManagement": [
+    {
+      "title": "拍品管理",
+      "icon": "&#xe612;",
+      "href": "index.php?act=auction&op=auctionlist",
+      "spread": false
+    },
+    {
+      "title": "产品库管理",
+      "icon": "icon-vip",
+      "href": "index.php?act=auclib&op=index",
+      "spread": false
+    },
+    {
+      "title": "拍品设置",
+      "icon": "icon-vip",
+      "href": "index.php?act=auction&op=auctionsetting",
+      "spread": false
+    },
+    {
+      "title": "页面设置",
+      "icon": "icon-vip",
+      "href": "index.php?act=auction&op=pageauction",
+      "spread": false
+    },
+    {
+      "title": "拍品专场",
+      "icon": "icon-vip",
+      "href": "index.php?act=auction&op=auctiontopic",
+      "spread": false
+    }
+  ],
+  "userManagement": [
+    {
+      "title": "用户管理",
+      "icon": "&#xe631;",
+      "href": "index.php?act=user&op=userlist",
+      "spread": false
+    },{
+      "title": "提现申请",
+      "icon": "icon-log",
+      "href": "index.php?act=user&op=tixian",
+      "spread": false
+    },{
+      "title": "充值记录",
+      "icon": "&#xe857;",
+      "href": "index.php?act=user&op=recharge",
+      "spread": false
+    },
+    {
+      "title": "商家设置",
+      "icon": "&#xe64c;",
+      "href": "index.php?act=user&op=shopsetting",
+      "spread": false
+    },{
+      "title": "资质认证",
+      "icon": "&#xe857;",
+      "href": "index.php?act=user&op=renzheng",
+      "spread": false
+    },{
+      "title": "用户签到",
+      "icon": "&#xe857;",
+      "href": "index.php?act=signin&op=index",
+      "spread": false
+    },{
+      "title": "积分兑换",
+      "icon": "&#xe857;",
+      "href": "index.php?act=score&op=scorelist",
+      "spread": false
+    },{
+      "title": "消费保证金",
+      "icon": "&#xe857;",
+      "href": "index.php?act=user&op=baozhengjin",
+      "spread": false
+    },{
+      "title": "福袋管理",
+      "icon": "&#xe857;",
+      "href": "index.php?act=redpackage&op=lucky",
+      "spread": false
+    },{
+      "title": "优惠券管理",
+      "icon": "&#xe857;",
+      "href": "index.php?act=coupon&op=coupon",
+      "spread": false
+    },{
+      "title": "代言管理",
+      "icon": "&#xe857;",
+      "href": "index.php?act=represent&op=representlist",
+      "spread": false
+    },{
+      "title": "鉴定管理",
+      "icon": "&#xe857;",
+      "href": "index.php?act=identify&op=identifylist",
+      "spread": false
+    },{
+      "title": "拍卖师团队",
+      "icon": "&#xe857;",
+      "href": "index.php?act=userrelation&op=list",
+      "spread": false
+    },{
+      "title": "粉丝管理",
+      "icon": "&#xe857;",
+      "href": "index.php?act=fansadmin&op=list",
+      "spread": false
+    },{
+      "title": "顶价授权码",
+      "icon": "&#xe857;",
+      "href": "index.php?act=bid&op=codeList",
+      "spread": false
+    },{
+      "title": "拉新活动",
+      "icon": "&#xe857;",
+      "href": "index.php?act=laolaxin&op=actionlist",
+      "spread": false
+    }
+  ],
+  "transactionManagement": [
+    {
+      "title": "订单管理",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=order&op=orderlist",
+      "spread": false
+    },{
+      "title": "数据统计",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=order&op=orderstatistics",
+      "spread": false
+    },{
+      "title": "出价保证金记录",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=order&op=cashlog",
+      "spread": false
+    },{
+      "title": "小二介入",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=order&op=orderrefuse",
+      "spread": false
+    },{
+      "title": "零元夺宝订单",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=order&op=zeroTreasureOrderList",
+      "spread": false
+    },{
+      "title": "399商城",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=order&op=mallOrderList",
+      "spread": false
+    },{
+      "title": "一元锁粉订单",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=purchase&op=oneOrderList",
+      "spread": false
+    },{
+      "title": "365商场",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=order&op=serviceOrder",
+      "spread": false
+    },{
+      "title": "优惠券管理",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=coupon365&op=log",
+      "spread": false
+    },{
+      "title": "拍卖师激活码",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=membercode&op=mclist",
+      "spread": false
+    }
+  ],
+  "weixinManagement": [
+    {
+      "title": "微信设置",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=weixin&op=setting",
+      "spread": false
+    },{
+      "title": "自定义菜单",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=weixin&op=menu",
+      "spread": false
+    },{
+      "title": "关键词回复",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=weixin&op=keyword",
+      "spread": false
+    },{
+      "title": "图文管理",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=weixin&op=tuwen",
+      "spread": false
+    },{
+      "title": "关注时回复",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=weixin&op=guanzhu",
+      "spread": false
+    },{
+      "title": "模版消息",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=weixin&op=templatemessage",
+      "spread": false
+    },{
+      "title": "发送专场图文消息",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=weixin&op=sendnewslist",
+      "spread": false
+    }
+  ],
+  "operationManagement": [
+    {
+      "title": "微官网设置",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=website&op=websetting",
+      "spread": false
+    },{
+      "title": "站点设置",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=website&op=pcsetting",
+      "spread": false
+    },{
+      "title": "系统文章",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=website&op=article",
+      "spread": false
+    },{
+      "title": "社区管理",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=community&op=community",
+      "spread": false
+    },{
+      "title": "APP版本管理",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=versions&op=appversions",
+      "spread": false
+    },{
+      "title": "商学院",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=business&op=list",
+      "spread": false
+    }
+  ],
+  "moneyManagement": [
+    {
+      "title": "出局奖金设置",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=bonus&op=bonusoutset",
+      "spread": false
+    },{
+      "title": "排行榜管理",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=commission&op=robotCommission",
+      "spread": false
+    },{
+      "title": "金粉排行榜",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=goldfans&op=robotCommission",
+      "spread": false
+    },{
+      "title": "赚报设置",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=commission&op=earnReport",
+      "spread": false
+    },{
+      "title": "分享佣金设置",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=bonus&op=sharecommissionset",
+      "spread": false
+    },{
+      "title": "开红包设置",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=bonus_redpacket&op=togetherPackageSeting",
+      "spread": false
+    },{
+      "title": "拍卖联盟",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=auctionunion&op=index",
+      "spread": false
+    },{
+      "title": "分享话术",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=sharetext&op=index",
+      "spread": false
+    }
+  ],
+  "dataManagement": [
+    {
+      "title": "总数据统计",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=analysis&op=analysistotal",
+      "spread": false
+    },{
+      "title": "用户数据",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=analysis&op=userdatalist",
+      "spread": false
+    },{
+      "title": "交易数据",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=analysis&op=tradedatalist",
+      "spread": false
+    },{
+      "title": "分类数据",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=analysis&op=categorydatalist",
+      "spread": false
+    },{
+      "title": "佣金数据",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=analysis&op=usercommissiondatalist",
+      "spread": false
+    },{
+      "title": "活跃度数据",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=analysis&op=dailyList",
+      "spread": false
+    },{
+      "title": "团队拍卖师增量",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=analysis&op=teamList",
+      "spread": false
+    }
+  ],
+  "auctionerManagement": [
+    {
+      "title": "拍卖师列表",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=auctioneer&op=list",
+      "spread": false
+    },{
+      "title": "邀请码生成",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=membercode&op=toGrant",
+      "spread": false
+    },{
+      "title": "邀请码列表",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=membercode&op=mclist",
+      "spread": false
+    }
+  ],
+  "liveManageMent": [
+    {
+      "title": "直播间列表",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=live&op=roomList",
+      "spread": false
+    },{
+      "title": "主播列表",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=live&op=ownerList",
+      "spread": false
+    },{
+      "title": "主播申请列表",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=live&op=applyList",
+      "spread": false
+    },{
+      "title": "群发消息",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=live&op=sendMsgAll",
+      "spread": false
+    },{
+      "title": "主播banner",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=live&op=liveBanner",
+      "spread": false
+    },{
+      "title": "发红包",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=redpacket&op=list",
+      "spread": false
+    }
+  ],
+  "snsManageMent": [
+    {
+      "title": "版块列表",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=sns&op=forumList",
+      "spread": false
+    },{
+      "title": "帖子列表",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=sns&op=threadList",
+      "spread": false
+    },{
+      "title": "人员列表",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=sns&op=memberList",
+      "spread": false
+    },{
+      "title": "版主申请列表",
+      "icon": "icon-mokuai",
+      "href": "index.php?act=sns&op=applyList",
+      "spread": false
+    }
+  ]
+}
+

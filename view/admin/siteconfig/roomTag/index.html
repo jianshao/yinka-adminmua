@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+    <style>
+
+        .form-control:focus {
+            border-color: #66afe9;
+            outline: 0;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
+            box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
+        }
+
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+    </style>
+
+</head>
+<body class="gray-bg">
+
+<!--数据表格-->
+<div class="wrapper wrapper-content animated fadeInRight" >
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+
+                        <div class="example">
+
+                            <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                <button type="button" class="btn btn-outline btn-success" id="add">
+                                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加
+                                </button>
+                                <button type="button" class="btn saveRedis btn-outline btn-success" id="clearCache">
+                                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>更新上线
+                                </button>
+                                <a href="javascript:history.go(-1)">
+                                <button type="button" class="btn btn-outline btn-success">
+                                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>返回
+                                </button>
+                                </a>
+                            </div>
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">标签Id</th>
+                                    <th class="text-center">标签名</th>
+                                    <th class="text-center">音恋标签名</th>
+                                    <th class="text-center">mua标签图</th>
+                                    <th class="text-center">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($list)"}
+                                {volist name="list" id="lists"}
+                                <tr>
+                                    <td class="text-center id" id="id">{$lists.id}</td>
+                                    <td class="text-center name">{$lists.tag_name}</td>
+                                    <td class="text-center"><img src="{$lists.tag_img_yinlian}" width="80" alt=""></td>
+                                    <td class="text-center"><img src="{$lists.tag_img_mua}" width="80" alt=""></td>
+                                    <td  class="text-center">
+                                        <button class="btn btn-success save" >编辑</button>
+                                        <button class="btn btn-success del">删除</button>
+                                    </td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="7" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+                </button>
+                <h4 class="modal-title" id="editModalLabel">添加</h4>
+            </div>
+            <div class="modal-body edit-append">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" >关闭</button>
+                <button type="button" class="btn btn-primary" onclick="edit_info()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--编辑信息-->
+<div class="modal fade" id="SaveModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="SaveModalLabel">编辑</h4>
+            </div>
+            <div class="modal-body Save-append">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="ConfSave()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--操作modal-->
+<input type="hidden" value="{$token}" name="token" id="token">
+<input type="hidden" value="/admin/roomTypeList" name="master_url" id="master_url">
+
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<script>
+    $('.del').on('click',function(){
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/roomTagSave",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {token:$('#token').val(),master_url:'/admin/roomTagSave',delId:$(this).parents("tr").find(".id").text()},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    })
+    //编辑信息
+    $('.save').on('click',function(){
+        $(".Save-append").empty()
+        $(".Save-append").prepend(
+            "<form id='edit_form' method='post'>"+
+            " <input type='hidden' value='/admin/ConfSave'>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"标签名:"+"</label>" +
+            "<input type='text' class='form-control name' name='tag_name'  required='required'>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>音恋标签图:</label>"+
+            "<input type='file' class='form-control corner_sign' file='roomtag' id='tag_img_yinlian' required>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>mua标签图:</label>"+
+            "<input type='file' class='form-control corner_sign' file='roomtag' id='tag_img_mua' required>"+
+            "</div>"+
+
+            "<input type='hidden' value='/admin/roomTagSave' name='master_url'>"+
+            "<input type='hidden' value='{$token}' name='token'>"+
+            "<input type='hidden' class='id' name='id'>"+
+            " </form>"
+        );
+        $(".name").val($(this).parents("tr").find(".name").text());
+        $(".id").val($(this).parents("tr").find(".id").text());
+        $('#SaveModal').modal('show');
+    });
+    //编辑执行
+    function ConfSave(){
+        var edit_info = $("#edit_form").serializeArray();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/roomTagSave",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: edit_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+    //清除缓存
+    $("#clearCache").on('click',function(){
+        var master_url = "/admin/clearCache";
+        var token = $("#token").val();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/clearCache",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data:{master_url:master_url,token:token,type:'room_tag_conf'},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 500);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    })
+    //添加
+    $('#add').on('click',function(){
+        $(".attire-append").empty();
+        $(".edit-append").empty();
+        $(".edit-append").prepend(
+            "<form id='edit_form' method='post' >"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"标签名:"+"</label>" +
+            "<input type='text' class='form-control' name='tag_name'  required='required'>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>音恋标签图:</label>"+
+            "<input type='file' class='form-control corner_sign' file='roomtag' id='tag_img_yinlian' required>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>mua标签图:</label>"+
+            "<input type='file' class='form-control corner_sign' file='roomtag' id='tag_img_mua' required>"+
+            "</div>"+
+
+            "<input type='hidden' value='{$token}' name='token'>"+
+            "<input type='hidden' value='/admin/roomTagAdd' id='master_url' name='master_url'>"+
+            " </form>"
+        );
+        $('#editModal').modal('show');
+    });
+
+    //图片上传
+    $(document).on("change",".corner_sign",function(){
+        var sign = $(this).attr('id');
+        if($(this)[0].files[0]){
+            var animationType = $(this)[0].files[0].name.split('.');
+            if (animationType[1] != "bmp"&&animationType[1] != "png"&&animationType[1] != "gif" && animationType[1]!="jpg" && animationType[1]!="jpeg" && animationType[1] != "svga") {
+                toastr.warning("文件只限图片");
+                return false;
+            }
+        }
+        var formData = new FormData();
+        formData.append("token", $("#token").val());
+        formData.append("file", $(this).attr('file'));
+        formData.append("master_url", $("#master_url").val());
+        formData.append("image", $(this)[0].files[0]);
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            cache: false,
+            processData: false,
+            contentType: false,
+            type: "post",    //请求类型
+            url: "/admin/ossAttireFile",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: formData,
+            success: function (rs) {
+                if (rs.status !== 1) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                $('#edit_form').append("<input type='hidden' name="+sign+"  value="+rs.image+">");
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    })
+
+    //添加执行
+    function edit_info(){
+        var edit_info = $("#edit_form").serializeArray();
+
+        if(edit_info[0]['value']=='' ){
+            toastr.warning("标签名必填");
+            return false;
+        }
+        if( $('#tag_img_yinlian').val() == '' && $('#tag_img_mua').val() == '' ){
+            toastr.warning("标签图必传一张");
+            return false;
+        }
+
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/roomTagAdd",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data: edit_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    }
+</script>
+</body>
+</html>

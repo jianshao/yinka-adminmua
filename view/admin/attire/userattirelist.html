@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+
+    <style>
+
+        .form-control:focus {
+            border-color: #66afe9;
+            outline: 0;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
+            box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
+        }
+
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+    </style>
+
+</head>
+<body class="gray-bg">
+
+<!--数据表格-->
+<div class="wrapper wrapper-content animated fadeInRight" >
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <!--                            搜索-->
+                        <div class="pull-right search form-inline">
+                            <input class="form-control input-outline" type="text"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                   placeholder="请输入用户ID" value="{$uid}"
+                                   id="uid">
+                            <button type="button" class=" btn btn-primary" id="search">搜索</button>
+                        </div>
+                        <div class="example">
+                            <!--                            添加装扮-->
+                            <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                <button type="button" class="btn editGift btn-outline btn-success" id="add_gift">
+                                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>给用户赠送装扮
+                                </button>
+                            </div>
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center" >ID</th>
+                                    <th class="text-center" >用户ID</th>
+                                    <th class="text-center" >装扮ID</th>
+                                    <th class="text-center" >装扮名称</th>
+                                    <th class="text-center" >用户拥有装扮图片</th>
+                                    <th class="text-center">天数</th>
+                                    <th class="text-center">用户获取时间</th>
+                                    <th class="text-center">装扮过期时间</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($list)"}
+                                {volist name="list" id="lists"}
+                                <tr>
+                                    <td class="text-center attire_id" >{$lists.id}</td>
+                                    <td class="text-center  desc">{$lists.uid}</td>
+                                    <td class="text-center  desc">{$lists.kind_id}</td>
+                                    <td class="text-center attire_name">{$lists.name}</td>
+                                    <td class="text-center image" >
+                                        <img src="{$lists.image}" width="70"  heght="70">
+                                    </td>
+                                    <td class="text-center price">{$lists.count}</td>
+                                    <td class="text-center price">{$lists.create_time}</td>
+                                    <td class="text-center price">{$lists.expires_time}</td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="7" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page >1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+
+<!--编辑装扮信息-->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+                </button>
+                <h4 class="modal-title" id="editModalLabel">编辑装扮信息</h4>
+            </div>
+            <div class="modal-body edit-append">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" >关闭</button>
+                <button type="button" class="btn btn-primary" onclick="edit_info()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="attireModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+                </button>
+                <h4 class="modal-title" id="attireModalLabel">编辑装扮信息</h4>
+            </div>
+            <div class="modal-body attire-append">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" >关闭</button>
+                <button type="button" class="btn btn-primary" id="search2">修改</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--操作modal-->
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$token}" name="token" id="token">
+<input type="hidden" value="/admin/ossAttireFile" name="master_url" id="master_url">
+
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<script>
+
+    //分页
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/userAttire&token=' + $("#token").val() + '&uid=' + $("#uid").val()
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+    });
+
+
+
+
+    //添加装扮信息
+    $('.editGift').on('click',function(){
+        $(".edit-append").empty();
+        $(".edit-append").prepend(
+            "<form id='edit_form' method='post' >"+
+            "<div id='type1'>"+
+            "选择装扮:"+
+            "<select name='attire_id' id='attire_id'>"+
+            "<option value=''>---请选择---</option>"+
+            "{volist name='attire' id='list' key='k'}"+
+            "<option value='{$list.kindId}' >{$list.name}</option>"+
+            "{/volist}"+
+            "</div>"+
+
+            "<input type='hidden' value='{$token}' name='token'>"+
+            "<input type='hidden' value='/admin/addUserAttire' id='master_url' name='master_url'>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"请输入要赠送的用户ID:"+"</label>" +
+            "<input type='text' class='form-control' id='userid' placeholder='请输入要赠送的用户ID' name='userid'  value='' required='required'>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"请输入要赠送的天数:"+"</label>"+
+            "<input type='text' class='form-control name endtime'id='endtime' placeholder='请输入要赠送的天数' name='endtime'  value='' required>"+
+            "</div>"+
+
+            " </form>"
+        );
+        $('#editModal').modal('show');
+    });
+
+
+    //添加执行
+    function edit_info(){
+
+        var edit_info = $("#edit_form").serializeArray();
+        if($('#attire_id').val()==''){
+            toastr.warning("装扮你选一个呀！");
+            return false;
+        }
+
+
+        if($('#userid').val() == ''){
+            toastr.warning('用户ID你咋不填啊！我的哥！');
+            return false;
+        }
+
+        if($('#endtime').val() == ''){
+            toastr.warning('要赠送的天数你咋不填啊！我的哥！');
+            return false;
+        }
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/addUserAttire",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data: edit_info,
+            success: function (rs) {
+                if (rs.code != 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    }
+
+    //搜索用户
+    $("#search").click(function () {
+        var uid = $("#uid").val();
+        if (isNaN(uid)) {
+            toastr.warning('请输入正确的用户IＤ');
+            return false;
+        }
+        var token = $('#token').val();
+        window.location.href = "/admin/userAttire?token=" + token + '&master_url=/admin/userAttire&page=1&uid=' + uid;
+    })
+</script>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="example">
+                            <div class="example">
+                                <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                    <button type="button" class="btn btn-outline btn-success" id="add_gift">
+                                        <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加日期
+                                    </button>
+                                    <button type="button" class="btn btn-outline btn-success" id="save">
+                                        <i class="glyphicon glyphicon-cloud" aria-hidden="true"></i>更新
+                                    </button>
+
+                                </div>
+                                <table class="table table-hover table-responsive" id="data_table" style="word-wrap: break-word; word-break: break-all;">
+                                    <thead>
+                                    <tr>
+                                        <th class="text-center">起止日</th>
+                                        <th class="text-center">截止日</th>
+                                        <th class="text-center">留存数</th>
+                                        <th class="text-center">(～￣(OO)￣)ブ</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {if condition="!empty($data)"}
+                                    {volist name="data" id="list"}
+                                    <tr>
+                                        <td class="text-center boxId" >{$list.start}</td>
+                                        <td class="text-center name" >{$list.end}</td>
+                                        <td class="text-center price" >{$list.rmb}</td>
+                                        <td class="text-center ">
+                                            <button type="button" wid="{$list.id}" class="btn btn-danger btn-success del">删除</button>
+                                        </td>
+                                    </tr>
+                                    {/volist}
+                                    {else}
+                                    <tr class="no-records-found">
+                                        <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                    </tr>
+                                    {/if}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- End Example Events -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Panel Other -->
+    </div>
+</div>
+
+<!--操作modal-->
+<!--添加-->
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="addModalLabel">添加宝箱</h4>
+            </div>
+            <div class="modal-body">
+                <form id='add_form' method="post">
+                    <div class="form-group">
+                        <label class='control-label'>起止日:</label>
+                        <input type="text" class="form-control" placeholder="起止日" name="start" required>
+                    </div>
+                    <div class="form-group">
+                        <label class='control-label'>截止日:</label>
+                        <input type="text" class="form-control" placeholder="截止日" name="end" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="hidden" value="/admin/retainedAdd" name="master_url">
+                        <input type="hidden" value="{$token}" name="token">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="add_info()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<input type="hidden" value="{$token}" name="token" id="token">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script src="/admin/js/trap/fileinput.js" type="text/javascript"></script>
+<script src="/admin/js/trap/fileinput_locale_zh.js" type="text/javascript"></script>
+<script>
+
+    $(document).on('click','.del',function () {
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/retainedDel",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data:{master_url:'/admin/retainedDel',token:$("#token").val(),id:$(this).attr('wid')},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 500);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    })
+
+
+    //添加
+    $('#add_gift').on('click',function(){
+        $('#addModal').modal('show');
+    });
+
+
+
+    function add_info(){
+        var add_info = $("#add_form").serializeArray();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/retainedAdd",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: add_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+
+    $(document).on('click','#save',function () {
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/retainedUpdate",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data:{master_url:'/admin/retainedUpdate',token:$("#token").val()},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    })
+
+</script>
+</body>
+</html>
+
+

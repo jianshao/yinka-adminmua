@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/admin/layui/css/layui.css" media="all">
+    <script src="/admin/js/jquery.min.js"></script>
+    <style>
+        .layui-table-cell {
+            height: auto;
+            overflow: visible;
+            text-overflow: inherit;
+            white-space: normal;
+        }
+    </style>
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+</head>
+<body>
+
+<script type="text/html" id="editaction">
+    <a class="layui-btn layui-btn-xs layui-btn-radius" lay-event="editconfig">
+        <i class="layui-icon-left layui-icon layui-icon-edit"></i>编辑</a>
+    <a class="layui-btn layui-btn-xs layui-btn-danger layui-btn-radius " lay-event="delconfig">
+        <i class="layui-icon-left layui-icon layui-icon-delete"></i>删除</a>
+</script>
+
+<script type="text/html" id="addconfig">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="add_template"><i class="layui-icon layui-icon-set" style="font-size:10px;"></i>添加配置</button>
+        <button class="layui-btn layui-btn-normal layui-btn-sm" onclick="publish()">
+            <i class="layui-icon layui-icon-set" style="font-size:10px;"></i>更新上线</button>
+        <button class="layui-btn layui-btn-warm layui-btn-sm J_menuItem"
+                href="/admin/gashaponSeekRuning?master_url=/admin/gashaponSeekRuning&token={$token}"  title="运行中的奖池">
+            <i class="layui-icon layui-icon-set" style="font-size:10px;"></i>查看运行中的奖池</button>
+        <button class="layui-btn layui-btn-danger layui-btn-sm" onclick="refreshPool()">
+            <i class="layui-icon layui-icon-set" style="font-size:10px;"></i>刷新奖池</button>
+		<button class="layui-btn layui-btn-primary layui-btn-sm J_menuItem"
+			href="/admin/gashaponDetail?master_url=/admin/gashaponDetail&token={$token}"  title="用户数据详情">
+			<i class="layui-icon layui-icon-set" style="font-size:10px;"></i>用户数据详情</button>
+    </div>
+</script>
+<div style="padding:5px;">
+
+     <form style="display: flex;padding:5px 0px" class="layui-form">
+        <div class="layui-inline">
+            <label class="layui-form-label">消耗金币量</label>
+            <div class="layui-input-inline" style="width: 100px;">
+                <input type="text" name="" id="gashapon_price" class="layui-input" value="">
+            </div>
+        </div>
+
+      <!--  <div class="layui-inline">
+            <label class="layui-form-label">配置次数</label>
+            <div class="layui-input-inline" style="width: 100px;">
+                <input type="text" id="gashapon_count" autocomplete="off" class="layui-input" value=""  disabled>
+            </div>
+        </div>-->
+
+      <div class="layui-inline">
+           <label class="layui-form-label">配置次数</label>
+          <div class="layui-input-block">
+               <input type="checkbox" name="gashapon_count" value="1"   title="1次">
+               <input type="checkbox" name="gashapon_count" value="10"  title="10次">
+           </div>
+       </div>
+
+
+        <div class="layui-inline">
+            <button type="button" class="layui-btn layui-btn-sm layui-btn-normal" onclick="pricecount()">提交配置</button>
+        </div>
+
+</form>
+
+    <table id="datatable" lay-filter="test"></table>
+</div>
+
+<script src="/admin/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+<script>
+    layui.use(['table', 'form', 'layer', 'laydate', 'jquery'], function () {
+
+        var $ = layui.jquery
+            , form = layui.form
+            , laydate = layui.laydate
+            , table = layui.table;
+
+        //日期
+        laydate.render({
+            elem: '#date_b'
+        });
+
+        laydate.render({
+            elem: '#date_e'
+        });
+
+
+        table.render({
+            elem: '#datatable'
+            , totalRow: true
+            , even: true //开启隔行背景
+            //, height: 420
+            , toolbar: '#addconfig' //开启头部工具栏，并为其绑定左侧模板
+            , url: '/admin/gashaponConList?master_url=/admin/gashaponConList&token={$token}&isRequest=1' //数据接口
+            , page: false //开启分页
+            , cols: [[ //表头
+                {field: 'id', title: 'ID', width: '10%',templet:'#zizeng'}
+                ,{field: 'id', title: 'ID', width: '10%',hide:true}
+                , {field: 'assetname', title: '资产名', width: '40%',align:'left'}
+                , {field: 'assetId', title: '资产', width: '20%',hide:true}
+                , {field: 'count', title: '数量', width: '20%',edit:true}
+                , {field: 'weight', title: '权重', width: '10%',edit:true}
+                , {fixed: 'right', title: '操作', toolbar: '#editaction', width: '20%'}
+            ]]
+            , id: 'tablereload'
+            , limits: [20, 50, 100]
+            //, limit: 20 //每页默认显示的数量
+            , limit: Number.MAX_VALUE
+            , where: {}
+            , done: function (res, curr, count) {
+                //$("#gashapon_count").attr("value", res['hz']['gashapon_count']);
+                $("#gashapon_price").attr("value", res['hz']['gashapon_price']);
+                //设置checkbox被选中
+                var gashapon_count = res['hz']['gashapon_count'];
+                var countsarr = gashapon_count.split(",");
+                //赋值
+                var countobj = $("input:checkbox[name=gashapon_count]");
+                for(var i = 0; i < countobj.length; i++){
+                    if(countsarr.indexOf(countobj[i].value) >= 0 ){
+                        countobj[i].checked = true
+                    }
+                }
+                form = layui.form;
+                form.render(); //这句必须（用来更新渲染页面）
+            }
+        });
+
+
+        var $ = layui.$, active = {
+            reload: function () {
+                //执行重载
+                table.reload('tablereload', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    , where: {
+                        //prop_id: $('#prop_id').val()
+                    }
+                });
+            }
+        };
+
+        $('.demoTable .layui-btn').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+
+        //头工具栏事件
+        table.on('toolbar(test)', function (obj) {
+            switch (obj.event) {
+                case 'add_template':
+                    //页面层-自定义
+                    $("#sendform")[0].reset();
+                    $("#id").val(0);
+                    layer.open({
+                        type: 1,
+                        title: "添加配置",
+                        //closeBtn: true,
+                        shift: 2,
+                        area: ['400px', '300px'],
+                        shadeClose: true,
+                        content: $("#add-dialog"),
+                        success: function (layero, index) {
+                        },
+                        yes: function () {
+                        }
+                    });
+
+            }
+        });
+
+        //单元格的编辑处理
+        table.on('edit(test)', function (obj) {
+          let requestBody = {propid:obj.data.id,weight:obj.data.weight,count:obj.data.count}
+            $.post("/admin/gashaponConAdd?master_url=/admin/gashaponConAdd&token={$token}", requestBody, function (resp) {
+                resp = eval("(" + resp + ")");
+                layer.msg(resp.msg, {
+                    time: 1000, //1s后自动关闭
+                }, function () {
+                    table.reload("test");
+                });
+            })
+            return false;
+        });
+
+
+        //监听行工具事件
+        table.on('tool(test)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'editconfig') {
+                layer.open({
+                    type: 1,
+                    title: "编辑配置",
+                    shift: 2,
+                    area: ['400px', '300px'],
+                    shadeClose: true,
+                    content: $("#add-dialog"),
+                    success: function (layero, index) {
+                        var body = $("body");
+                        body.find("#count").val(data.count);
+                        body.find("#weight").val(data.weight);
+                        body.find("#propid").val(data.id);
+                        //$("#propid").attr("disabled", "disabled");
+                        form.render();
+                    },
+                    yes: function (index) {
+                    }
+                });
+            }
+
+
+            if (obj.event === 'delconfig') {
+                var prop_id = data.id
+                layer.confirm('您确认要删除吗?', function(index){
+                    console.log(data)
+                    $.get("/admin/gashaponConDel?master_url=/admin/gashaponConDel&token={$token}", {prop_id:prop_id}, function (resp) {
+                        resp = eval("(" + resp + ")");
+                        if (resp.code != 0) {
+                            layer.msg(resp.msg, {
+                                time: 20000, //20s后自动关闭
+                                btn: ['ok'],
+                                btnAlign: 'c',
+                            }, function () {
+                                window.location.reload();
+                            });
+                        } else {
+                            window.location.reload();
+                        }
+                    })
+                });
+            }
+
+        });
+
+
+        //监听提交
+        form.on('submit(sendbuttion)', function (data) {
+            var fields = $(data.form).serialize();
+            $.post("/admin/gashaponConAdd?master_url=/admin/gashaponConAdd&token={$token}", fields, function (resp) {
+                resp = eval("(" + resp + ")");
+                    layer.msg(resp.msg, {
+                        time: 1000, //1s后自动关闭
+                        //btn: ['ok'],
+                        //btnAlign: 'c',
+                    }, function (index) {
+                        //layer.close(index); //如果设定了yes回调，需进行手工关闭
+                        //table.reload("test");
+                        window.location.reload();
+                    });
+            })
+            return false;
+        });
+
+    });
+
+    //设置修改消费的金币 和数量
+    function pricecount() {
+        var gashapon_price = $("#gashapon_price").val();
+        //var gashapon_count = $("#gashapon_count").val();
+        let countarr = new Array();
+        $("input:checkbox[name='gashapon_count']:checked").each(function(i){
+            countarr[i] = $(this).val();
+        });
+        let gashapon_count = (countarr.join(","));//将数组合并成字符串
+        const params = {gashapon_price: gashapon_price, gashapon_count: gashapon_count, "gashapon_edit": 1}
+        $.post("/admin/gashaponConAdd?master_url=/admin/gashaponConAdd&token={$token}", params, function (resp) {
+            resp = eval("(" + resp + ")");
+                layer.msg(resp.msg, {
+                    time: 1000, //1s后自动关闭
+                    //btn: ['ok'],
+                    //btnAlign: 'c',
+                }, function () {
+                    window.location.reload();
+                });
+        })
+    }
+
+    //发布到缓存中
+    function publish() {
+        $.get("/admin/gashaponConPublishCache?master_url=/admin/gashaponConPublishCache&token={$token}", {}, function (resp) {
+            resp = eval("(" + resp + ")");
+                layer.msg(resp.msg, {
+                    time: 1000, //1s后自动关闭
+                    //btn: ['ok'],
+                    //btnAlign: 'c',
+                }, function () {
+                    window.location.reload();
+                });
+        })
+    }
+
+
+     //刷新奖池
+    function refreshPool(){
+        layer.confirm('确认提交?', function(index){
+            $.get("/admin/gashaponRefreshPool?master_url=/admin/gashaponRefreshPool&token={$token}",{}, function (resp) {
+                resp = eval("(" + resp + ")");
+                    layer.msg(resp.msg, {
+                        time: 1000, //1s后自动关闭
+                        //btn: ['ok'],
+                        //btnAlign: 'c',
+                    }, function () {
+                        window.location.reload();
+                    });
+
+            })
+        });
+    }
+
+
+    layui.use(['jquery'],function(){
+        $('.J_menuItem').on('click', function () {
+            parent.childMenu(this)
+        });
+    })
+
+
+
+
+
+
+
+
+</script>
+
+<script type="text/html" id="zizeng">
+    {{d.LAY_TABLE_INDEX+1}}
+</script>
+
+
+<div id="add-dialog" style="display: none;padding:10px;">
+    <form class="layui-form" action="" id="sendform">
+        <input type="hidden" id="id" name="id">
+        <div class="layui-form-item" style="margin-top:20px;">
+            <div class="layui-inline">
+                <label class="layui-form-label">道具</label>
+                <div class="layui-input-block">
+                    <select name="propid" lay-verify="required" lay-search="" id="propid">
+                        {volist name="propList" id="list"}
+                        <option value="{$list.kindId}">{$list.name}</option>
+                        {/volist}
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-inline">
+                <label class="layui-form-label">数量</label>
+                <div class="layui-input-block">
+                    <input type="text" id="count" name="count" required value="" lay-verify="number"
+                           placeholder="数量" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-inline">
+                <label class="layui-form-label">权重</label>
+                <div class="layui-input-block">
+                    <input type="text" id="weight" name="weight" required value="" lay-verify="number"
+                           placeholder="权重" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit="" lay-filter="sendbuttion">立即提交</button>
+            </div>
+        </div>
+    </form>
+
+</div>
+
+
+</body>
+</html>

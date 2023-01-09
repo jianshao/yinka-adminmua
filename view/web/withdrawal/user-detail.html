@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>提现明细</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link href="/web/css/withdrawal.css" rel="stylesheet" type="text/css" media="all">
+<style>
+	/*!**加载效果旋转**!*/
+	/*@-webkit-keyframes rotate {0% {-webkit-transform: rotate(0deg);transform: rotate(0deg);}100% {-webkit-transform: rotate(360deg);transform: rotate(360deg);}}*/
+	/*@keyframes rotate {0% {-webkit-transform: rotate(0deg);transform: rotate(0deg);}100% {-webkit-transform: rotate(360deg);transform: rotate(360deg);}}*/
+
+	/*.loadmore {display:block;line-height: 50px;text-align:center;color:#ccc;font-size:14px;}*/
+	/*.loadmore span{height:20px;width:20px;border-radius:100%;display:inline-block;margin:10px;border:2px solid #f60;border-bottom-color: transparent;vertical-align: middle;-webkit-animation: rotate 1.1s infinite linear;animation: rotate 1.1s infinite linear;}*/
+	/*.loadover{position:relative;margin:0 12px;padding:24px 0;height:20px;line-height:20px;color:#909090;text-align: center;}*/
+	/*.loadover span{position:relative;display:inline-block;padding:0 6px;height:20px;background:#F2F2F2;z-index:2}*/
+	/*.loadover:after {content:'';position: absolute;left: 0;top:50%;width: 100%;height:1px;background:#DCDCDC;z-index:1;display:block;}*/
+</style>
+<body>
+<p style="font-size: 12px;text-align: center;color: #999999">该页面不支持分享</p>
+	<div class="detail">
+		<div class="detail-head">
+			{if condition="!$user_money_count"}
+			<div class="detail-head-p1">本月累计总金额<span style="color:#FF2F78;margin-left: 0.3125rem;">0</span> 元</div>
+			{else}
+			<div class="detail-head-p1">本月累计总金额<span style="color:#FF2F78;margin-left: 0.3125rem;">{$user_money_count}</span> 元</div>
+			{/if}
+		</div>
+		<div class="detail-user-list">
+			{volist name="user_detail" id="list"}
+			<div class="detail-user-list-one">
+				<div class="detail-user-tips">充值到钱包（<span>{$list.pay_type}</span>）</div>
+				<div class="detail-user-date">{$list.time}</div>
+				<div class="detail-user-status">
+					<div class="detail-user-status-money">{$list.money}</div>
+					<div class="detail-user-status-yes">{$list.zhuangtai}</div>
+				</div>
+			</div>
+			{/volist}
+		</div>
+	</div>
+</body>
+</html>
+<script type="text/javascript" src="/web/js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" src="/web/js/master/dist/dialog.js"></script>
+<script>
+$(function(){
+
+	var page =1;
+	$(window).scroll(function(){
+		var scrollH = document.documentElement.scrollHeight;
+		var clientH = document.documentElement.clientHeight;
+		if (scrollH == (document.documentElement.scrollTop | document.body.scrollTop) + clientH){
+			page ++;
+			//加载新数据
+			$.ajax({
+				type:"get",
+				dataType:"json",
+				data:{page:page,type:1},
+				url:"/web/webUserWithdrawal/webUserWithdrawalLists",
+				success: function (rs) {
+					if(rs.length > 0){
+						$(rs).each(function (i, n) {
+							$(".detail-user-list").append(
+							"<div class=\"detail-user-list-one\">" +
+								"<div class=\"detail-user-tips\">"+"充值到钱包（"+"<span>"+n.pay_type+"</span>"+"）"+"</div>" +
+								"<div class=\"detail-user-date\">"+n.time+"</div>\n" +
+								"<div class=\"detail-user-status\">" +
+								"<div class=\"detail-user-status-money\">"+n.money+"</div>\n" +
+								"<div class=\"detail-user-status-yes\">"+n.zhuangtai+"</div>\n" +
+								"</div>" +
+							"</div>"
+							);
+						});
+					}else{
+						alerts("没有更多数据了");
+						return false;
+					}
+				},
+				error:function (rs) {
+					alerts(rs.msg);
+					return false;
+				},
+			});
+			return false;
+		}
+	});
+});
+	/*第二中 */
+	//获取当前浏览器中的滚动事件
+	// $(window).off("scroll").on("scroll", function () {
+	//
+	// 	var scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight; //获取当前浏览器的滚动条高度
+	//
+	// 	if (scrollHeight <= ($(window).scrollTop() + $(window).height())) { //判断当前浏览器滚动条高度是否已到达浏览器底部，如果到达底部加载下一页数据信息
+	// 		$("#loadingImg").css('visibility','visible');
+	// 		setTimeout(function () {
+	//
+	//
+	// 			//模拟ajax
+	// 			for(m=0;m<5;m++){
+	// 				$(".order-list").append(appendStr);
+	// 			}
+	//
+	// 		},1000)
+	// 	}
+	// });
+
+
+
+// $(window).scroll(
+// 		function() {
+// 			var scrollTop = $(this).scrollTop();
+// 			var scrollHeight = $(document).height();
+// 			var windowHeight = $(this).height();
+// 			if (scrollTop + windowHeight == scrollHeight) {
+// 				// 此处写滚动条到底部时候触发的事件
+//
+// 				alerts('');
+// 			}
+// 		}
+// );
+//弹出框
+function alerts(content){
+	var hint = dialog({
+		content: content
+	});
+	hint.show();
+	setTimeout(function () {
+		hint.close().remove();
+	}, 2000);
+}
+</script>

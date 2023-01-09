@@ -1,0 +1,195 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="example">
+                            <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                <button type="button" class="btn btn-outline btn-success" id="details">
+                                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>编辑
+                                </button>
+                            </div>
+                        </div>
+                        {volist name="list" id="lists"}
+                        <div class='btn-group'>
+                            <label class='control-label'>数量:</label>
+                            <input type='button' style='width: 50px' value='{$lists.number}' >
+                            <label class='control-label'>价格:</label>
+                            <input type='button' style='width: 50px' value='{$lists.price}' >
+                            <label class='control-label'>虚拟币:</label>
+<!--                            <input type='button' style='width: 50px' value='{$lists.assetId}' >-->
+                            {if $lists.assetId=='iron'}
+                            <input type='button' style='width: 50px' value='铁矿石' >
+                            {elseif $lists.assetId=='fossil'}
+                            <input type='button' style='width: 50px' value='化石' >
+                            {elseif $lists.assetId=='silver'}
+                            <input type='button' style='width: 50px' value='银矿石' >
+                            {elseif $lists.assetId=='gold'}
+                            <input type='button' style='width: 50px' value='金矿石' >
+                            {elseif $lists.assetId=='bean'}
+                            <input type='button' style='width: 50px' value='豆' >
+                            {elseif $lists.assetId=='coin'}
+                            <input type='button' style='width: 50px' value='金币' >
+                            {/if}
+                        </div>
+                        <br>
+                        {/volist}
+                        <!-- End Example Events -->
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!-- End Panel Other -->
+    </div>
+
+    <!--操作modal-->
+    <div class="modal fade" id="attireModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="attireModalLabel">编辑商品</h4>
+                </div>
+                <div class="modal-body attire-append">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" >关闭</button>
+                    <button type="button" class="btn btn-primary" id="search2">修改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$token}" name="token" id="token">
+<script src="/admin/js/trap/fileinput.js" type="text/javascript"></script>
+<script src="/admin/js/trap/fileinput_locale_zh.js" type="text/javascript"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<script>
+
+    //详情
+    $('#details').on('click',function(){
+        $(".attire-append").empty();
+        $(".attire-append").prepend(
+            "<form id='attire_form' method='post' >"+
+
+            "{volist name='list' id='list'}"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"数量:"+"</label>" +
+            "<input type='text' class=' count' name='number[]' style='width: 50px' value='{$list.number}' required='required'>"+
+            "<label class='control-label'>"+"价格:"+"</label>" +
+            "<input type='text' class=' coinCount' name='price[]' style='width: 50px' value='{$list.price}' required='required'>"+
+            "<label class='control-label'>"+"虚拟币:"+"</label>"+
+            "<select name='type[]'>"+
+            "<option  value='coin' {if $list.assetId == 'coin'} echo selected=\"selected\" {/if}>---金币---</option>"+
+            "<option  value='bean' {if $list.assetId == 'bean'} echo selected=\"selected\" {/if}>---豆---</option>"+
+            "<option  value='fossil' {if $list.assetId == 'fossil'} echo selected=\"selected\" {/if}>---化石---</option>"+
+            "<option  value='gold' {if $list.assetId == 'gold'} echo selected=\"selected\" {/if}>---金矿石---</option>"+
+            "<option  value='iron' {if $list.assetId == 'iron'} echo selected=\"selected\" {/if}>---铁矿石---</option>"+
+            "<option  value='silver' {if $list.assetId == 'silver'} echo selected=\"selected\" {/if}>---银矿石---</option>"+
+            "</select>"+
+            "<button id='addpriceinput' type=\'button\' class=\'addpriceinput    \' id=\'add_gift\'>"+
+            " <i class=\'glyphicon glyphicon-plus\' aria-hidden=\'true\'></i>"+
+            "</button>"+
+            "</div>"+
+            "{/volist}"+
+            "<input type='hidden' value='{$token}' name='token'>"+
+            "<input type='hidden' value='/admin/goodsDetailsSave' id='master_url' name='master_url'>"+
+            "<input type='hidden' value='update' name='update'>"+
+            "<input type='hidden' value='{$goodsId}' name='goodsId'>"+
+            " </form>"
+        );
+        $(".goodsId").val($(this).parents("tr").find(".goodsId").text());
+        $('#attireModal').modal('show');
+    });
+
+
+
+
+    //修改按钮
+    $('#search2').click(function () {
+        var attire_info = $("#attire_form").serializeArray();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/goodsDetailsSave",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data: attire_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+
+    })
+
+    //追加豆框
+    $(document).on("click",".addpriceinput",function(){
+        $(this).parent().append(
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"数量:"+"</label>" +
+            "<input type='text' class=' count' name='number[]' style='width: 50px' value='{$list.number}' required='required'>"+
+            "<label class='control-label'>"+"价格:"+"</label>" +
+            "<input type='text' class=' coinCount' name='price[]' style='width: 50px' value='{$list.price}' required='required'>"+
+            "<label class='control-label'>"+"虚拟币:"+"</label>"+
+            "<select name='type[]'>"+
+            "<option  value='coin'>---金币---</option>"+
+            "<option  value='bean'>---豆---</option>"+
+            "<option  value='fossil'>---化石---</option>"+
+            "<option  value='gold'>---金矿石---</option>"+
+            "<option  value='silver'>---银矿石---</option>"+
+            "<option  value='iron'>---铁矿石---</option>"+
+            "</select>"+
+            "<button type=\'button\' class=\'addpriceinput    \' id=\'add_gift\'>"+
+            " <i class=\'glyphicon glyphicon-plus\' aria-hidden=\'true\'></i>"+
+            "</button>"+
+            "<button type=\'button\' class=\'delpriceinput    \' id=\'add_gift\'>━"+
+            "</button>"+
+            "</div>"
+        );
+    });
+
+    $(document).on("click",".delpriceinput",function(){
+        $(this).parent().remove();
+    });
+
+
+</script>
+</div>
+</body>
+</html>

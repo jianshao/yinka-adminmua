@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+    <style>
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+    </style>
+
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+
+                    <div class="example-wrap">
+                        {if condition="in_array('/admin/addRoomImageByType',$user_role_menu)"}
+                        <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                            <button type="button" class="btn btn-outline btn-success" id="add_backImage">
+                                <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加背景图
+                            </button>
+                        </div>
+                        {/if}
+                        <div class="btn-group hidden-xs form-inline">
+                            <select class="form-control" id="select_id">
+                                <option value="">请选择房间类型&#12288&#12288</option>
+                                {if condition="!empty($room_type_list)"}
+                                {volist name="room_type_list" id="lists"}
+                                <option value="{$lists.id}" {if $lists.id== $type} echo selected="selected" {/if}>{$lists.room_mode}</option>
+                                {/volist}
+                                {/if}
+                            </select>
+                            <!-- &#12288
+                           <select class="form-control" id="c_select_id">
+                               <option value="">请选择房间关联渠道&#12288&#12288</option>
+                               {if condition="!empty($channel_array)"}
+                               {volist name="$channel_array" id="data"}
+                               <option value="{$data.id}" {if $data.id== $channels_id} echo selected="selected" {/if}>{$data.name}</option>
+                               {/volist}
+                               {/if}
+                           </select>-->
+                            <button type="button" class="btn btn-outline btn-success" style="float:right;" id="search">
+                                <i aria-hidden="true"></i>搜索
+                            </button>
+                        </div>
+                        <div class="example">
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">id</th>
+                                    <th class="text-center">房间类型</th>
+                                    <th class="text-center">是否是vip</th>
+                                    <th class="text-center">是否是默认</th>
+                                    <th class="text-center">是否删除</th>
+                                    <th class="text-center">背景图</th>
+                                    <th class="text-center" width="20%">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($list)"}
+                                {volist name="list" id="lists"}
+                                <tr>
+                                    <td class="text-center id" id="idByType">{$lists.id}</td>
+                                    <td class="text-center rooms_type" id="room_mode">{$lists.room_mode}</td>
+                                    <td class="text-center rooms_type" id="is_vip">
+                                        {if condition="$lists.is_vip==2"}是{else}否{/if}
+                                    </td>
+                                    <td class="text-center rooms_type" id="start">
+                                        {if condition="$lists.start==1"}是{else}否{/if}
+                                    </td>
+                                    <td class="text-center rooms_type">{$lists.del}</td>
+                                    <td class="text-center"><img src="{$lists.image}" style="width: 50px;"></td>
+                                    <td class="text-center">
+                                        {if condition="in_array('/admin/editRoomImageByType',$user_role_menu)"}
+                                        <button class="btn btn-success addGiftImage" id="ossFile">编辑背景图</button>
+                                        <button class="btn btn-success start" photoWallId="{$lists.id}" photoWallType="{$lists.room_mode}">设为默认</button>
+                                        {/if}
+                                        {if condition="in_array('/admin/delRoomImageByType',$user_role_menu)"}
+                                        <button class="btn btn-success delImage" id="delImage" >删除</button>
+                                        {/if}
+                                    </td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="7" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page > 1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+<div class="modal fade" id="uploadFileModal" tabindex="-1" role="dialog" aria-labelledby="uploadFileModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="upload-file-name">背景图片编辑</h4>
+            </div>
+            <div class="modal-body">
+                <form id='uploads_files' method="post" enctype="multipart/form-data">
+                    <input type="hidden" id="id" value="">
+                    <div class="form-group">
+                        <label class="control-label">房间背景图[PNG]</label>
+                        <input type="file" class="form-control background_image" name="avatar" id="background_image"  value="" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="add_imgs()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="del_info">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>删除操作</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <i class="fa fa-trash-o" id="del_msg"></i>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger" data-btn-danger="modal" onclick="del_info()">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--添加房间类型背景图片-->
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="addModalLabel">添加房间背景图片</h4>
+            </div>
+            <div class="modal-body">
+                <form id='add_form' method="post">
+                    <div class="form-group">
+                        <label class="control-label">房间类型:</label>
+                        <select class="form-control" id="select_id" name= "type">
+                            <option value="">请选择房间类型&#12288&#12288</option>
+                            {if condition="!empty($room_type_list)"}
+                            {volist name="room_type_list" id="lists"}
+                            <option value="{$lists.id}">{$lists.room_mode}</option>
+                            {/volist}
+                            {/if}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">是否启用：</label>
+                        <select class="form-control " name="is_del"  required="" aria-required="true">
+                            <option value="1">是</option>
+                            <option value="0">否</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">是否是SVIP：</label>
+                        <select class="form-control " name="is_vip"  required="" aria-required="true">
+                            <option value="2">是</option>
+                            <option value="0">否</option>
+                        </select>
+                    </div>
+                    <input type="hidden" value="/admin/addRoomImageByType" name="master_url">
+                    <input type="hidden" value="{$token}" name="token">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="add_info()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{include file="../view/admin/common/userItem.html"}
+<input type="hidden" value="{$token}" id="token">
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="" id="to_id">
+<input type="hidden" value="" id="to_roomid">
+<input type="hidden" value="{$user_role_menu_input}" id="user_role_menu">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<script src="/admin/js/trap/fileinput.js" type="text/javascript"></script>
+<script src="/admin/js/trap/fileinput_locale_zh.js" type="text/javascript"></script>
+<script>
+    $('body').on('hidden.bs.modal', '#editModal', function () {
+        $("#editModal form").remove();
+    });
+    $('body').on('hidden.bs.modal', '#selectVsitorExternnumber', function () {
+        $("#a_tbody tr").remove();
+    });
+    $('body').on('hidden.bs.modal', '#room_channel_modal', function () {
+        $("input[name='checkbox_id']").attr("checked", false);
+    });
+
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/roomList&token=' + $("#token").val() + '&id=' + $("#search_id").val() + '&type=' + $("#select_id").val() + '&is_hot='+$("#is_hot").val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+        /*   onPageClicked:function (event, originalEvent, type, page) {
+               location.href = "?page="+page;
+           }*/
+    });
+
+    $('#search').click(function () {
+        var type = $('#select_id').val();
+        var room_id = $('#room_id').val();
+        var token = $('#token').val();
+        var is_hot = $('#is_hot').val();
+        window.location.href = "/admin/BackgroundImageOfType?token=" + token + '&master_url=/admin/BackgroundImageOfType&page=1&type=' + type;
+    });
+
+    $('.start').click(function () {
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "get",    //请求类型
+            url: "/admin/photoWallStart",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {'token':$('#token').val(),'master_url':'/admin/photoWallStart','id':$(this).attr('photoWallId'),'type':$(this).attr('photoWallType')},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(function(){
+                    location.replace(location.href);
+                },1000);
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+    })
+
+    //添加或更改图片
+    $('.addGiftImage').on('click',function(){
+        $("#idByType").val($(this).parents("tr").find("#idByType").text());
+        $('#uploadFileModal').modal('show');
+    })
+
+    //更改房间背景图
+    function add_imgs(){
+        if($("#idByType").val() == ""){
+            toastr.warning('未获得ID');
+            return false;
+        }
+        var formData = new FormData();
+        formData.append("id", $("#idByType").val());
+        formData.append("token", $("#token").val());
+        formData.append("master_url", $("#master_url").val());
+        formData.append("background_image", $('#background_image')[0].files[0]);
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            cache: false,
+            processData: false,
+            contentType: false,
+            type: "post",    //请求类型
+            url: "/admin/editRoomImageByType",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: formData,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+
+    $('.delImage').click(function () {
+        $("#idByType").val($(this).parents("tr").find("#idByType").text());
+        $('#del_info').modal('show')
+        $("#del_msg").html(' 您确定要删除该分类下的背景图? ')
+    })
+
+    function del_info() {
+        var id = $("#idByType").val();
+        var master_url = '/admin/delRoomImageByType'
+        var token = $('#token').val()
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/delRoomImageByType",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {id: id, master_url: master_url, token: token},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    }
+
+    //添加背景图
+    $('#add_backImage').on('click',function(){
+        $('#addModal').modal('show');
+    });
+
+    //根据房间类型
+    function add_info(){
+        var add_info = $("#add_form").serializeArray();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/addRoomImageByType",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: add_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+
+    }
+
+</script>
+</body>
+</html>

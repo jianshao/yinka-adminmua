@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    <script type="text/javascript" src="/admin/layui/layui.js"></script>
+    <link rel="stylesheet" href="/admin/layui/css/layui.css">
+    <script type="text/javascript" src="/admin/js/echarts.js"></script>
+    <script src="/admin/js/jquery.min.js"></script>
+    <style>
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+    </style>
+</head>
+<body class="gray-bg">
+
+<style>
+    .top-panel {
+        border: 1px solid #eceff9;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+    .top-panel > .layui-card-body {
+        height: 60px;
+    }
+
+    .top-panel-number {
+        line-height: 60px;
+        font-size: 30px;
+        border-right: 1px solid #eceff9;
+    }
+
+    .top-panel-tips {
+        line-height: 30px;
+        font-size: 12px
+    }
+</style>
+
+<div style="margin:15px 5px 0px 15px;">
+    <form class="layui-form" onsubmit="return false;" id="myform">
+        <div class="layui-inline">
+            <div class="layui-input-inline">
+                <input type="text" style="width:300px;" name="date" readonly id="date_r" lay-verify="date" placeholder="日期结束" autocomplete="off"
+                       class="layui-input" value="{$date_r}">
+            </div>
+            <div class="layui-inline">
+                <select name="modules" lay-verify="required" lay-search="" id="asatype">
+                    <option value="">推广类型</option>
+                    <option value="appstore" {if $asatype == 'appstore'} echo selected="selected" {/if}>appstore</option>
+                    <option value="huawei" {if $asatype == 'huawei'} echo selected="selected" {/if} >huawei</option>
+                </select>
+            </div>
+        </div>
+        <button class="layui-btn" data-type="reload" onclick="mysearch()">搜索</button>
+        <span>备注:数据不包括当日</span>
+
+    </form>
+
+</div>
+
+
+<div class="layui-fluid">
+    <div class="layuimini-main welcome">
+        <!--用户充值分直充代充-->
+        <div class="layui-row layui-col-space1">
+            <div class="layui-col-xs12 layui-col-md12">
+                <div class="layui-card top-panel">
+                    <blockquote class="layui-elem-quote" style="padding:10px;margin:1px;text-align: left;font-weight: bold">
+                        asa数据汇总
+                    </blockquote>
+                    <table class="layui-table" lay-filter="charge-add-table">
+                        <thead>
+                        <tr>
+                            <th lay-data="{field:'1'}">新增用户</th>
+                            <th lay-data="{field:'2'}">累计新增充值用户</th>
+                            <th lay-data="{field:'3'}">累计充值金额</th>
+                            <th lay-data="{field:'4'}">新增次留</th>
+                            <th lay-data="{field:'5'}">付费次留</th>
+                            <th lay-data="{field:'6'}">新增充值率</th>
+                            <th lay-data="{field:'7'}">新增次留率</th>
+                            <th lay-data="{field:'15'}">付费次留率</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>{$summary.register_add}</td>
+                            <td>{$summary.sum_charge_user_number}</td>
+                            <td>{$summary.sum_charge_amount}</td>
+                            <td>{$summary.register_keep2}</td>
+                            <td>{$summary.charge_keep2}</td>
+                            <td>{$summary.register_charge_rate * 100}%</td>
+                            <td>{$summary.register_keep2_rate *100}%</td>
+                            <td>{$summary.charge_keep2_rate*100}%</td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+
+                    <blockquote class="layui-elem-quote" style="padding:10px;margin:1px;text-align: left;font-weight: bold">
+                        新增TOP10
+                    </blockquote>
+                    <table class="layui-table" lay-filter="charge-add-table">
+                        <thead>
+                        <tr>
+                            <th lay-data="{field:'1_register_keyword'}">关键词ID</th>
+                            <th lay-data="{field:'1_register_keyword_name'}">关键词名</th>
+                            <th lay-data="{field:'1_register'}">新增用户</th>
+                            <th lay-data="{field:'2_register'}">累计新增充值用户</th>
+                            <th lay-data="{field:'3_register'}">累计充值金额</th>
+                            <th lay-data="{field:'4_register'}">新增次留</th>
+                            <th lay-data="{field:'5_register'}">付费次留</th>
+                            <th lay-data="{field:'6_register'}">新增充值率</th>
+                            <th lay-data="{field:'7_register'}">新增次留率</th>
+                            <th lay-data="{field:'15_register'}">付费次留率</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {volist name="top_by_register" id="list"}
+                        <tr>
+                            <td>{$list.iad_keyword}</td>
+                            <td>{$list.iad_keyword_name}</td>
+                            <td>{$list.register_add}</td>
+                            <td>{$list.sum_charge_user_number}</td>
+                            <td>{$list.sum_charge_amount}</td>
+                            <td>{$list.register_keep2}</td>
+                            <td>{$list.charge_keep2}</td>
+                            <td>{$list.register_charge_rate * 100}%</td>
+                            <td>{$list.register_keep2_rate *100}%</td>
+                            <td>{$list.charge_keep2_rate*100}%</td>
+                        </tr>
+                        {/volist}
+                        </tbody>
+                    </table>
+
+                    <br>
+
+
+                    <blockquote class="layui-elem-quote" style="padding:10px;margin:1px;text-align: left;font-weight: bold">
+                        充值人数TOP10
+                    </blockquote>
+                    <table class="layui-table" lay-filter="charge-add-table">
+                        <thead>
+                        <tr>
+                            <th lay-data="{field:'1_charge_number_keyword'}">关键词ID</th>
+                            <th lay-data="{field:'1_charge_number_keyword_name'}">关键词名</th>
+                            <th lay-data="{field:'1_charge_number'}">新增用户</th>
+                            <th lay-data="{field:'2_charge_number'}">累计新增充值用户</th>
+                            <th lay-data="{field:'3_charge_number'}">累计充值金额</th>
+                            <th lay-data="{field:'4_charge_number'}">新增次留</th>
+                            <th lay-data="{field:'5_charge_number'}">付费次留</th>
+                            <th lay-data="{field:'6_charge_number'}">新增充值率</th>
+                            <th lay-data="{field:'7_charge_number'}">新增次留率</th>
+                            <th lay-data="{field:'15_charge_number'}">付费次留率</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {volist name="top_by_charge" id="list"}
+                        <tr>
+                            <td>{$list.iad_keyword}</td>
+                            <td>{$list.iad_keyword_name}</td>
+                            <td>{$list.register_add}</td>
+                            <td>{$list.sum_charge_user_number}</td>
+                            <td>{$list.sum_charge_amount}</td>
+                            <td>{$list.register_keep2}</td>
+                            <td>{$list.charge_keep2}</td>
+                            <td>{$list.register_charge_rate * 100}%</td>
+                            <td>{$list.register_keep2_rate *100}%</td>
+                            <td>{$list.charge_keep2_rate*100}%</td>
+                        </tr>
+                        {/volist}
+                        </tbody>
+                    </table>
+
+
+
+                    <blockquote class="layui-elem-quote" style="padding:10px;margin:1px;text-align: left;font-weight: bold">
+                        累计充值金额TOP10
+                    </blockquote>
+                    <table class="layui-table" lay-filter="charge-add-table">
+                        <thead>
+                        <tr>
+                            <th lay-data="{field:'1_amount_sum_keyword'}">关键词ID</th>
+                            <th lay-data="{field:'1_amount_sum_keyword_name'}">关键词名</th>
+                            <th lay-data="{field:'1_amount_sum'}">新增用户</th>
+                            <th lay-data="{field:'2_amount_sum'}">累计新增充值用户</th>
+                            <th lay-data="{field:'3_amount_sum'}">累计充值金额</th>
+                            <th lay-data="{field:'4_amount_sum'}">新增次留</th>
+                            <th lay-data="{field:'5_amount_sum'}">付费次留</th>
+                            <th lay-data="{field:'6_amount_sum'}">新增充值率</th>
+                            <th lay-data="{field:'7_amount_sum'}">新增次留率</th>
+                            <th lay-data="{field:'15_amount_sum'}">付费次留率</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {volist name="top_by_amount" id="list"}
+                        <tr>
+                            <td>{$list.iad_keyword}</td>
+                            <td>{$list.iad_keyword_name}</td>
+                            <td>{$list.register_add}</td>
+                            <td>{$list.sum_charge_user_number}</td>
+                            <td>{$list.sum_charge_amount}</td>
+                            <td>{$list.register_keep2}</td>
+                            <td>{$list.charge_keep2}</td>
+                            <td>{$list.register_charge_rate * 100}%</td>
+                            <td>{$list.register_keep2_rate *100}%</td>
+                            <td>{$list.charge_keep2_rate*100}%</td>
+                        </tr>
+                        {/volist}
+                        </tbody>
+                    </table>
+
+
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+
+<script>
+
+    layui.use(['jquery', 'form', 'layer', 'element', 'laydate', 'table'], function () {
+        var $ = layui.jquery
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , form = layui.form
+            , table = layui.table;
+
+        var element = layui.element;
+
+        laydate.render({
+            elem: '#date_r'
+            ,range: true
+        });
+
+        //转换静态表格
+        table.init('charge-table', {
+            height: 288 //设置高度
+        });
+
+        //转换静态表格
+        table.init('charge-add-table', {
+            //height: 288 //设置高度
+            limit: 2000
+        });
+
+
+    });
+
+
+    function mysearch() {
+        var date_e = $("#date_e").val();
+        var date_b = $("#date_b").val();
+        var date_r = $("#date_r").val();
+        var asatype = $("#asatype").val();
+        //window.location.href = "/admin/asaSummary?master_url=/admin/asaSummary&token={$token}&date_e=" + date_e + "&date_b=" + date_b;
+        window.location.href = `/admin/asaSummary?master_url=/admin/asaSummary&token={$token}&date_r=${date_r}&asatype=${asatype}`;
+
+    }
+
+
+</script>
+
+
+</body>
+</html>

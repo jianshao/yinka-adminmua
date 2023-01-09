@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/time/daterangepicker.css">
+    <style>
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        #demo {
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+        }
+
+        .btn-default {
+            background-color: #fff;
+            border: 1px solid #828080;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: #08c;
+            border: 1px solid #08c;
+            border-radius: 3px;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            background-color: #357ebd;
+        }
+
+    </style>
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="btn-group hidden-xs form-inline">
+                            <div class="form-group">
+                            {if condition="!empty($channel_level)&&$channel_level<3"}
+                                &#12288
+                                <button id="addchannel_level" type="button" channel_level="{$channel_level+1}" class="btn btn-outline btn-success"
+                                    style="float:right;">
+                                <i aria-hidden="true"></i>添加{$channel_level+1}级渠道
+                            </button>
+                            {/if}
+
+                        </div>
+                        <div class="example">
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center" >登录账号</th>
+                                    <th class="text-center" >一级渠道</th>
+                                    <th class="text-center level_2_th" >二级渠道</th>
+                                    <th class="text-center level_3_th" >三级渠道</th>
+                                    <th class="text-center " width="80px">渠道级别</th>
+                                    <th class="text-center " width="60px">邀请码</th>
+                                    <th class="text-center "width="100px">房间ID</th>
+                                    <th class="text-center "width="100px">主播ID</th>
+                                    <th class="text-center">入职时间</th>
+                                    <th class="text-center">状态</th>
+                                    <th class="text-center">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($data)"}
+                                {volist name="data" id="data"}
+                                <tr>
+                                    <td class="text-center adminName" >{$data.adminName}</td>
+                                    <td class="text-center one_id_td" >{$data.one_id}</td>
+                                    <td class="text-center two_id_td" >{$data.two_id}</td>
+                                    <td class="text-center three_id_td" channelId="{$data.id}">{$data.three_id}</td>
+                                    <td class="text-center username_td" >{$data.username}</td>
+                                    <td class="text-center channel_one_td">{$data.channel_one}</td>
+                                    <td class="text-center channel_two_td">{$data.channel_two}</td>
+                                    <td class="text-center channel_three_td">{$data.channel_three}</td>
+                                    <td class="text-center channel_level2_td">{$data.channel_level}</td>
+                                    <td class="text-center invitcode_td">{$data.invitcode}</td>
+                                    <td class="text-center room_id_td">{$data.room_id}</td>
+                                    <td class="text-center anchor_id_td">{$data.anchor_id}</td>
+                                    <td class="text-center createTime_td">{$data.createTime}</td>
+                                    <td class="text-center createTime_td">{if($data.status==1)}在职{else}离职{/if}</td>
+                                    <td class="text-center">
+                                        <button data_id="{$data.id}" class="btn btn-success update">编辑</button>
+                                        {if condition="$channel_level==1&&$data.channel_level!==1"}
+                                        <button data_id="{$data.id}" level="{$data.channel_level}" pid="{$data.pid}" class="btn btn-success group">分组</button>
+                                        {/if}
+                                        {if condition="$channel_level<$data.channel_level"}
+<!--                                        <button data_id="{$data.id}" invitcode="{$data.invitcode}" class="btn btn-success del">删除</button>-->
+                                        {if($data.status==1)}
+                                        <button data_id="{$data.id}" invitcode="{$data.invitcode}" class="btn btn-success status">离职</button>
+                                        {/if}
+                                        {/if}
+                                    </td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="9" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page > 1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+<!--编辑-->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true" onclick="empty()">&times;</span>
+                </button>
+                <h4 class="modal-title" id="editModalLabel">渠道操作</h4>
+            </div>
+            <div class="modal-body update_div"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary update_info" >保存修改</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--添加-->
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true"
+                                                                                                  onclick="empty()">&times;</span>
+                </button>
+                <h4 class="modal-title" id="addModalLabel">渠道操作</h4>
+            </div>
+            <div class="modal-body append_div"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="edit_info">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+    <!--分组-->
+    <div class="modal fade" id="groupModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true" onclick="empty()">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="channel">渠道操作</h4>
+                </div>
+                <div class="modal-body group_div"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary group_info" >保存修改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<input type="hidden" value="{$token}" id="token">
+<input type="hidden" value="{$grade_2}" id="grade_2_val">
+<input type="hidden" value="{$channel_level}" id="channel_level">
+<input type="hidden" value="{$grade_3}" id="grade_3_val">
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+
+    {include file="../view/admin/common/jsHeader.html"}
+    <script src="/admin/js/fileinput/fileinput.js" type="text/javascript"></script>
+    <script src="/admin/js/fileinput/zh.js" type="text/javascript"></script>
+    <script src="/admin/js/plugins/toastr/toastr.min.js"></script>
+    <script src="/time/moment.min.js"></script>
+    <script src="/time/daterangepicker.min.js"></script>
+    <script>
+        $(function() {
+
+            $('#pageLimit').bootstrapPaginator({
+                currentPage: $("#page").val(),
+                totalPages: $("#total_page").val(),
+                size: "normal",
+                bootstrapMajorVersion: 3,
+                alignment: "right",
+                numberOfPages: '5',
+                pageUrl: function (type, page, current) {
+                    //是每个分页码变成一个超链接
+                    return '?page=' + page + '&master_url=/admin/channelList&token=' + $("#token").val() ;
+                },
+                itemTexts: function (type, page, current) {
+                    switch (type) {
+                        case "first":
+                            return "首页";
+                        case "prev":
+                            return "上一页";
+                        case "next":
+                            return "下一页";
+                        case "last":
+                            return "末页";
+                        case "page":
+                            return page;
+                    }
+                }
+                /*   onPageClicked:function (event, originalEvent, type, page) {
+                       location.href = "?page="+page;
+                   }*/
+            });
+
+            $('.username_td').hide();
+            $('.three_id_td').hide();
+            $('.one_id_td').hide();
+            $('.two_id_td').hide();
+            $(document).on('click', '#addchannel_level', function () {
+                $(".append_div").empty();
+                $(".update_div").empty();
+                $(".append_div").prepend(
+                    "<form id='channel_form' method='post' >" +
+
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>" + "渠道名称:" + "</label>" +
+                    "<input type='text' class='form-control channel_name ' name='channel_name' required>" +
+                    "</div>" +
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>" + "登录账户:" + "</label>" +
+                    "<input type='text' class='form-control username' name='username' value='' required>" +
+                    "</div>" +
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>" + "登录密码:" + "</label>" +
+                    "<input type='text' class='form-control password ' name='password'required>" +
+                    "</div>" +
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>" + "房间ID:" + "</label>" +
+                    "<input type='text' class='form-control room_id ' name='room_id' required>" +
+                    "</div>" +
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>" + "主播ID:" + "</label>" +
+                    "<input type='text' class='form-control anchor_id ' name='anchor_id' required>" +
+                    "</div>" +
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>" + "状态:" + "</label>" +
+                    "<label class='radio-inline'>" +
+                    "<input type='radio' name='status' class='status'  value='1' checked>" + " 是" +
+                    "</label>" +
+                    "<label class='radio-inline'>" +
+                    "<input type='radio' name='status' class='status'  value='0'>" + " 否" +
+                    "</label>" +
+                    "</div>" +
+                    "<input type='hidden' value='{$token}' name='token'>" +
+                    "<input type='hidden' value='{$role_id}' name='role_id' id='role_id'>" +
+                    "<input type='hidden' name='invitcode' id='invitcode'>" +
+                    "<input type='hidden' value='{$level_1.id}' name='one_level'>" +
+                    "<input type='hidden' value='{$level_2}' name='two_level'>" +
+                    "<input type='hidden' value='{$level_3}' name='three_level'>" +
+                    "<input type='hidden' value='{$level_3}' name='channel_id'>" +
+                    "<input type='hidden' value='{$channel_level+1}' name='channel_level'>" +
+                    "<input type='hidden' value='/admin/channelList' id='master_url' name='master_url'>" +
+                    " </form>"
+                );
+                $.ajax({
+                    async: false,    //表示请求是否异步处理
+                    type: "get",    //请求类型
+                    url: "/admin/getInviteCode",//请求的 URL地址
+                    token: $("#token").val(),
+                    dataType: "json",//返回的数据类型
+                    data: {master_url: '/admin/channelList', token: $("#token").val(),},
+                    success: function (rs) {
+                        $('#invitcode').val(rs.invitcode)
+                    }
+                });
+                $('#addModal').modal('show');
+            })
+            //添加执行
+            $('#edit_info').click(function () {
+                var channel_form = $("#channel_form").serializeArray();
+                var channel_level = $('#channel_level').attr('channel_level');
+
+                if ($('.username').val() == '') {
+                    alert('渠道登录账户填一下');
+                    return false;
+                }
+                if ($('.username').val().length < 4) {
+                    alert('渠道登录账户不可小于4位');
+                    return false;
+                }
+                if ($('.channel_name').val() == '') {
+                    alert('昵渠道名称填一下');
+                    return false;
+                }
+                if ($('.password').val() == '') {
+                    alert('密码填一下');
+                    return false;
+                }
+                if ($('.password').val().length < 3) {
+                    alert('密码不可小于3位');
+                    return false;
+                }
+                console.log(channel_form);
+                $.ajax({
+                    async: false,    //表示请求是否异步处理
+                    type: "get",    //请求类型
+                    url: "/admin/addChannel",//请求的 URL地址
+                    token: $("#token").val(),
+                    dataType: "json",//返回的数据类型
+                    data: channel_form,
+                    success: function (rs) {
+                        if (rs.code !== 200) {
+                            alert(rs.msg);
+                            return false;
+                        }
+                        alert(rs.msg);
+                        setTimeout(location, 1000);   //延迟5秒刷新页面
+                    },
+                    error: function (rs) {
+                        alert('请求失败');
+                    }
+                });
+
+                function location() {
+                    window.location.href = window.location.href;
+                }
+
+                return false;
+            })
+            //删除
+            $('.del').on('click',function () {
+                var id = $(this).attr('data_id')
+                var invitcode = $(this).attr('invitcode')
+                var r = confirm("您确认要删除此用户吗？");
+                if (r == true) {
+                    $.ajax({
+                        async: false,    //表示请求是否异步处理
+                        type: "get",    //请求类型
+                        url: "/admin/delChannel",//请求的 URL地址
+                        dataType: "json",//返回的数据类型
+                        data: {
+                            id: id,
+                            invitcode: invitcode,
+                            master_url: '/admin/delChannel',
+                            token: $("#token").val(),
+                        },
+                        success: function (rs) {
+                            if (rs.code !== 200) {
+                                alert(rs.msg);
+                                return false;
+                            }
+                            alert(rs.msg);
+                            setTimeout(location, 5000);   //延迟5秒刷新页面
+                        },
+                        error: function (rs) {
+                            alert('请求失败');
+                        }
+                    });
+                } else {
+                    window.location.href = window.location.href;
+                }
+            })
+
+            //离职
+            $('.status').click(function () {
+                var id = $(this).attr('data_id')
+                var invitcode = $(this).attr('invitcode')
+                var r = confirm("确认此用户离职吗？");
+                if (r == true) {
+                    $.ajax({
+                        async: false,    //表示请求是否异步处理
+                        type: "get",    //请求类型
+                        url: "/admin/delChannel",//请求的 URL地址
+                        dataType: "json",//返回的数据类型
+                        data: {
+                            id: id,
+                            invitcode: invitcode,
+                            master_url: '/admin/delChannel',
+                            token: $("#token").val(),
+                        },
+                        success: function (rs) {
+                            if (rs.code !== 200) {
+                                alert(rs.msg);
+                                return false;
+                            }
+                            alert(rs.msg);
+                            setTimeout(function(){
+                                location.replace(location.href);
+                            },1000);   //延迟5秒刷新页面
+                        },
+                        error: function (rs) {
+                            alert('请求失败');
+                        }
+                    });
+                } else {
+                    window.location.href = window.location.href;
+                }
+            })
+
+            //修改
+            $(document).on('click', '.update', function () {
+                var id = $(this).parents("tr").find(".three_id_td").attr('channelId');
+
+                var username = $(this).parents("tr").find(".channel_three_td").text()
+                if (username == '--') {
+                    var username = $(this).parents("tr").find(".channel_two_td").text();
+                    if (username == '--') {
+                        var username = $(this).parents("tr").find(".channel_one_td").text();
+                    }
+                }
+                $(".append_div").empty();
+                $(".update_div").empty();
+                $(".update_div").prepend(
+                    "<form id='channel_form' method='post' >" +
+
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>" + "登录账号:" + "</label>" +
+                    "<input type='text' disabled=\"disabled\" class='form-control username' name='username' value='' required>" +
+                    "</div>"+
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>" + "渠道名称:" + "</label>" +
+                    "<input type='text' class='form-control channel_name' name='channel_name' value='' required>" +
+                    "</div>"+
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>" + "密码:" + "</label>" +
+                    "<input type='text' class='form-control password' name='password' value='' required>" +
+                    "</div>" +
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>" + "房间ID:" + "</label>" +
+                    "<input type='text' class='form-control room_id' name='room_id' value='' required>" +
+                    "</div>" +
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>" + "主播ID:" + "</label>" +
+                    "<input type='text' class='form-control anchor_id' name='anchor_id' value='' required>" +
+                    "</div>" +
+                    // "<div class='form-group'>" +
+                    // "<label class='control-label'>" + "入职时间:" + "</label>" +
+                    // "<input type='text' class='datetime form-control createtime' name='createtime' value='' required>" +
+                    // "</div>" +
+                    "<div class='form-group'>" +
+                    "<label class='control-label'>" + "状态:" + "</label>" +
+                    "<label class='radio-inline'>" +
+                    "<input type='radio' name='status' class='status'  value='1' checked>" + " 是" +
+                    "</label>" +
+                    "<label class='radio-inline'>" +
+                    "<input type='radio' name='status' class='status'  value='0'>" + " 否" +
+                    "</label>" +
+                    "</div>" +
+
+                    "<input type='hidden' value='{$token}' name='token'>" +
+                    "<input type='hidden' value='/admin/channelList' id='master_url' name='master_url'>" +
+                    "<input type='hidden' value='update' name='update'>" +
+                    "<input type='hidden' class='id' value='' name='id'>" +
+                    " </form>"
+                );
+                $(".id").val(id);
+                $(".username").val($(this).parents("tr").find(".adminName").text());
+                $(".channel_name").val(username);
+                $(".room_id").val($(this).parents("tr").find(".room_id_td").text());
+                $(".anchor_id").val($(this).parents("tr").find(".anchor_id_td").text());
+                $(".createtime").val($(this).parents("tr").find(".createTime_td").text());
+                var status = $(this).parents("tr").find(".status").attr('status_td');
+                $(":radio[name='status'][value=" + status + "]").attr("checked", "checked");
+                $('#editModal').modal('show');
+            })
+            $('.update_info').click(function () {
+                var channel_form = $("#channel_form").serializeArray();
+                if ($('.channel_name').val() == '') {
+                    alert('渠道名称填一下');
+                    return false;
+                }
+                if ($('.username').val() == '') {
+                    alert('渠道登录账户填一下');
+                    return false;
+                }
+
+                $.ajax({
+                    async: false,    //表示请求是否异步处理
+                    type: "get",    //请求类型
+                    url: "/admin/editChannel",//请求的 URL地址
+                    token: $("#token").val(),
+                    dataType: "json",//返回的数据类型
+                    data: channel_form,
+                    success: function (rs) {
+                        if (rs.code !== 200) {
+                            alert(rs.msg);
+                            return false;
+                        }
+                        alert(rs.msg);
+                        setTimeout(location, 1000);   //延迟5秒刷新页面
+                    },
+                    error: function (rs) {
+                        alert('请求失败');
+                    }
+                });
+
+                function location() {
+                    window.location.href = window.location.href;
+                }
+
+                return false;
+            })
+
+            //分组
+            $(document).on('click', '.group', function () {
+                var id = $(this).parents("tr").find(".three_id_td").attr('channelId');
+                var level = $(this).attr('level');
+                var pid = $(this).attr('pid');
+                $(".group_div").empty();
+                $(".group_div").prepend(
+                    "<form id='channel_form' method='post' >" +
+
+                    "<div class='form-group'>"+
+                    "<label class='control-label'>"+"渠道等级:"+"</label>"+
+                    "<select name='channel_level' id='level'>"+
+                    "<option  value='2'>二级渠道</option>"+
+                    "<option  value='3'>三级渠道</option>"+
+                    "</select>"+
+                    "</div>"+
+
+                    "<div class='form-group'>"+
+                    "<label class='control-label'>"+"组长:"+"</label>"+
+                    "<select name='pid' id='pid'>"+
+                    "</select>"+
+                    "</div>"+
+                    "<input type='hidden' class='channelIdVal' name='channelIdVal'>" +
+                    "<input type='hidden' value='{$token}' name='token'>" +
+                    "<input type='hidden' value='/admin/channelList' id='master_url' name='master_url'>" +
+                    " </form>"
+                );
+                $(".channelIdVal").val(id);
+                $("#level option[value='"+level+"']").attr("selected","select");
+
+                $.ajax({
+                    async: false,    //表示请求是否异步处理
+                    type: "get",    //请求类型
+                    url: "/admin/level",//请求的 URL地址
+                    data: {token:$("#token").val(),master_url:'/admin/level',level:level},
+                    success: function (rs) {
+                        var arr = JSON.parse( rs )
+                        for( k  in arr ) {
+                            $('#pid').append( "<option class='attiretypepid' value='" + arr[k]['id'] + "' >" + arr[k]['channel_name'] + "</option>")
+                        }
+                    }
+                });
+
+                $("#pid option[value='"+pid+"']").attr("selected","select");
+                $('#groupModal').modal('show');
+            })
+            $('.group_info').click(function () {
+                var channel_form = $("#channel_form").serializeArray();
+
+                $.ajax({
+                    async: false,    //表示请求是否异步处理
+                    type: "get",    //请求类型
+                    url: "/admin/group",//请求的 URL地址
+                    token: $("#token").val(),
+                    dataType: "json",//返回的数据类型
+                    data: channel_form,
+                    success: function (rs) {
+                        if (rs.code !== 200) {
+                            alert(rs.msg);
+                            return false;
+                        }
+                        alert(rs.msg);
+                        setTimeout(location, 1000);   //延迟5秒刷新页面
+                    },
+                    error: function (rs) {
+                        alert('请求失败');
+                    }
+                });
+
+                function location() {
+                    window.location.href = window.location.href;
+                }
+
+                return false;
+            })
+
+            //追加select
+            $(document).on('change','#level',function(){
+                $('.attiretypepid').remove();
+                var level = $(this).val();
+                $.ajax({
+                    async: false,    //表示请求是否异步处理
+                    type: "get",    //请求类型
+                    url: "/admin/level",//请求的 URL地址
+                    data: {token:$("#token").val(),master_url:'/admin/level',level:level},
+                    success: function (rs) {
+                        var arr = JSON.parse( rs )
+                        for( k  in arr ) {
+                            $('#pid').append( "<option class='attiretypepid' value='" + arr[k]['id'] + "' >" + arr[k]['channel_name'] + "</option>")
+                        }
+                    }
+                });
+                return false;
+            });
+
+            $('#daochu').click(function () {
+                var level_1 = $('#level_1').val();
+                var level_2 = $('#level_2').val();
+                var level_3 = $('#level_3').val();
+                var inviteCode = $('#inviteCode').val();
+                var strtime = $('#datetimeStart').val();
+                var endtime = $('#datetimeEnd').val();
+                var token = $('#token').val();
+                var page = $("#page").val();
+                if (strtime > endtime) {
+                    alert('开始时间不能大于结束时间');
+                    return false;
+                }
+                window.location.href = "/admin/channelList?token=" + token + '&master_url=/admin/channelList&page=' + page + '&strtime=' + strtime + '&endtime=' + endtime + '&level_1=' + level_1 + '&level_2=' + level_2 + '&level_3=' + level_3 + '&inviteCode=' + inviteCode;
+            })
+
+
+
+        })
+    </script>
+<script>
+    $(function () {
+        var locale = {
+            "format": 'YYYY-MM-DD',
+            "separator": " - ",
+            "applyLabel": "确定",
+            "cancelLabel": "取消",
+            "fromLabel": "起始时间",
+            "toLabel": "结束时间'",
+            "customRangeLabel": "自定义",
+            "weekLabel": "W",
+            "daysOfWeek": ["日", "一", "二", "三", "四", "五", "六"],
+            "monthNames": ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"],
+            "firstDay": 1
+        };
+        $('#demo').daterangepicker({
+            'locale': locale,
+            ranges: {
+                '今日': [moment(), moment()],
+                '昨日': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                '最近7日': [moment().subtract(6, 'days'), moment()],
+                '最近30日': [moment().subtract(29, 'days'), moment()],
+                '本月': [moment().startOf('month'), moment().endOf('month')],
+                '上月': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month')
+                    .endOf('month')
+                ]
+            },
+            "alwaysShowCalendars": true,
+            "opens": "right",
+        }, function (start, end, label) {
+            console.log('New date range selected: ' + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD') + ' (predefined range: ' + label + ')');
+        });
+    })
+
+
+</script>
+</body>
+</html>

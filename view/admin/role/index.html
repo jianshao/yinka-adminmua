@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    <link rel="shortcut icon" href="/admin/favicon.ico">
+    <link href="/admin/css/bootstrap.min.css?v=3.3.6" rel="stylesheet">
+    <link href="/admin/css/style.css?v=4.1.0" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+    <link href="/admin/css/font-awesome.css?v=4.4.0" rel="stylesheet">
+    <link href="/admin/css/plugins/jsTree/style.min.css" rel="stylesheet">
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        {if condition="in_array('/admin/getRoleLists',$user_role_menu)"}
+                            <div class="pull-right search form-inline">
+                                <input class="form-control input-outline" type="text" value="{$role_name}" placeholder="角色名称"
+                                       id="search_name">
+                                <button type="button" class=" btn btn-primary" id="search">搜索</button>
+                            </div>
+                        {/if}
+                        <div class="example">
+                            {if condition="in_array('/admin/addRole',$user_role_menu)"}
+                                <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                    <button type="button" class="btn btn-outline btn-success" id="add_role">
+                                        <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加角色
+                                    </button>
+                                </div>
+                            {/if}
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">ID</th>
+                                    <th class="text-center">名称</th>
+                                    <th class="text-center">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($role_list)"}
+                                    {volist name="role_list" id="list"}
+                                        {if $list.id != $id}
+                                            <tr>
+                                                <td class="text-center" id="id">{$list.id}</td>
+                                                <td class="text-center" id="name">{$list.name}</td>
+                                                <td class="text-center">
+                                                    {if condition="in_array('/admin/editRole',$user_role_menu)"}
+                                                    <button class="btn btn-success editRole">编辑</button>
+                                                    {/if}
+                                                    {if condition="in_array('/admin/delRole',$user_role_menu)"}
+                                                    <button class="btn btn-danger delRole">删除</button>
+                                                    {/if}
+                                                    {if condition="in_array('/admin/editRoleToMenu',$user_role_menu)"}
+                                                    <button class="btn btn-info assignRoleToMenu">分配权限</button>
+                                                    {/if}
+                                                </td>
+                                            </tr>
+                                        {else}
+                                            {if $login_info.id == 66}
+                                                <tr>
+                                                    <td class="text-center" id="id">{$list.id}</td>
+                                                    <td class="text-center" id="name">{$list.name}</td>
+                                                    <td class="text-center">
+                                                        {if condition="in_array('/admin/editRole',$user_role_menu)"}
+                                                        <button class="btn btn-success editRole">编辑</button>
+                                                        {/if}
+                                                        {if condition="in_array('/admin/delRole',$user_role_menu)"}
+                                                        <button class="btn btn-danger delRole">删除</button>
+                                                        {/if}
+                                                        {if condition="in_array('/admin/editRoleToMenu',$user_role_menu)"}
+                                                        <button class="btn btn-info assignRoleToMenu">分配权限</button>
+                                                        {/if}
+                                                    </td>
+                                                </tr>
+                                            {/if}
+                                        {/if}
+                                    {/volist}
+                                {else}
+                                    <tr class="no-records-found">
+                                        <td colspan="3" class="text-center">没有找到匹配的记录</td>
+                                    </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page >1"}
+                        <div id="Paginator" style="text-align: center">
+                            <ul id="pageLimit"></ul>
+                        </div>
+                    {/if}
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    <!-- End Panel Other -->
+</div>
+<!--添加角色-->
+<div class="modal fade" id="addRole" tabindex="-1" role="dialog" aria-labelledby="addRoleModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="exampleModalLabel">添加角色</h4>
+            </div>
+            <div class="modal-body">
+                <form id='add_form' method="post">
+                    <div class="form-group">
+                        <label class="control-label">角色名称:</label>
+                        <input type="text" class="form-control" name='name' required="required">
+                        <input type="hidden" name="master_url" value="/admin/addRole">
+                        <input type="hidden" name="token" value="{$token}" id="token">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="add_info()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--编辑角色-->
+<div class="modal fade" id="editRole" tabindex="-1" role="dialog" aria-labelledby="editRoleModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="editRoleModalLabel">添加角色</h4>
+            </div>
+            <div class="modal-body">
+                <form id='edit_form' method="post">
+                    <div class="form-group">
+                        <label class="control-label">角色名称:</label>
+                        <input type="text" class="form-control" name='name' required="required" id="role_name">
+                        <input type="hidden" name="master_url" value="/admin/editRole">
+                        <input type="hidden" name="master_name" value="" id="master_name">
+                        <input type="hidden" name="type" value="2">
+                        <input type="hidden" name="token" value="{$token}">
+                        <input type="hidden" name="id" value="" id="ids">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="edit_info()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--删除角色-->
+<div class="modal fade" id="del_role">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>删除操作</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <i class="fa fa-trash-o" id="del_msg"></i>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger" data-btn-danger="modal" onclick="del_role()">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--分配权限-->
+<div class="modal fade" id="assignRoleToMenu">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>分配权限</h3>
+            </div>
+            <div id="jstree"></div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger" data-btn-danger="modal" onclick="assign_role_menu()">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+<input type="hidden" value="" id="to_id">
+<input type="hidden" value="{$role_menu_list}" id="role_menu_list">
+<input type="hidden" value="" id="master_menu">
+<input type="hidden" value="{$page.page ? $page.page: 0}"  id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<!-- 全局js -->
+<script src="/admin/js/jquery.min.js?v=2.1.4"></script>
+<script src="/admin/js/bootstrap.min.js?v=3.3.6"></script>
+<script src="/admin/js/plugins/toastr/toastr.min.js"></script>
+<script src="/admin/js/plugins/jsTree/jstree.min.js"></script>
+<script src="/admin/js/plugins/pagination/bootstrap-paginator.js"></script>
+<!--{include file="../view/admin/common/jsHeader.html"}-->
+<style>
+    .jstree-open > .jstree-anchor > .fa-folder:before {
+        content: "\f07c";
+    }
+
+    .jstree-default .jstree-icon.none {
+        width: 0;
+    }
+</style>
+<script>
+    $("#add_role").click(function () {
+        $("#addRole").modal('show')
+    })
+
+    $('.delRole').click(function () {
+        var id = $(this).parents("tr").find("#id").text();
+        $("#to_id").val(id);
+        var name = $(this).parents("tr").find("#name").text();
+        $('#del_role').modal('show')
+        $("#del_msg").html(' 您确定要删除角色：' + name + ' ? ')
+    });
+
+    $('.editRole').click(function () {
+        var id = $(this).parents("tr").find("#id").text();
+        $("#ids").val(id);
+        var name = $(this).parents("tr").find("#name").text();
+        $("#role_name").val(name);
+        $("#master_name").val(name);
+
+        $('#editRole').modal('show')
+    });
+
+    $('.assignRoleToMenu').click(function () {
+        var id = $(this).parents("tr").find("#id").text();
+        var master_url = '/admin/editRoleToMenu';
+        var token = $('#token').val();
+        var type = 1;
+        //获取当前权限对应的菜单项
+        $.ajax({
+            type: "post",  // 请求方式
+            url: "/admin/editRoleToMenu",  // 目标资源
+            data: {id: id, type: type, master_url: master_url, token: token}, // 请求参数
+            dataType: "json",  // 服务器响应的数据类型
+            success: function (data) {  //
+                if (data.code !== 200) {
+                    toastr.warning(data.msg);
+                    return false;
+                }
+                $("#to_id").val(id);
+                $("#master_menu").val(data.data);
+                var master_menu = data.data;
+                menuTree(master_menu);
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function menuTree(master_menu) {
+            $('#jstree').jstree("destroy");
+            $("#assignRoleToMenu").modal("show");
+            var role_menu_list = $("#role_menu_list").val();
+            $('#jstree').jstree({
+                'core': {
+                    'data': JSON.parse(role_menu_list),
+                    'expand_selected_onload': false,
+                    'check_callback': true,
+                },
+                "checkbox": {
+                    "keep_selected_style": false,//是否默认选中
+                    "three_state": false,//父子级别级联选择
+                    // "tie_selection": false,
+                },
+                "plugins": ["checkbox"]
+            }).bind('loaded.jstree', function (event, jstree) {
+                var $jstree = $('#jstree').jstree(true);
+                var data = jstree.instance._model.data;
+                var firstSubKey;
+                if (master_menu.length > 0) {
+                    // 根据json参数勾选默认
+                    for (key in data) {
+                        if ('#' === key) {
+                            continue;
+                        }
+                        var index = $.inArray(data[key].original.iid, master_menu);   //结果：index=1
+                        if (index >= 0) {
+                            $jstree.check_node(key);
+                        }
+                        if (!firstSubKey && $jstree.get_node(key).parents.length == 1) {
+                            firstSubKey = key;
+                        }
+                    }
+                    // 默认打开一级展示
+                    if (firstSubKey) {
+                        $jstree.close_all();
+                        $jstree.open_node(firstSubKey);
+                    }
+                }
+            })
+        }
+
+    })
+
+    $('#search').click(function () {
+        var name = $("#search_name").val();
+        // if (name == '') {
+        //     toastr.warning('请输入角色名称再进行搜索');
+        //     return false;
+        // }
+        var token = $('#token').val();
+        window.location.href = "/admin/getRoleLists?token=" + token + '&master_url=/admin/getRoleLists&page=1&role_name=' + name;
+    })
+
+    function add_info() {
+        var add_info = $("#add_form").serializeArray();
+        if (add_info[0].value == '') {
+            toastr.warning('角色名称不可为空！');
+            return false;
+        }
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/addRole",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: add_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    }
+
+    function edit_info() {
+        var edit_info = $("#edit_form").serializeArray();
+        if (edit_info[0].value == '') {
+            toastr.warning('角色名称不可为空！');
+            return false;
+        }
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/editRole",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: edit_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    }
+
+    function del_role() {
+        var id = $("#to_id").val();
+        var master_url = '/admin/delRole'
+        var token = $('#token').val()
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/delRole",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {id: id, master_url: master_url, token: token},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location(), 1000);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    }
+
+    function assign_role_menu() {
+        var id = $("#to_id").val();
+        var ids = [];
+        var $jstree = $('#jstree').jstree(true);
+        var data = $jstree._model.data;
+        for (key in data) {
+            if ($jstree.is_checked(key)) {
+                ids.push(data[key].original.iid);
+            }
+        }
+        var menu_now = ids.join(',');
+        var menu_form = $("#master_menu").val()
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/editRoleToMenu",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {
+                type: 2,
+                token: $("#token").val(),
+                master_url: '/admin/editRoleToMenu',
+                menu_now: menu_now,
+                menu_form: menu_form,
+                id: id
+            },
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    }
+
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page+'&master_url=/admin/getRoleLists&token='+$("#token").val()+'&role_name='+$("#search_name").val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+        /*   onPageClicked:function (event, originalEvent, type, page) {
+               location.href = "?page="+page;
+           }*/
+    });
+</script>
+
+</body>
+
+</html>

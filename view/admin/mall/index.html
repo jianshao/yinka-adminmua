@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+
+    <style>
+        .form-control:focus {
+            border-color: #66afe9;
+            outline: 0;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, 0.6);
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, 0.6);
+        }
+
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+
+</head>
+
+<body class="gray-bg">
+
+    <!--数据表格-->
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <!-- Panel Other -->
+        <div class="ibox float-e-margins">
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <!-- Example Events -->
+                        <div class="example-wrap">
+                            <!--                            搜索-->
+                            {if condition="in_array('/admin/listCategory',$user_role_menu)"}
+                            <div class="pull-right search form-inline">
+                                </select>
+                                <button type="button" class=" btn btn-primary" id="search">搜索</button>
+                            </div>
+                            {/if}
+                            <div class="example">
+                                <!--                            添加-->
+                                <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                    <button type="button" class="btn add btn-outline btn-success">
+                                        <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加
+                                    </button>
+                                    <button type="button" class="btn btn-outline btn-success" id="clearCache">
+                                        <i class="glyphicon glyphicon-fire" aria-hidden="true"></i>清除缓存
+                                    </button>
+                                </div>
+
+                                <table class="table table-hover table-responsive" id="data_table">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center" width="50">ID</th>
+                                            <th class="text-center">商品分类名称</th>
+                                            <th class="text-center">图片</th>
+                                            <th class="text-center">状态</th>
+                                            <th class="text-center">排序</th>
+                                            <th class="text-center">操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {if condition="!empty($list)"}
+                                        {volist name="list" id="lists"}
+                                        <tr pid="{$lists.pid}">
+                                            <td class="text-center id">{$lists.id}</td>
+                                            <td class="text-center  category_name">{$lists.category_name}</td>
+                                            <td class="text-center img_url"><img src="{$app_url}{$lists.img_url}"
+                                                    width="30" heght="30" img_url="{$lists.img_url}"></td>
+                                            {if $lists.is_show==1}
+                                            <td class="text-center is_show" is_show="1">开启</td>
+                                            {else}
+                                            <td class="text-center is_show" is_show="0">关闭</td>
+                                            {/if}
+                                            <td class="text-center sort">{$lists.sort}</td>
+                                            <td class="text-center">
+                                                <div class="btn-group hidden-xs form-inline">
+                                                    <button class="btn btn-success delete" id="{$lists.id}">删除</button>
+                                                </div>
+                                                <div class="btn-group hidden-xs form-inline">
+                                                    <button class="btn btn-success edit" pid="{$lists.pid}"
+                                                        id="{$lists.id}">修改</button>
+                                                </div>
+                                                <div class="btn-group hidden-xs form-inline">
+                                                    <!-- <button class="btn btn-success addGiftImage" id="ossFile">添加图片</button> -->
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {/volist}
+                                        {else}
+                                        <tr class="no-records-found">
+                                            <td colspan="7" class="text-center">没有找到匹配的记录</td>
+                                        </tr>
+                                        {/if}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {if condition = "$page.total_page >1"}
+                        <div id="Paginator" style="text-align: center">
+                            <ul id="pageLimit"></ul>
+                        </div>
+                        {/if}
+                        <!-- End Example Events -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Panel Other -->
+    </div>
+    <!--添加信息-->
+    <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true"
+                            onclick="empty()">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="addModalLabel">添加</h4>
+                </div>
+                <div class="modal-body add-append">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="add_info()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--编辑信息-->
+    <div class="modal fade" id="attireModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true"
+                            onclick="empty()">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="attireModalLabel">编辑信息</h4>
+                </div>
+                <div class="modal-body edit-append">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="save">修改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--删除-->
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="deleteModalLabel">删除信息</h4>
+                </div>
+                <div class="modal-body delete-append">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="delete_info()">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--编辑图片-->
+    <div class="modal fade" id="uploadFileModal" tabindex="-1" role="dialog" aria-labelledby="uploadFileModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="upload-file-name">图片编辑</h4>
+                </div>
+                <div class="modal-body">
+                    <form id='uploads_files' method="post" enctype="multipart/form-data">
+                        <input type="hidden" id="gifts_id" value="">
+                        <div class="form-group">
+                            <label class="control-label">添加礼物图片[PNG]</label>
+                            <input type="file" class="form-control gift_image" name="gift_image" id="gift_image"
+                                value="" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">添加礼物动画[GIF]:</label>
+                            <input type="file" class="form-control animation" name="animation" id="animation" value=""
+                                required>
+                        </div>
+                        <!--                    <div class="form-group">-->
+                        <!--                        <label class="control-label">添加大动画[SVGA]:</label>-->
+                        <!--                        <input type="file" class="form-control gift_animation" name="gift_animation" id="gift_animation" value="" required>-->
+                        <!--                    </div>-->
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="add_imgs()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--操作modal-->
+    <input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+    <input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+    <input type="hidden" value="{$token}" name="token" id="token">
+    <input type="hidden" value="/admin/listCategory" name="master_url" id="master_url">
+
+    <!-- 全局js -->
+    {include file="../view/admin/common/jsHeader.html"}
+
+    <script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+    <script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+    <script>
+        //添加或更改图片
+        $('.addGiftImage').on('click', function () {
+            $("#gifts_id").val($(this).parents("tr").find(".id").text());
+            $('#uploadFileModal').modal('show');
+        })
+
+        function add_imgs() {
+            if ($("#gifts_id").val() == "") {
+                toastr.warning('未获得礼物ID');
+                return false;
+            }
+            if ($('#gift_image')[0].files[0]) {
+                var gift_imageType = $('#gift_image')[0].files[0].name.split('.');
+                if (gift_imageType[1] != 'png') {
+                    toastr.warning('礼物图标请选择png格式文件');
+                    return false;
+                }
+            }
+            if ($('#animation')[0].files[0]) {
+                var animationType = $('#animation')[0].files[0].name.split('.');
+                if (animationType[1] != 'gif') {
+                    toastr.warning('礼物动画请选择gif格式文件');
+                    return false;
+                }
+            }
+            // if($('#gift_animation')[0].files[0]){
+            //     var gift_animationType = $('#gift_animation')[0].files[0].name.split('.');
+            //     if(gift_animationType[1]!='svga'){
+            //         toastr.warning('礼物大动画请选择svga格式文件');
+            //         return false;
+            //     }
+            // }
+
+            var formData = new FormData();
+            formData.append("id", $("#gifts_id").val());
+            formData.append("token", $("#token").val());
+            formData.append("master_url", $("#master_url").val());
+            formData.append("gift_image", $('#gift_image')[0].files[0]);
+            formData.append("animation", $('#animation')[0].files[0]);
+            // formData.append("gift_animation", $('#gift_animation')[0].files[0]);
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                cache: false,
+                processData: false,
+                contentType: false,
+                type: "post", //请求类型
+                url: "/admin/ossCategoryFile", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: formData,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000); //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        }
+        //分页
+        $('#pageLimit').bootstrapPaginator({
+            currentPage: $("#page").val(),
+            totalPages: $("#total_page").val(),
+            size: "normal",
+            bootstrapMajorVersion: 3,
+            alignment: "right",
+            numberOfPages: '5',
+            pageUrl: function (type, page, current) {
+                //是每个分页码变成一个超链接
+                return '?page=' + page + '&master_url=/admin/listCategory&token=' + $("#token").val() +
+                    '&is_show=' + $("#is_show").val()
+            },
+            itemTexts: function (type, page, current) {
+                switch (type) {
+                    case "first":
+                        return "首页";
+                    case "prev":
+                        return "上一页";
+                    case "next":
+                        return "下一页";
+                    case "last":
+                        return "末页";
+                    case "page":
+                        return page;
+                }
+            }
+        });
+
+        var categories = JSON.parse('<?php echo json_encode($all)?>');
+        var str = '';
+        $.each(categories, function (key, category) {
+            let spl = '——|';
+            spl = spl.repeat(category.level);
+            str += "<option value='" + category.id + "'>" + spl + category.category_name + "</option>";
+        });
+        console.log(str)
+        //添加信息
+        $('.add').on('click', function () {
+            $(".add-append").empty();
+            $(".add-append").prepend(
+                "<form id='add_form' method='post' >" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "选择上级分类名称:" + "</label>" +
+                "<select class='form-control pid' name='pid' id='pid'>" +
+                "<option value='0' >默认顶级</option>" + str +
+                "</select>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "分类名称:" + "</label>" +
+                "<input type='text' id='category_name' class='form-control category_name' name='category_name' value='' required>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>添加图片:</label>" +
+                "<input type='file' class='form-control img_url' id='img_url' value='' required>" +
+                "</div>" +
+
+                "<div id='type1'>" +
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "排序:" + "</label>" +
+                "<input type='number' id='sort' oninput=\"if(value.length > 6)value = value.slice(0, 6)\"  class='form-control' name='sort' value='' required>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "是否显示:" + "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='is_show' class='is_show' checked value='1'>" + " 是" +
+                "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='is_show' class='is_show'  value='0'>" + " 否" +
+                "</label>" +
+                "</div>" +
+
+                "<input type='hidden' value='{$token}' name='token'>" +
+                "<input type='hidden' value='/admin/addCategory' id='master_url' name='master_url'>" +
+                " </form>"
+            );
+            $('#addModal').modal('show');
+        });
+
+        //图片上传
+        $(document).on("change", "#img_url", function () {
+            console.log($('#img_url')[0].files[0])
+            if ($('#img_url')[0].files[0]) {
+                var animationType = $('#img_url')[0].files[0].name.split('.');
+                if (animationType[1] != "bmp" && animationType[1] != "png" && animationType[1] != "gif" &&
+                    animationType[1] != "jpg" && animationType[1] != "jpeg" && animationType[1] != "svga") {
+                    toastr.warning("文件只限图片");
+                    return false;
+                }
+            }
+            var formData = new FormData();
+            formData.append("token", $("#token").val());
+            formData.append("master_url", $("#master_url").val());
+            formData.append("image", $('#img_url')[0].files[0]);
+
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                cache: false,
+                processData: false,
+                contentType: false,
+                type: "post", //请求类型
+                url: "/admin/ossAttireFile", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: formData,
+                success: function (rs) {
+                    if (rs.status !== 1) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    $('#img_url').parent().append("<input type='hidden' name='img_url'  value=" + rs
+                        .image + ">");
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        })
+
+        //动图上传
+        $(document).on("change", "#animation", function () {
+            if ($('#animation')[0].files[0]) {
+                var animationType = $('#animation')[0].files[0].name.split('.');
+                if (animationType[1] != "bmp" && animationType[1] != "png" && animationType[1] != "gif" &&
+                    animationType[1] != "jpg" && animationType[1] != "jpeg" && animationType[1] != "svga") {
+                    toastr.warning("文件只限图片");
+                    return false;
+                }
+            }
+            var formData = new FormData();
+            formData.append("token", $("#token").val());
+            formData.append("master_url", $("#master_url").val());
+            formData.append("image", $('#animation')[0].files[0]);
+
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                cache: false,
+                processData: false,
+                contentType: false,
+                type: "post", //请求类型
+                url: "/admin/ossAttireFile", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: formData,
+                success: function (rs) {
+                    if (rs.status !== 1) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    $('#animation').parent().append(
+                        "<input type='hidden' name='animation'  value=" + rs.image + ">");
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        })
+
+        //添加执行
+        function add_info() {
+            var add_info = $("#add_form").serializeArray();
+            if ($('#category_name').val() == '') {
+                toastr.warning('名称不可为空');
+                return false;
+            }
+            if ($('#sort').val() == '') {
+                toastr.warning('排序必填');
+                return false;
+            }
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                url: "/admin/addCategory", //请求的 URL地址
+                token: $("#token").val(),
+                dataType: "json", //返回的数据类型
+                data: add_info,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000); //延迟5秒刷新页面
+
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+
+            return false;
+        }
+
+        //搜索
+        $("#search").click(function () {
+            var token = $('#token').val();
+        })
+
+        //修改框追加
+        $('.edit').on('click', function () {
+            $(".edit-append").empty();
+            $(".edit-append").prepend(
+                "<form id='edit_form' method='post' >" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "选择上级分类名称:" + "</label>" +
+                "<select class='form-control pid' name='pid' id='pid' readonly>" +
+                "<option value='0' >默认顶级</option>" + str +
+                "</select>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "分类名称:" + "</label>" +
+                "<input type='text' id='category_name' class='form-control category_name' name='category_name' value='' required>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='col-md-15 control-label'>添加图片:</label>" +
+                // '<div class="col-md-15 src_img"><img src="" heght="" width="300"></div>' +
+                "<input type='file' class='form-control img_url' id='img_url' value='' required>" +
+                "<input name='img_url' value='' type='hidden'>" +
+                "</div>" +
+
+                "<div id='type1'>" +
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "排序:" + "</label>" +
+                "<input type='number' id='sort' oninput=\"if(value.length > 6)value = value.slice(0, 6)\"  class='form-control' name='sort' value='' required>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "是否显示:" + "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='is_show' class='is_show' checked value='1'>" + " 是" +
+                "</label>" +
+                "<label class='radio-inline'>" +
+                "<input type='radio' name='is_show' class='is_show'  value='0'>" + " 否" +
+                "</label>" +
+                "</div>" +
+
+                "<input type='hidden' value='{$token}' name='token'>" +
+                "<input type='hidden' class='id' name='id'>" +
+                "<input type='hidden' value='/admin/saveCategory' id='master_url' name='master_url'>" +
+                " </form>"
+            );
+
+            $(".id").val($(this).parents("tr").find(".id").text());
+
+            var pid = $(this).attr("pid");
+
+            $('#edit_form').find(".pid option[value='" + pid + "']").attr("selected", "select");
+            $('#edit_form').find(".category_name").val($(this).parents("tr").find(".category_name").text());
+            $('#edit_form').find("#sort").val($(this).parents("tr").find(".sort").text());
+
+            var type = $(this).parents("tr").find(".type").attr('type');
+            $('#edit_form').find(":radio[name='type'][value=" + type + "]").attr("checked", "checked");
+            var is_show = $(this).parents("tr").find(".is_show").attr('is_show');
+            $('#edit_form').find(":radio[name='is_show'][value=" + is_show + "]").attr("checked", "checked");
+
+            // var src_img = $(this).parents("tr").find(".img_url").find("img").attr('src');
+            // $('#edit_form').find('.src_img').find('img').attr('src', src_img);
+            var img_url = $(this).parents("tr").find(".img_url").find("img").attr('img_url');
+            console.log(img_url)
+            $('#edit_form').find('input[name="img_url"]').attr('value', img_url);
+            $('#attireModal').modal('show');
+        });
+
+
+        //修改按钮
+        $('#save').click(function () {
+            var attire_info = $("#edit_form").serializeArray();
+            if ($('#category_name').val() == '') {
+                toastr.warning('名称不可为空');
+                return false;
+            }
+            if ($('#sort').val() == '') {
+                toastr.warning('排序必填');
+                return false;
+            }
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                url: "/admin/saveCategory", //请求的 URL地址
+                token: $("#token").val(),
+                dataType: "json", //返回的数据类型
+                data: attire_info,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000); //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+
+        })
+
+        //删除
+        $('.delete').on('click', function () {
+            var id = $(this).parents("tr").find(".id").text();
+            $('.delete-append').empty();
+            $(".delete-append").prepend(
+                "<h4 class='modal-title' id='deleteModalLabel'>确认删除当前分类及子分类吗?</h4>" +
+                "<form id='delete_form' method='post'>" +
+                "<input type='hidden' value='/admin/delCategory' name='master_url'>" +
+                "<input type='hidden' value='{$token}' name='token'>" +
+                "<input type='hidden' name='id' value=''>" +
+                "</form>"
+            );
+            $("#delete_form").find('input[name=id]').val(id);
+            $('#deleteModal').modal('show');
+        });
+
+
+        function delete_info() {
+            var delete_info = $("#delete_form").serializeArray();
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                url: "/admin/delCategory", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: delete_info,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000); //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        }
+
+        //清除缓存
+        $("#clearCache").on('click', function () {
+            var master_url = "/admin/clearGoldEmoti";
+            var token = $("#token").val();
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                url: "/admin/clearGoldEmoti", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: {
+                    master_url: master_url,
+                    token: token
+                },
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 500); //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        })
+    </script>
+</body>
+
+</html>

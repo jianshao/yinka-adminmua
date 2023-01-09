@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/admin/layui/css/layui.css" media="all">
+    <script src="/admin/js/jquery.min.js"></script>
+    <script src="/admin/js/xm-select.js"></script>
+    <style>
+        .layui-table-cell {
+            height: auto;
+            overflow: visible;
+            text-overflow: inherit;
+            white-space: normal;
+        }
+    </style>
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+</head>
+<body>
+
+
+
+
+<script type="text/html" id="addTemplate">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="add_template">新增配置</button>
+    </div>
+</script>
+<div style="padding:5px;">
+    <div class="demoTable">
+          <form class="layui-form" onsubmit="return false;" id="myformsearch">
+              <div class="layui-inline">
+                  <select name="s_type" lay-verify="required" lay-search="" id="s_type">
+                      <option value="">=选择类型=</option>
+                      <option value="ios_channel">Ios推广渠道</option>
+                      <option value="huawei_channel">HuaWei推广渠道</option>
+                  </select>
+              </div>
+              <button class="layui-btn" data-type="reload">搜索</button>
+          </form>
+    </div>
+    <table id="datatable" lay-filter="test"></table>
+</div>
+
+<script src="/admin/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+<script>
+
+    layui.use(['table', 'form', 'layer', 'laydate', 'jquery'], function () {
+
+        var $ = layui.jquery
+            , form = layui.form
+            , laydate = layui.laydate
+            , table = layui.table;
+
+        //日期
+        laydate.render({
+            elem: '#begin_time'
+            ,type:'datetime'
+            ,format:'yyyy-MM-dd HH:mm:ss'
+        });
+
+        laydate.render({
+            elem: '#end_time'
+            ,type:'datetime'
+            ,format:'yyyy-MM-dd HH:mm:ss'
+        });
+
+
+        table.render({
+            elem: '#datatable'
+            , totalRow: true
+            //, height: 420
+            , toolbar: '#addTemplate' //开启头部工具栏，并为其绑定左侧模板
+            , url: '/admin/asaComeRoomList?master_url=/admin/asaComeRoomList&token={$token}&isRequest=1' //数据接口
+            , page: true //开启分页
+            , cols: [[ //表头
+                  {field: 'room_id', title: '房间ID',width:'10%'}
+                , {field: 'type', title: '数据类型',width:'15%'}
+                , {field: 'room_name', title: '房间名称',width:'20%'}
+                , {field: 'begin_time', title: '开始时间',width:'20%'}
+                , {field: 'end_time', title: '结束时间',width:'20%'}
+                , {title: '操作', toolbar: '#editaction', width:'15%'}
+            ]]
+            , id: 'tablereload'
+            , limits: [20, 50, 100]
+            , limit: 20 //每页默认显示的数量
+            , where: {}
+            , done: function (res, curr, count) {
+            }
+        });
+
+
+        var $ = layui.$, active = {
+            reload: function () {
+                //执行重载
+                table.reload('tablereload', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    , where: {
+                        s_type: $('#s_type').val()
+                    }
+                });
+            }
+        };
+
+        $('.demoTable .layui-btn').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+
+        //头工具栏事件
+        table.on('toolbar(test)', function (obj) {
+            switch (obj.event) {
+                case 'add_template':
+                    //页面层-自定义
+                    $("#sendform")[0].reset();
+                    layer.open({
+                        type: 1,
+                        title: "新增",
+                        //closeBtn: true,
+                        shift: 2,
+                        area: ['600px', '400px'],
+                        shadeClose: true,
+                        content: $("#add-main2"),
+                        success: function (layero, index) {
+                        },
+                        yes: function () {
+                        }
+                    });
+
+            }
+        });
+
+
+        //监听行工具事件
+        table.on('tool(test)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'delaction') {
+                layer.confirm('您确定要删除操作吗?', {icon: 3, title: '提示'}, function (index) {
+                    layer.close(index);
+                    const requestbody = {room_id: data.room_id,action:"del",type:data.type,begin_time:data.begin_time,end_time:data.end_time}
+
+                    $.post('/admin/asaComeRoomDel?master_url=/admin/asaComeRoomDel&token={$token}',requestbody , function (resp) {
+                        var respon = eval('(' + resp + ')');
+                        if (respon.code == 0) {
+                            table.reload('tablereload', {});
+                        } else {
+                            layer.msg(respon.msg);
+                        }
+                    })
+                });
+            }
+
+
+        });
+
+
+        //监听提交
+        form.on('submit(myform)', function (data) {
+            var fields = $(data.form).serialize();
+            console.log(fields);
+            $.post("/admin/asaComeRoomAdd?master_url=/admin/asaComeRoomAdd&token={$token}", fields, function (resp) {
+                var res  = eval("("+resp+")");
+                if (res['code'] != 0) {
+                    layer.msg(res['msg'], {
+                        time: 20000, //20s后自动关闭
+                        btn: ['ok'],
+                        btnAlign: 'c',
+                    }, function () {
+                        //window.location.reload();
+                    });
+                } else {
+                    window.location.reload();
+                }
+
+            })
+            return false;
+        });
+    });
+</script>
+
+
+<div id="add-main2" style="display: none;">
+    <form class="layui-form" id="sendform" action="" style="padding:10px;">
+        <div class="layui-form-item" style="margin-top:20px;">
+            <label class="layui-form-label">房间ID</label>
+            <div class="layui-input-block">
+                <input type="text" id="room_id" name="room_id" required value="" lay-verify="required"
+                       placeholder="房间ID" autocomplete="off" class="layui-input">
+            </div>
+            <div style="clear: both;height:10px;"></div>
+
+            <label class="layui-form-label">开始时间</label>
+
+            <div class="layui-inline">
+                <div class="layui-input-inline">
+                    <input type="text" name="begin_time" id="begin_time" lay-verify="datetime" placeholder="开始时间" autocomplete="off" class="layui-input" value="">
+                </div>
+            </div>
+
+            <div style="clear: both;height:10px;"></div>
+
+            <label class="layui-form-label">结束时间</label>
+            <div class="layui-inline">
+                <div class="layui-input-inline">
+                    <input type="text" name="end_time" id="end_time" lay-verify="datetime" placeholder="结束时间" autocomplete="off" class="layui-input" value="">
+                </div>
+            </div>
+            <div style="clear: both;height:10px;"></div>
+            <label class="layui-form-label">数据类型</label>
+            <div class="layui-inline">
+                <select name="type" lay-verify="required" lay-search="" id="type">
+                    <option value="ios_channel">Ios推广渠道</option>
+                    <option value="huawei_channel">HuaWei推广渠道</option>
+                </select>
+            </div>
+
+
+        </div>
+
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit="" lay-filter="myform">立即提交</button>
+                <button type="reset" class="layui-btn layui-btn-primary" id="closeBtn">重置</button>
+            </div>
+        </div>
+    </form>
+
+</div>
+
+
+
+
+
+
+<script type="text/html" id="editaction">
+    <button type="button" class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delaction">删除</button>
+</script>
+
+
+
+
+
+
+
+</body>
+</html>

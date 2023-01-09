@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+
+<body class="gray-bg">
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <!-- Panel Other -->
+        <div class="ibox float-e-margins">
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <!-- Example Events -->
+                        <div class="example-wrap">
+                            <div class="example">
+                                <div class="btn-group hidden-xs form-inline">
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-outline btn-success" id="online">
+                                            <i class="glyphicon glyphicon-cloud" aria-hidden="true"></i>配置上线
+                                        </button>
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-outline btn-success baseInfo">
+                                            国王地鼠配置
+                                        </button>
+                                    </div>
+                                    <div class="form-group">
+                                        <b>国王地鼠池子数量：</b>{$kingValue}
+                                    </div>
+                                </div>
+                                <table class="table table-hover table-responsive" id="data_table"
+                                    style="word-wrap: break-word; word-break: break-all;">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center">奖池名称</th>
+                                            <th class="text-center">中奖数</th>
+                                            <th class="text-center">不中奖数</th>
+                                            <th class="text-center">操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {if condition="!empty($pools)"}
+                                        {volist name="pools" id="list"}
+                                        <tr>
+                                            <td class="text-center poolId">{$list['poolId']}</td>
+                                            <td class="text-center win">{$list['win']}</td>
+                                            <td class="text-center unwin">{$list['unwin']}</td>
+                                            <td class="text-center ">
+                                                <button type="button" class="btn btn-primary edit"
+                                                    wid="{$list['poolId']}">编辑</button>
+                                                <button type="button" wid="{$list['poolId']}" class="btn btn-danger btn-success the-refresh">刷新奖池</button>
+                                                <button type="button" wid="{$list['poolId']}" class="btn btn-primary btn-success pool-left">奖池剩余数量</button>
+                                            </td>
+                                        </tr>
+                                        {/volist}
+                                        {else}
+                                        <tr class="no-records-found">
+                                            <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                        </tr>
+                                        {/if}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- End Example Events -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Panel Other -->
+        </div>
+    </div>
+
+    <!--操作modal-->
+    <!--编辑-->
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="editModalLabel">编辑信息</h4>
+                </div>
+                <div class="modal-body edit_append">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="edit_info()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--奖池剩余个数-->
+    <div class="modal fade" id="poolLeftModal" tabindex="-1" role="dialog" aria-labelledby="poolLeftModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="poolLeftModalLabel">奖池剩余信息</h4>
+                </div>
+                <div class="modal-body poolLeft_append">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <input type="hidden" value="{$token}" name="token" id="token">
+</body>
+
+</html>
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script src="/admin/js/trap/fileinput.js" type="text/javascript"></script>
+<script src="/admin/js/trap/fileinput_locale_zh.js" type="text/javascript"></script>
+<script>
+    $('.pool-left').on('click', function () {
+        $.ajax({
+            async: false, //表示请求是否异步处理
+            type: "post", //请求类型
+            url: "/admin/gopher/getPoolInfo", //请求的 URL地址
+            dataType: "json", //返回的数据类型
+            data: {
+                master_url: '/admin/gopher/getPoolInfo',
+                token: $("#token").val(),
+                poolId: $(this).attr('wid')
+            },
+            success: function (rs) {
+                console.log(rs);
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                let data = rs.data.items;
+                let poolId = rs.data.poolId;
+                let unwin = data[0];
+                let win = data[1];
+                displayPoolLeft(unwin,win,poolId);
+                console.log(unwin,win)
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+    });
+
+    function displayPoolLeft(unwin, win, poolId){
+        $('.poolLeft_append').empty()
+        $(".poolLeft_append").prepend(
+            "<div class='form-group'>" +
+            "<label class='control-label'>" + "奖池名称:" + "</label>" +
+            "<input type='text' class='form-control poolId' name='poolId' value=' " + poolId + " ' disabled='disabled' required>" +
+            "</div>" +
+            "<div class='form-group'>" +
+            "<label class='control-label'>" + "中奖数:" + "</label>" +
+            "<input disabled='disabled' type='text' class='form-control win' name='win' value=' " + win + " ' required>" +
+            "</div>" +
+            "<div class='form-group'>" +
+            "<label class='control-label'>" + "非中奖数:" + "</label>" +
+            "<input disabled='disabled' type='text' class='form-control unwin' name='unwin' value=' " + unwin + " ' required>" +
+            "</div>"
+        );
+        $('#poolLeftModal').modal('show');
+    }
+
+    $('.the-refresh').on('click', function () {
+        if (confirm("确认要刷新当前奖池吗?")) {
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                url: "/admin/gopher/refreshPool", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: {
+                    master_url: '/admin/gopher/refreshPool',
+                    token: $("#token").val(),
+                    poolId: $(this).attr('wid')
+                },
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 500); //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        }
+    })
+
+    $(document).on('click', '.open', function () {
+        var status = $(this).attr('status')
+        if (status == 0) {
+            if (confirm("确认要关闭潘多拉魔盒吗?")) {
+                open(status)
+            }
+        } else {
+            open(status)
+        }
+    })
+
+    function open(status) {
+        $.ajax({
+            async: false, //表示请求是否异步处理
+            type: "post", //请求类型
+            url: "/admin/boxSwitch", //请求的 URL地址
+            dataType: "json", //返回的数据类型
+            data: {
+                master_url: '/admin/boxSwitch',
+                token: $("#token").val(),
+                status: status
+            },
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 500); //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+
+    //清除缓存
+    $("#online").on('click', function () {
+        var master_url = "/admin/gopher/clearCache";
+        var token = $("#token").val();
+        $.ajax({
+            async: false, //表示请求是否异步处理
+            type: "post", //请求类型
+            url: "/admin/gopher/clearCache", //请求的 URL地址
+            dataType: "json", //返回的数据类型
+            data: {
+                master_url: master_url,
+                token: token
+            },
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 500); //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    })
+
+    //奖池
+    $('.prize-pool').on('click', function () {
+        window.location.href = "/admin/box3/getBoxPools?token=" + $('#token').val() +
+            '&master_url=/admin/box3/getBoxPools&boxId=' + $(this).parents("tr").find(".boxId").text();
+    })
+    //入池配置
+    $('.conf-pool').on('click', function () {
+        window.location.href = "/admin/box3/getBoxRules?token=" + $('#token').val() +
+            '&master_url=/admin/box3/getBoxRules&boxId=' + $(this).parents("tr").find(".boxId").text();
+    })
+
+    //爆率配置
+    $('.baolv-pool').on('click', function () {
+        window.location.href = "/admin/box3/getBoxRate?token=" + $('#token').val() +
+            '&master_url=/admin/box3/getBoxRate&boxId=' + $(this).parents("tr").find(".boxId").text();
+    })
+
+    //指定进池
+    $('.point-pool').on('click', function () {
+        window.location.href = "/admin/box3/getBoxPointUsers?token=" + $('#token').val() +
+            '&master_url=/admin/box3/getBoxPointUsers&boxId=' + $(this).parents("tr").find(".boxId").text();
+    })
+
+
+    //编辑
+    $('.edit').on('click', function () {
+        $('#edit_form').empty()
+        $(".edit_append").prepend(
+            "<form id='edit_form' method='post'>" +
+            "<input type='hidden' name='poolId' class='poolId'>" +
+            "<div class='form-group'>" +
+            "<label class='control-label'>" + "奖池名称:" + "</label>" +
+            "<input type='text' class='form-control poolId' name='poolId' value='' disabled='disabled' required>" +
+            "</div>" +
+            "<div class='form-group'>" +
+            "<label class='control-label'>" + "中奖数:" + "</label>" +
+            "<input type='text' class='form-control win' name='win' value='' required>" +
+            "</div>" +
+            "<div class='form-group'>" +
+            "<label class='control-label'>" + "非中奖数:" + "</label>" +
+            "<input type='text' class='form-control unwin' name='unwin' value='' required>" +
+            "</div>" +
+            "<input type='hidden' value='/admin/gopher/setPools' name='master_url' id='master_url'>" +
+            "<input type='hidden' value='{$token}' name='token'>" +
+            " </form>"
+        );
+        var id = $(this).parents("tr").find(".poolId").text()
+        $(".poolId").val($(this).parents("tr").find(".poolId").text());
+        $(".win").val($(this).parents("tr").find(".win").text());
+        $(".unwin").val($(this).parents("tr").find(".unwin").text());
+        $(".poolId").val(id);
+        $('#editModal').modal('show');
+    });
+
+    var data = JSON.parse('<?php echo json_encode($data)?>');
+    console.log(data);
+    //编辑
+    $('.baseInfo').on('click', function () {
+        $('#edit_form').empty()
+        $(".edit_append").prepend(
+            "<form id='edit_form' method='post'>" +
+            "<div class='form-group'>" +
+            "<label class='control-label'>" + "地鼠价格:" + "</label>" +
+            "<input type='text' class='form-control kingReward' name='kingReward' value='' required>" +
+            "</div>" +
+            "<div class='form-group'>" +
+            "<label class='control-label'>" + "抽池率(%):" + "</label>" +
+            "<input type='text' class='form-control poolRate' name='poolRate' value='' required>" +
+            "</div>" +
+            "<div class='form-group'>" +
+            "<label class='control-label'>" + "死亡率(%):" + "</label>" +
+            "<input type='text' class='form-control kingRate' name='kingRate' value='' required>" +
+            "</div>" +
+
+			"<div class='form-group'>" +
+            "<label class='control-label'>" + "状态:" + "</label>" +
+            "<select class='form-control isOpen' name='isOpen'>\n" +
+            "<option value='0' >关闭</option>\n" + 
+            "<option value='1' >开启</option>\n" +
+            "</select>"+
+            "</div>" +
+
+            "<input type='hidden' value='/admin/gopher/setBaseInfo' name='master_url' id='master_url'>" +
+            "<input type='hidden' value='{$token}' name='token'>" +
+            " </form>"
+        );
+		let isOpen = data.isOpen;
+		$("#edit_form .isOpen option[value='"+ isOpen +"']").attr("selected","select");
+        $(".kingReward").val(data.kingReward);
+        $(".kingRate").val(data.kingRate * 100);
+        $(".poolRate").val(data.poolRate * 100);
+        $('#editModal').modal('show');
+    });
+
+    //删除框
+    $(document).on("click", ".minus", function () {
+        if ($(this).parent('.form-group').siblings().size() < 2) {
+            toastr.warning('元素过少不可删除');
+        } else {
+            // console.log($(this).parent('.form-group').siblings().size())
+            $(this).parent('.form-group').remove()
+        }
+    })
+
+    function add_info() {
+        var add_info = $("#add_form").serializeArray();
+        $.ajax({
+            async: false, //表示请求是否异步处理
+            type: "post", //请求类型
+            url: "/admin/addBox", //请求的 URL地址
+            dataType: "json", //返回的数据类型
+            data: add_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000); //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+
+    function edit_info() {
+        var edit_info = $("#edit_form").serializeArray();
+        console.log(edit_info);
+        var posturl = $('.edit_append').find('#master_url').val();
+        console.log(posturl);
+        $.ajax({
+            async: false, //表示请求是否异步处理
+            type: "post", //请求类型
+            url: posturl, //请求的 URL地址
+            dataType: "json", //返回的数据类型
+            data: edit_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000); //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+</script>

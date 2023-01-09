@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/time/daterangepicker.css">
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight" style="height: 100%">
+
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins" style="height: 100%">
+
+        <div class="ibox-content" style="height: 100%">
+            <div class="row row-lg" style="height: 80%;width: 80%">
+                <div class="col-sm-12" style="height: 100%">
+                    <!-- Example Events -->
+                    <div class="example-wrap" style="height: 100%">
+                        <div class="example" style="height: 100%">
+                            {if condition="!empty($data)"}
+                            <textarea class="form-control boxJson" style="height: 100%" name="" cols="30" rows="10">{$data}</textarea>
+                            {else}
+                            <textarea class="form-control boxJson" style="height: 100%" name="" cols="30" rows="10"></textarea>
+                            {/if}
+                            <button type="button" class="btn btn-outline btn-success" style="float:right;"  onclick="edit_info()">
+                                <i aria-hidden="true"></i>修改
+                            </button>
+                        </div>
+                    </div>
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+<input type="hidden" value="{$token}" name="token" id="token">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script src="/admin/js/fileinput/fileinput.js" type="text/javascript"></script>
+<script src="/admin/js/fileinput/zh.js" type="text/javascript"></script>
+<script src="/admin/js/plugins/toastr/toastr.min.js"></script>
+<script src="/time/moment.min.js"></script>
+<script src="/time/daterangepicker.min.js"></script>
+
+<script>
+    //修改
+    function edit_info(){
+        var boxJson = $('.boxJson').val();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/setBoxConf",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {token:$('#token').val(),master_url:'/admin/boxPoolsShow',boxJson:boxJson},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+
+
+</script>
+</body>
+
+</html>

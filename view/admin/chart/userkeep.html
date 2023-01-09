@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    <script type="text/javascript" src="/admin/layui/layui.js"></script>
+    <link rel="stylesheet" href="/admin/layui/css/layui.css">
+    <script type="text/javascript" src="/admin/js/echarts.js"></script>
+    <script src="/admin/js/jquery.min.js"></script>
+    <style>
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+    </style>
+</head>
+<body class="gray-bg">
+
+<style>
+    .top-panel {
+        border: 1px solid #eceff9;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+    .top-panel > .layui-card-body {
+        height: 60px;
+    }
+
+    .top-panel-number {
+        line-height: 60px;
+        font-size: 30px;
+        border-right: 1px solid #eceff9;
+    }
+
+    .top-panel-tips {
+        line-height: 30px;
+        font-size: 12px
+    }
+</style>
+
+<div style="margin:15px 5px 0px 15px;">
+    <blockquote class="layui-elem-quote" style="padding:10px;margin:1px;">
+        用户留存数据
+    </blockquote>
+    <form class="layui-form" onsubmit="return false;" id="myform">
+        <div class="layui-inline">
+            <div class="layui-input-inline">
+                <input type="text" name="date" id="date_b" lay-verify="date" placeholder="日期开始" autocomplete="off"
+                       class="layui-input" value="{$date_b}">
+            </div>
+            <div class="layui-input-inline">
+                <input type="text" name="date" id="date_e" lay-verify="date" placeholder="日期结束" autocomplete="off"
+                       class="layui-input" value="{$date_e}">
+            </div>
+
+            <div class="layui-input-inline" style="width:160px"><select name="modules" lay-verify="required"
+                                                                        lay-search=""
+                                                                        id="keep_type">
+                <option value="register" {if condition="$keep_type eq 'register' " } selected {/if} >注册用户留存</option>
+                <option value="charge" {if condition="$keep_type eq 'charge' " } selected {/if} >充值用户留存</option>
+                <option value="charge_add" {if condition="$keep_type eq 'charge_add' " } selected {/if} >新增充值用户留存</option>
+                <option value="active" {if condition="$keep_type eq 'active' " } selected {/if} >日活用户留存</option>
+            </select>
+            </div>
+
+        </div>
+
+        <button class="layui-btn" data-type="reload" onclick="mysearch()">搜索</button>
+        <button type="button" class="layui-btn layui-btn-normal" onclick="mysearch(true)">导出</button>
+    </form>
+
+</div>
+
+
+<div class="layui-fluid">
+    <div class="layuimini-main welcome">
+        <!--用户充值分直充代充-->
+        <div class="layui-row layui-col-space1">
+            <div class="layui-col-xs12 layui-col-md12">
+                <div class="layui-card top-panel">
+                    <div id="main_mul" style="width: 100%;height:300px;"></div>
+                    <script>
+                        var chartDom = document.getElementById('main_mul');
+                        var myChart = echarts.init(chartDom);
+                        var option;
+
+                        option = {
+                            title: {
+                                text: '{$keepTypeMark}'
+                            },
+                            tooltip: {
+                                trigger: 'axis'
+                            },
+                            legend: {
+                                data: JSON.parse('<?php echo json_encode($nameList); ?>'),
+                            },
+                            grid: {
+                                left: '3%',
+                                right: '4%',
+                                bottom: '3%',
+                                containLabel: true
+                            },
+                            toolbox: {
+                                feature: {
+                                    saveAsImage: {}
+                                }
+                            },
+                            xAxis: {
+                                type: 'category',
+                                boundaryGap: false,
+                                data: JSON.parse('<?php echo json_encode($dateList); ?>'),
+                            },
+                            yAxis: {
+                                type: 'value'
+                            },
+                            series: JSON.parse('<?php echo json_encode($charFormatList); ?>'),
+                        };
+
+                        option && myChart.setOption(option);
+
+                    </script>
+
+
+                    <table class="layui-table" lay-filter="charge-add-table">
+                        <thead>
+                        <tr>
+                            <th lay-data="{field:'1'}">日期</th>
+                            <th lay-data="{field:'2'}">目标数量</th>
+                            <th lay-data="{field:'3'}">次日留存量</th>
+                            <th lay-data="{field:'4'}">3日留存量</th>
+                            <th lay-data="{field:'5'}">5日留存量</th>
+                            <th lay-data="{field:'6'}">7日留存量</th>
+                            <th lay-data="{field:'7'}">10日留存量</th>
+                            <th lay-data="{field:'15'}">15日留存量</th>
+                            <th lay-data="{field:'30'}">30日留存量</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {volist name="resList" id="list"}
+                        <tr>
+                            <td>{$list.date}</td>
+                            <td>{$list.total_number}</td>
+                            <td>{$list.keep_2_number} <span style="color:green">({$list.keep_2_number_rate*100}%)</span>
+                            </td>
+                            <td>{$list.keep_3_number} <span style="color:green">({$list.keep_3_number_rate*100}%)</span>
+                            </td>
+                            <td>{$list.keep_5_number} <span style="color:green">({$list.keep_5_number_rate*100}%)</span>
+                            </td>
+                            <td>{$list.keep_7_number} <span style="color:green">({$list.keep_7_number_rate*100}%)</span>
+                            </td>
+                            <td>{$list.keep_10_number} <span style="color:green">({$list.keep_10_number_rate*100}%)</span></td>
+                            <td>{$list.keep_15_number} <span style="color:green">({$list.keep_15_number_rate*100}%)</span></td>
+                            <td>{$list.keep_30_number} <span style="color:green">({$list.keep_30_number_rate*100}%)</span></td>
+                        </tr>
+                        {/volist}
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+
+<script>
+
+    layui.use(['jquery', 'form', 'layer', 'element', 'laydate', 'table'], function () {
+        var $ = layui.jquery
+            , layer = layui.layer
+            , laydate = layui.laydate
+            , form = layui.form
+            , table = layui.table;
+
+        var element = layui.element;
+
+        //日期
+        laydate.render({
+            elem: '#date_b'
+        });
+
+        laydate.render({
+            elem: '#date_e'
+        });
+
+        //转换静态表格
+        table.init('charge-table', {
+            height: 288 //设置高度
+        });
+
+        //转换静态表格
+        table.init('charge-add-table', {
+            //height: 288 //设置高度
+            limit: 2000
+        });
+
+
+    });
+
+
+    function mysearch(isexport=false) {
+        var date_e = $("#date_e").val();
+        var date_b = $("#date_b").val();
+        var keep_type = $("#keep_type").val();
+        if(isexport == true){
+            window.location.href = "/admin/userkeepList?master_url=/admin/userkeepList&token={$token}&date_e=" + date_e + "&date_b=" + date_b + "&keep_type=" + keep_type + '&daochu=1';
+        }else{
+            window.location.href = "/admin/userkeepList?master_url=/admin/userkeepList&token={$token}&date_e=" + date_e + "&date_b=" + date_b + "&keep_type=" + keep_type;
+        }
+
+    }
+
+
+</script>
+
+
+</body>
+</html>

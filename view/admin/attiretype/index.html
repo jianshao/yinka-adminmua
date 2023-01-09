@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+
+    <style>
+
+        .form-control:focus {
+            border-color: #66afe9;
+            outline: 0;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
+            box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
+        }
+
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+    </style>
+
+</head>
+<body class="gray-bg">
+
+
+<!--数据表格-->
+<div class="wrapper wrapper-content animated fadeInRight" >
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <!--                            搜索-->
+                        {if condition="in_array('/admin/getAttireList',$user_role_menu)"}
+                        <div class="pull-right search form-inline">
+                            <input class="form-control input-outline" type="text"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                   placeholder="请输入Id" value="{$attireType_id}"
+                                   id="attireType_id">
+                            <!-- <input class="form-control input-outline" type="text"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                   placeholder="输入1是上架，2是下架" value="{$status}"
+                                   id="status"> -->
+                            是否上下架:<select class="form-control" id="status">
+                            <option value="0" {if $status == 0} echo selected="selected" {/if}>全部</option>
+                            <option value="1" {if $status == 1} echo selected="selected" {/if}>上架</option>
+                            <option value="2" {if $status == 2} echo selected="selected" {/if}>下架</option>
+
+                        </select>
+                            是否展示:<select class="form-control" id="is_show">
+                            <option value="2" {if $is_show == 2} echo selected="selected" {/if}>全部</option>
+                            <option value="1" {if $is_show == 1} echo selected="selected" {/if}>是</option>
+                            <option value="3" {if $is_show == 3} echo selected="selected" {/if}>否</option>
+                        </select>
+                            <button type="button" class=" btn btn-primary" id="search">搜索</button>
+                        </div>
+                        {/if}
+                        <div class="example">
+                            <!--                            添加装扮-->
+                            <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                <button type="button" class="btn type_id btn-outline btn-success" id="type_id">
+                                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加装扮一级分类
+                                </button>
+                                <button type="button" class="btn type_pid btn-outline btn-success" id="type_pid">
+                                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加装扮二级分类
+                                </button>
+                            </div>
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <div  style="position:absolute; width:100%; height:100%; z-index:-1; left:0; top:0;">
+                                <thead>
+                                <tr>
+                                    <th class="text-center" width="50"></th>
+                                    <th class="text-center" width="100">ID</th>
+                                    <th class="text-center" width="100">PID</th>
+                                    <th class="text-center" width="150">装扮分类名称</th>
+                                    <th class="text-center" width="150">上下架</th>
+                                    <th class="text-center" width="150">是否显示</th>
+                                    <th class="text-center" width="200">创建时间</th>
+                                    <th class="text-center" width="200">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody class="tbody">
+                                {if condition="!empty($list)"}
+                                {volist name="list" id="lists"}
+                                {if $lists.pid==0}
+                                <tr>
+                                    <td class="text-center attireType_id" width="50">
+                                        <button type="button" class="btn-outline open btn-success" style="float:right;" attireType_id="{$lists.id}">
+                                            <i aria-hidden="true" class="i">+</i>
+                                        </button>
+                                    </td>
+                                    <td class="text-center attireType_id" width="100">{$lists.id}</td>
+                                    <td class="text-center pid"  width="100">{$lists.pid}</td>
+                                    <td class="text-center typeName attire_name">{$lists.name}</td>
+
+                                    {if $lists.status==1}
+                                    <td class="text-center status" status="1"  width="150">上架</td>
+                                    {else}
+                                    <td class="text-center status" status="0"  width="150">下架</td>
+                                    {/if}
+                                    {if $lists.is_show==1}
+                                    <td class="text-center is_show" is_show="1"  width="150">显示</td>
+                                    {else}
+                                    <td class="text-center is_show" is_show="0"  width="150">不显示</td>
+                                    {/if}
+                                    <td class="text-center created_time"  width="200">{$lists.created_time}</td>
+                                    <td class="text-center"  width="200">
+                                        <div class="btn-group hidden-xs form-inline">
+                                            <button type="button" class="btn btn-outline statusupdate btn-success" status="{$lists.status}"  style="float:right;" attireType_id="{$lists.id}">
+                                                <i aria-hidden="true"></i>切换上下架
+                                            </button>
+                                            <button type="button" status="{$lists.status}" is_show="{$lists.is_show}" class="btn btn-outline update btn-success" style="float:right;" attireType_id="{$lists.id}" attireType_pid="{$lists.pid}">
+                                                <i aria-hidden="true"></i>修改
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {/if}
+                                <div class="div"></div>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="7" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                                </div>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+
+
+<!--编辑装扮分类信息-->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+                </button>
+                <h4 class="modal-title" id="editModalLabel">编辑装扮分类信息</h4>
+            </div>
+            <div class="modal-body edit-append">
+
+            </div>
+            <div class="modal-body type-append">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" >关闭</button>
+                <button type="button" class="btn btn-primary" onclick="edit_info()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="typeModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+                </button>
+                <h4 class="modal-title" id="typeModalLabel">编辑装扮分类信息</h4>
+            </div>
+            <div class="modal-body type-append1">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" >关闭</button>
+                <button type="button" class="btn btn-primary updateType" >修改</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--操作modal-->
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$token}" name="token" id="token">
+<input type="hidden" value="/admin/getAttireTypeList" name="master_url" id="master_url">
+
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<script>
+
+    //分页
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/getAttireTypeList&token=' + $("#token").val() + '&status=' + $("#status").val()+'&is_show=' + $("#is_show").val()
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+    });
+
+    //添加执行
+    function edit_info(){
+
+        var edit_info = $("#edit_form").serializeArray();
+
+        if($('#typeid').val() == ''){
+            toastr.warning('一级分类必选');
+            return false;
+        }
+
+        if($('#typeName').val() == ''){
+            toastr.warning('名称不可为空');
+            return false;
+        }
+
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/addAttireType",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data: edit_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+
+    //搜索
+    $("#search").click(function () {
+        var attireType_id = $("#attireType_id").val();
+        var status = $("#status").val();
+        var is_show = $("#is_show").val();
+        var token = $('#token').val();
+        console.log(status)
+        console.log(is_show)
+        if (isNaN(attireType_id)) {
+            toastr.warning('请输入正确的Id');
+            return false;
+        }
+        window.location.href = "/admin/getAttireTypeList?token=" + token + '&master_url=/admin/getAttireTypeList&page=1&attireType_id=' + attireType_id+'&status=' + status+'&is_show=' + is_show;
+    })
+
+    //添加装扮一级分类
+    $('.type_id').on('click',function(){
+        $(".edit-append").empty();
+        $(".edit-append").prepend(
+            "<form id='edit_form' method='post' >"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>" + "分类名称： "+"</label>"+
+            "<input type='text' class='form-control  day' name='typeName'  value='' required='required'>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"是否上架:"+"</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='status' class='status' checked  value='1'>"+" 是"+
+            "</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='status' class='status'  value='0'>"+" 否"+
+            "</label>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"是否展示:"+"</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='is_show' class='is_show' checked value='1'>"+" 是"+
+            "</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='is_show' class='is_show'  value='0'>"+" 否"+
+            "</label>"+
+            "</div>"+
+
+            "<input type='hidden' value='{$token}' name='token'>"+
+            "<input type='hidden' value='/admin/addAttire' id='master_url' name='master_url'>"+
+            " </form>"
+        );
+        $('#editModal').modal('show');
+    });
+
+    //添加装扮二级分类
+    $('.type_pid').on('click',function(){
+        $(".edit-append").empty();
+        $(".edit-append").prepend(
+            "<form id='edit_form' method='post' >"+
+            "<div class='form-group'>"+
+            "<div id='type1'>"+
+
+            "一级分类:"+
+            "<select name='typeid' id='typeid'>"+
+            "<option value=''>---请选择---</option>"+
+            "{volist name='attiretype' id='lists' key='k'}"+
+            "{if $lists.pid == 0}"+
+            "<option value='{$lists.id}' >{$lists.name}</option>"+
+            "{/if}"+
+            "{/volist}"+
+            // "</select>" +
+            // "<select name='typepid' id='typepid'>"+
+            // "<option id='pidop' value=''>---请选择---</option>"+
+            // "</select>"+
+            "</div>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>分类名称:</label>"+
+            "<input type='text' placeholder=\"分类名称\" class='form-control  typeName' name='typeName'  value='' required='required'>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"是否上架:"+"</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='status' class='status' checked  value='1'>"+" 是"+
+            "</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='status' class='status'  value='0'>"+" 否"+
+            "</label>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"是否展示:"+"</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='is_show' class='is_show' checked value='1'>"+" 是"+
+            "</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='is_show' class='is_show'  value='0'>"+" 否"+
+            "</label>"+
+            "</div>"+
+
+            "<input type='hidden' value='{$token}' name='token'>"+
+            "<input type='hidden' value='/admin/addAttire' id='master_url' name='master_url'>"+
+            " </form>"
+        );
+        $('#editModal').modal('show');
+    });
+
+    //修改动态狂追加
+    $(document).on('click','.update',function () {
+        $(".type-append1").empty();
+        var attireType_id = $(this).attr('attireType_id')
+        var attireType_pid = $(this).attr('attireType_pid')
+        var status = $(this).attr('status')
+        var is_show = $(this).attr('is_show')
+        if(attireType_pid!=0){
+            $(".type-append1").prepend(
+                "<form id='type_form' method='post' >"+
+                "<div class='form-group'>"+
+                "<div id='type1'>"+
+                "一级分类:"+
+                "<select name='typeid' class='typeid' id='type_id'>"+
+                "{volist name='attiretype' id='lists' key='k'}"+
+                "{if $lists.pid == 0}"+
+                "<option value='{$lists.id}' >{$lists.name}</option>"+
+                "{/if}"+
+                "{/volist}"+
+                "</div>"+
+                "</div>"+
+                "<div class='form-group'>"+
+                "<label class='control-label'>" + "分类名称： "+"</label>"+
+                "<input type='text' class='form-control  typeName' name='typeName'  value='' required='required'>"+
+
+                "<div class='form-group'>"+
+                "<label class='control-label'>"+"是否上架:"+"</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='status' class='status'  value='1'>"+" 是"+
+                "</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='status' class='status'  value='0'>"+" 否"+
+                "</label>"+
+                "</div>"+
+
+                "<div class='form-group'>"+
+                "<label class='control-label'>"+"是否展示:"+"</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='is_show' class='is_show' value='1'>"+" 是"+
+                "</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='is_show' class='is_show'  value='0'>"+" 否"+
+                "</label>"+
+                "</div>"+
+
+                "<input type='hidden' value='{$token}' name='token'>"+
+                "<input type='hidden' value='/admin/addAttire' id='master_url' name='master_url'>"+
+                "<input type='hidden' value='"+attireType_id+"' id='type_id' name='type_id'>"+
+                " </form>"
+            );
+        }
+        else
+        {
+            $(".type-append1").prepend(
+                "<form id='type_form' method='post' >"+
+                "<div class='form-group'>"+
+                "<label class='control-label'>" + "分类名称： "+"</label>"+
+                "<input type='text' class='form-control  typeName' name='typeName'  value='' required='required'>"+
+
+                "<div class='form-group'>"+
+                "<label class='control-label'>"+"是否上架:"+"</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='status' class='status'  value='1'>"+" 是"+
+                "</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='status' class='status'  value='0'>"+" 否"+
+                "</label>"+
+                "</div>"+
+
+                "<div class='form-group'>"+
+                "<label class='control-label'>"+"是否展示:"+"</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='is_show' class='is_show' value='1'>"+" 是"+
+                "</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='is_show' class='is_show'  value='0'>"+" 否"+
+                "</label>"+
+                "</div>"+
+
+                "<input type='hidden' value='{$token}' name='token'>"+
+                "<input type='hidden' value='/admin/addAttire' id='master_url' name='master_url'>"+
+                "<input type='hidden' value='"+attireType_id+"' id='type_id' name='type_id'>"+
+                " </form>"
+            );
+        }
+        $(".typeName").val($(this).parents("tr").find(".typeName").text());
+        $("#type_id option[value='"+attireType_pid+"']").attr("selected","select");
+        $(":radio[name='status'][value="+status+"]").attr("checked","checked");
+        $(":radio[name='is_show'][value="+is_show+"]").attr("checked","checked");
+        console.log(status)
+        console.log(is_show)
+        $('#typeModal').modal('show');
+    })
+
+    //修改按钮
+    $(document).on('click','.updateType',function () {
+        var type_info = $("#type_form").serializeArray();
+        if($('.typeName').val() == ''){
+            toastr.warning('分类名称不可为空');
+            return false;
+        }
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/updateAttireType",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data: type_info,
+            success: function (rs) {
+                toastr.warning(rs);
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+
+    })
+
+    //上下架 open
+    $(document).on('click','.statusupdate',function(){
+        var master_url = $('#master_url').val()
+        var attireType_id = $(this).attr('attireType_id')
+        var status = $(this).attr('status')
+        console.log(status)
+        console.log(attireType_id)
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            token: $("#token").val(),
+            url: "/admin/statusAttireType",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {master_url:master_url,attireType_id:attireType_id,token:$("#token").val(),update:'update',status:status},
+            success: function (rs) {
+                toastr.warning(rs);
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    })
+
+    //展开子类
+    $(document).on('click','.open',function () {
+        var id = $(this).attr('attireType_id')
+        var master_url = $('#master_url').val()
+        var $this = $(this)
+        // $('.tr').remove()
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/getAttireType",//请求的 URL地址
+            token: $("#token").val(),
+            data: {master_url:master_url,token:$("#token").val()},
+            success: function (rs) {
+                var arr = JSON.parse( rs )
+                console.log(arr)
+                for( k  in arr ) {
+                    if (arr[k]['pid'] == id  ) {
+                        if(arr[k]['status'] == 1){
+                            var status = '上架'
+                        }else{
+                            var status = '下架'
+                        }
+                        if(arr[k]['is_show'] == 1){
+                            var is_show = '显示'
+                        }else{
+                            var is_show = '不显示'
+                        }
+                        $this.parent().parent().after(
+                            "<tr class='tr'>"+
+                            "<td class=\"text-center attireType_id\" width=\"50\"></td>"+
+                            "<td class=\"text-center attireType_id\" width=\"100\">"+arr[k]['id']+"</td>"+
+                            "<td class=\"text-center  pid\"  width=\"100\">"+arr[k]['pid']+"</td>"+
+                            "<td class=\"text-center typeName attire_name\">"+arr[k]['name']+"</td>"+
+                            "<td class=\"text-center status\" status=\""+status+"\"  width=\"150\">"+status+"</td>"+
+                            "<td class=\"text-center is_show\" is_show=\""+is_show+"\"  width=\"150\">"+is_show+"</td>"+
+                            "<td class=\"text-center created_time\"  width=\"200\">"+arr[k]['created_time']+"</td>"+
+                            "<td class=\"text-center\"  width=\"200\">"+
+                            "<div class=\"btn-group hidden-xs form-inline\">"+
+                            "<button type=\"button\" class=\"btn btn-outline statusupdate btn-success\" status=\""+arr[k]['status']+"\" style=\"float:right;\" attireType_id=\""+arr[k]['id']+"\">"+
+                            "<i aria-hidden=\"true\"></i>切换上下架"+
+                            "</button>"+
+                            "<button type=\"button\" class=\"btn btn-outline update btn-success\" style=\"float:right;\" attireType_id=\""+arr[k]['id']+"\" attireType_pid=\""+arr[k]['pid']+"\">"+
+                            "<i aria-hidden=\"true\"></i>修改"+
+                            "</button>"+
+                            "</div>"+
+                            "</td>"+
+                            "</tr>"
+                        )
+                    }
+                }
+            }
+        });
+        $this.parent().append(
+            "<button type=\"button\" class=\"btn-outline empty-open btn-success\" style=\"float:right;\">"+
+            "<i aria-hidden=\"true\" >-</i>"+
+            "</button>"
+        )
+        $this.remove()
+    })
+
+    //按钮替换
+    $(document).on('click','.empty-open',function () {
+        window.location.reload()//刷新当前页面.
+        // $(this).parent().append(
+        //     "<button type=\"button\" class=\"btn-outline open btn-success\" style=\"float:right;\" attireType_id=\"{$lists.id}\">"+
+        //     "<i aria-hidden=\"true\" class=\"i\">+</i>"+
+        //     "</button>"
+        // )
+        // $('.tr').remove()
+        // $(this).remove()
+    })
+</script>

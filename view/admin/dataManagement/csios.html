@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/admin/layui/css/layui.css" media="all">
+    <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <style>
+        .layui-table-cell {
+            height: auto;
+            overflow: visible;
+            text-overflow: inherit;
+            white-space: normal;
+        }
+    </style>
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+</head>
+<body>
+<div style="padding:5px;">
+
+    <div class="demoTable">
+        <form class="layui-form" onsubmit="return false;" id="myform">
+
+            <div class="layui-inline">
+                <div class="layui-input-inline">
+                    <input type="text" name="date" id="date_b" lay-verify="date" placeholder="日期开始" autocomplete="off"
+                           class="layui-input" value="{$begintime}">
+                </div>
+                <div class="layui-input-inline">
+                    <input type="text" name="date" id="date_e" lay-verify="date" placeholder="日期结束" autocomplete="off"
+                           class="layui-input" value="{$endtime}">
+                </div>
+            </div>
+
+
+            <div class="layui-input-inline" style="width:100px"><select name="modules" lay-verify="required"
+                                                                        lay-search="" id="s_source">
+                <option value="">包源</option>
+                <option value="1">mua</option>
+                <option value="2">yinlian</option>
+            </select>
+            </div>
+
+            <button class="layui-btn" data-type="reload">搜索</button>
+            <button type="button" class="layui-btn layui-btn-normal" onclick="exportdata()">导出</button>
+        </form>
+    </div>
+    <blockquote class="layui-elem-quote" style="margin-bottom:0px">
+        <button class="layui-btn layui-btn-primary layui-border-black" id="register_user_total"></button>
+        <button class="layui-btn layui-btn-primary layui-border-black" id="regiser_user_add_money"></button>
+        <button class="layui-btn layui-btn-primary layui-border-black" id="regiser_user_charge"></button>
+        <button class="layui-btn layui-btn-primary layui-border-black" id="regiser_user_money"></button>
+    </blockquote>
+    <table id="datatable" lay-filter="test"></table>
+</div>
+
+<script src="/admin/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+<script>
+    layui.use(['table', 'form', 'layer', 'laydate', 'jquery'], function () {
+
+        var $ = layui.jquery
+            , form = layui.form
+            , laydate = layui.laydate
+            , table = layui.table;
+
+        //日期
+        laydate.render({
+            elem: '#date_b'
+        });
+
+        laydate.render({
+            elem: '#date_e'
+        });
+
+
+        table.render({
+            elem: '#datatable'
+            , totalRow: true
+            //, height: 420
+            //,toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+            , url: '/admin/channelSourceIosData?master_url=/admin/channelSourceIosData&token={$token}&isRequest=1' //数据接口
+            , page: true //开启分页
+            , cols: [[ //表头
+                {field: 'date', title: '日期', width: 120,fixed: 'left'}
+                , {field: 'source', title: '包源', width: 80,fixed: 'left'}
+                , {field: 'iad_adgroup_id', title: '广告组id', width: 120}
+                , {field: 'iad_adgroup_name', title: '广告组名称', width: 120}
+                , {field: 'iad_campaign_id', title: '广告系列id', width: 120}
+                , {field: 'iad_campaign_name', title: '广告系列名称', width: 120}
+                , {field: 'iad_keyword_id', title: '关键词id', width: 120}
+                , {field: 'iad_keyword', title: '关键词名称', width: 120}
+                , {field: 'daily_life', title: '日活'}
+                , {field: 'register_people_num', title: '新增'}
+                , {field: 'register_user_charge_amount', title: '新增充值总金额'}
+                , {field: 'register_user_charge_num', title: '新增充值人数'}
+                , {field: 'register_rate', title: '新增充值率'}
+                , {field: 'charge_money_sum', title: '充值总金额'}
+                , {field: 'charge_people_sum', title: '充值人数'}
+                , {field: 'pay_amount_up_now', title: '累计充值'}
+                , {field: 'arpu', title: 'ARPU'}
+                , {field: 'arppu', title: 'ARPPU'}
+                , {field: 'fee_register_7', title: '7日付费', hide: true}
+                , {field: 'fee_register_30', title: '30日付费', hide: true}
+                , {field: 'fee_register_60', title: '60付费', hide: true}
+                , {field: 'fee_register_90', title: '90付费', hide: true}
+                , {field: 'keep_login_1', title: '1日留存'}
+                , {field: 'keep_login_7', title: '7日留存'}
+                , {field: 'keep_login_15', title: '15日留存'}
+                , {field: 'keep_login_30', title: '30日留存'}
+            ]]
+            , id: 'tablereload'
+            , limits: [30, 50, 100]
+            , limit: 30 //每页默认显示的数量
+            , where: {begintime: "{$begintime}", endtime: "{$endtime}"}
+            , done: function(res, curr, count){
+                //如果是异步请求数据方式，res即为你接口返回的信息。
+                //如果是直接赋值的方式，res即为：{data: [], count: 99} data为当前页数据、count为数据总长度
+                $("#register_user_total").html("新增用户:" + res['hz']['register_user_total']);
+                $("#regiser_user_add_money").html("累计新增充值金额:" + res['hz']['regiser_user_add_money']);
+                $("#regiser_user_charge").html("累计新增充值用户:" + res['hz']['regiser_user_charge']);
+                $("#regiser_user_money").html("累计充值金额:" + res['hz']['regiser_user_money']);
+
+                $(".layui-table-main tr").each(function (index, val) {
+                    $(".layui-table-fixed").each(function () {
+                        $($(this).find(".layui-table-body tbody tr")[index]).height($(val).height());
+                    });
+                });
+                $(".layui-table-header tr").each(function (index, val) {
+                    $(".layui-table-fixed").each(function () {
+                        $($(this).find(".layui-table-header thead tr")[index]).height($(val).height());
+                    });
+                });
+
+            }
+        });
+
+
+
+        var $ = layui.$, active = {
+            reload: function () {
+
+                var s_source = $('#s_source');
+                var date_b = $('#date_b');
+                var date_e = $('#date_e');
+
+                //执行重载
+                table.reload('tablereload', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    , where: {
+                        source: s_source.val()
+                        , begintime: date_b.val()
+                        , endtime: date_e.val()
+                    }
+                });
+            }
+        };
+
+        $('.demoTable .layui-btn').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+    });
+
+
+    function search() {
+        var s_source = $('#s_source').val();
+        var date_b = $('#date_b').val();
+        var date_e = $('#date_e').val();
+        var params = "source=" + s_source + "&begintime=" + date_b + "&endtime=" + date_e;
+        var host = "/admin/channelSourceIosData?master_url=/admin/channelSourceIosData&token={$token}&" + params;
+        window.location.href = host
+    }
+
+
+    function exportdata() {
+        var s_source = $('#s_source').val();
+        var date_b = $('#date_b').val();
+        var date_e = $('#date_e').val();
+        var params = "source=" + s_source + "&begintime=" + date_b + "&endtime=" + date_e + "&daochu=1";
+        var host = "/admin/channelSourceIosData?master_url=/admin/channelSourceIosData&token={$token}&" + params;
+        window.location.href = host
+    }
+
+
+</script>
+
+
+</body>
+</html>

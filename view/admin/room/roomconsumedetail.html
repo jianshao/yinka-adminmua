@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/admin/layui/css/layui.css" media="all">
+    <script src="/admin/js/jquery.min.js"></script>
+    <style>
+        .layui-table-cell {
+            height: auto;
+            overflow: visible;
+            text-overflow: inherit;
+        }
+
+    </style>
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+</head>
+<body>
+
+
+<div style="padding:5px;">
+    <table id="datatable" lay-filter="test"></table>
+</div>
+
+<script src="/admin/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+<script type="text/javascript">
+    layui.config({
+        base: '/admin/layui/layui_exts/'
+    }).extend({
+        excel: 'excel'
+    });
+</script>
+<script>
+
+    layui.use(['table', 'form', 'layer', 'laydate', 'jquery'], function () {
+        var $ = layui.jquery
+            , form = layui.form
+            , laydate = layui.laydate
+            , table = layui.table;
+
+        //日期
+        laydate.render({
+            elem: '#date_b'
+        });
+
+        laydate.render({
+            elem: '#date_e'
+        });
+
+
+        table.render({
+            elem: '#datatable'
+            //, totalRow: true
+            , defaultToolbar: ['exports', {
+                title: '提示' //标题
+                ,layEvent: 'LAYTABLE_TIPS' //事件名，用于 toolbar 事件中使用
+                ,icon: 'layui-icon-tips' //图标类名
+            }]
+            //, height: 420
+            , toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+            , url: '/admin/roomConsumeDetail?master_url=/admin/roomConsumeDetail&token={$token}&isRequest=1&room_id={$room_id}&demo={$demo}' //数据接口
+            , page: true //开启分页
+            , cols: [[ //表头
+                 {field: 'room_id', title: '房间',width:'10%'}
+                , {field: 'room_name', title: '房间名',width:'20%'}
+                , {field: 'uid', title: '用户id',width:'10%'}
+                , {field: 'reward_amount', title: '消费豆', width: '10%'}
+                , {field: 'sendtype', title: '类型',width:'10%'}
+                , {field: 'gift_id', title: '礼物id',width:'10%'}
+                , {field: 'gift_name', title: '礼物名称',width:'20%'}
+                , {field: 'count', title: '礼物数量',width:'10%'}
+            ]]
+            , id: 'tablereload'
+            , limits: [200, 500, 1000,5000]
+            , limit: 200 //每页默认显示的数量
+            , cellMinWidth: 200
+            , where: {}
+            , done: function (res, curr, count) {
+            }
+        });
+
+
+        var $ = layui.$, active = {
+            reload: function () {
+                //执行重载
+                table.reload('tablereload', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    , where: {
+                        //from_uid: $('#from_uid').val()
+                        //, to_uid: $('#to_uid').val()
+                    }
+                });
+            }
+        };
+
+        $('.demoTable .layui-btn').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+
+    });
+
+
+
+
+    /**
+     * 导出接口数据的样例
+     * @return {[type]} [description]
+     */
+    function exportApi(url) {
+        console.log(url);
+        layui.use(['jquery', 'layer','excel'], function () {
+            var $ = layui.jquery
+            var layer = layui.layer
+            var excel = layui.excel
+            // 模拟从后端接口读取需要导出的数据
+            $.ajax({
+                url: url
+                , dataType: 'json'
+                , success: function (res) {
+                    var data = res.data
+                    // 重点！！！如果后端给的数据顺序和映射关系不对，请执行梳理函数后导出
+                    data = excel.filterExportData(data, {
+                        room_id: 'room_id'
+                        ,room_name: 'room_name'
+                        ,uid: 'uid'
+                        ,reward_amount: 'reward_amount'
+                        ,sendtype: 'sendtype'
+                        ,gift_id: 'gift_id'
+                        ,gift_name: 'gift_name'
+                        ,count: 'count'
+
+                    })
+                    // 重点2！！！一般都需要加一个表头，表头的键名顺序需要与最终导出的数据一致
+                    data.unshift({
+                        room_id: "room_id"
+                        ,room_name: 'room_name'
+                        ,uid: 'uid'
+                        ,reward_amount: 'reward_amount'
+                        ,sendtype: 'sendtype'
+                        ,gift_id: 'gift_id'
+                        ,gift_name: 'gift_name'
+                        ,count: 'count'
+                    })
+
+                    var timestart = Date.now()
+                    excel.exportExcel({
+                        sheet1: data
+                    }, '数据导出'+timestart+'.xlsx', 'xlsx')
+
+                }
+                , error: function () {
+                    layer.alert('获取数据失败')
+                }
+            })
+        })
+    }
+
+
+
+
+
+
+</script>
+
+
+
+<script type="text/html" id="toolbarDemo">
+    <button type="button" onclick="exportApi('/admin/roomConsumeDetail?master_url=/admin/roomConsumeDetail&token={$token}&isRequest=1&export=1&room_id={$room_id}&demo={$demo}')" class="layui-btn layui-btn-warm" lay-filter="uploadImg">
+        <i class="layui-icon"></i>导出Excel</button>
+</script>
+
+
+
+
+
+
+</body>
+</html>

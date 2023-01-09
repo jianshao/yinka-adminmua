@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        {if condition="in_array('/admin/noticeList',$user_role_menu)"}
+                        <div class="pull-right search form-inline">
+                            <input class="form-control input-outline" type="text"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                   placeholder="请输入Id" value="{$search_id}"
+                                   id="search_id">
+                            <button type="button" class=" btn btn-primary" id="search">搜索</button>
+                        </div>
+                        {/if}
+                        <div class="example">
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">Id</th>
+                                    <th class="text-center">封面</th>
+                                    <th class="text-center">活动标题</th>
+                                    <th class="text-center">发布时间</th>
+                                    <th class="text-center">公告状态</th>
+                                    <th class="text-center">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($list)"}
+                                {volist name="list" id="lists"}
+                                <tr>
+                                    <td class="text-center" id="id">{$lists.id}</td>
+                                    <td class="text-center"><img src="{$lists.notice_img}" class="text-center" style="width: 100px;height: 100px;" alt=""></td>
+                                    <td class="text-center notice_title">{$lists.notice_title}</td>
+                                    <td class="text-center timing_time">{$lists.timing_time}</td>
+                                    <td class="text-center notice_status">{$lists.notice_status}</td>
+                                    <td class="text-center notice_content" hidden>{$lists.notice_content}</td>
+                                    <td class="text-center">
+                                        {if condition="in_array('/admin/exitNotice',$user_role_menu)"}
+                                        <button class="btn btn-success exit_notice">编辑</button>
+                                        {/if}
+                                        {if condition="in_array('/admin/exitNotice',$user_role_menu)"}
+                                        <button class="btn btn-success del_notice">删除</button>
+                                        {/if}
+                                    </td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page >1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--添加公告-->
+<div class="modal fade" id="addNotices" tabindex="-1" role="dialog" aria-labelledby="addNoticesModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="addNoticesModalLabel">公告管理</h4>
+            </div>
+            <div class="modal-body add-notice-modal">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary now" ondblclick="loading_notice()" onclick="timing_notice()">定时发布</button>
+                <button type="button" class="btn btn-primary" onclick="now_notice()">立即发送</button>
+                <button type="button" class="btn btn-primary" onclick="save_notice()">保存</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="del_notice_model">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>删除操作</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <i class="fa fa-trash-o" id="del_notice_model_msg"></i>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger" data-btn-danger="modal" onclick="del_notice_model_on()">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" id="noticeId" value="">
+<input type="hidden" id="delNotice" value="">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<script src="/admin/js/trap/fileinput.js" type="text/javascript"></script>
+<script src="/admin/js/trap/fileinput_locale_zh.js" type="text/javascript"></script>
+
+<style>
+</style>
+<script>
+    $('body').on('hidden.bs.modal', '#selectnoticeInfo', function () {
+        $(".notice_tbody p").remove();
+    });
+    $('body').on('hidden.bs.modal', '#addNotices', function () {
+        $(".add-notice-modal form").remove();
+    });
+    //修改公告
+    $(".exit_notice").on('click',function(){
+        $(".add-notice-modal").prepend(
+            "<form id='add_form' method=\"post\" enctype=\"multipart/form-data\">"+
+            " <div class=\"form-group\">"+
+            "<label class=\"control-label\">"+"公告标题"+"</label>"+
+            "<input type=\"text\" class=\"form-control \" name='notice_title' id=\"notice_title\" required=\"required\">"+
+            "</div>"+
+            "<div class=\"form-group\">"+
+            "<label class=\"control-label\">"+"公告封面[ JPEG & PNG ]"+"</label>"+
+            "<input type=\"file\"  class=\"form-control \" name=\"notice_img\"  id=\"notice_img\" value=\"\" required>"+
+            "</div>"+
+            "<div class=\"form-group\">"+
+            " <label class=\"control-label\">"+"正文"+"</label>"+
+            "<textarea class=\"form-control \" name=\"notice_content\" id=\"notice_content\" placeholder=\"内容最多输入5000字\" onkeyup=\"this.value=this.value.substring(0, 5000)\" maxlength=\"5000\"  rows=\"10\"></textarea>"+
+            "<span id=\"text-count\" value=\"\">"+0+"</span>/"+5000+
+            "</div>"+
+            "<div class=\"form-group\">"+
+            " <label class=\"control-label\" id=\"timing_notice_title\" readonly style='display: none'>"+"公告定时发布时间"+"</label>"+
+            " <div class=\"form-group\">"+
+            " <input type=\"text\"name=\"timing_time\" id=\"timing_time\" readonly class=\"form_datetime timing_time\" style='display: none'>"+
+            "</div>"+
+            "</div>"+
+            "<input type=\"hidden\" name=\"token\" value=\"{$token}\" id=\"token\">"+
+            "<input type=\"hidden\" name=\"master_url\" class=\"master_url\" value=\"/admin/addNotice\">"+
+            "</form>"
+        );
+        var notice_id = $(this).parents("tr").find("#id").text();
+        $("#notice_title").val($(this).parents("tr").find(".notice_title").text());
+        $("#notice_content").val($(this).parents("tr").find(".notice_content").text());
+        $("#timing_time").val("");
+        $("#noticeId").val(notice_id);
+        $("#timing_time").datetimepicker({
+            weekStart: 1,
+            todayBtn: 1,
+            todayHighlight: 1,
+            startView: 2,
+            forceParse: 0,
+            showMeridian: 1,
+            format: 'yyyy-mm-dd hh:ii:ss',
+            minView: '0',
+            language: 'zh-CN',
+            autoclose: true,
+            startDate: new Date()
+        });
+        $("#timing_time").datetimepicker("setDate", new Date());
+        $('#notice_content').keyup(function() {
+            var len=this.value.length;
+            $('#text-count').text(len);
+        });
+        $('#addNotices').modal('show');
+    });
+    // 分页
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/noticeList&token=' + $("#token").val() + '&id=' + $("#search_id").val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+    });
+    //搜索
+    $("#search").click(function () {
+        var notice_id = $("#search_id").val();
+        if (isNaN(notice_id)) {
+            toastr.warning('请输入正确的Id');
+            return false;
+        }
+        var token = $('#token').val();
+        window.location.href = "/admin/unpublishedList?token=" + token + '&master_url=/admin/unpublishedList&page=1&notice_id=' + notice_id;
+    })
+
+    $('#notice_content').keyup(function() {
+        var len=this.value.length;
+        $('#text-count').text(len);
+    });
+    function timing_notice(){
+        $("#timing_notice_title").show();
+        $("#timing_time").show();
+        $(".now").attr('class','btn btn-danger now');
+    }
+    //定时发送公告
+    function loading_notice(){
+        if($("#notice_title").val() ==  ""){
+            toastr.warning('公告标题不能为空');
+            return false;
+        }
+        if($("#notice_content").val() ==  ""){
+            toastr.warning('公告内容不能为空');
+            return false;
+        }
+        if($("#notice_title").val().length >15){
+            toastr.warning('标题不能超过15个字');
+            return false;
+        }
+        var formData = new FormData();
+        if( $("#noticeId").val() != ""){
+            formData.append("notice_id", $("#noticeId").val());
+        }
+        if($('#notice_img')[0].files[0] != undefined){
+            formData.append("notice_img", $('#notice_img')[0].files[0]);
+        }
+        formData.append("token", $("#token").val());
+        formData.append("master_url", '/admin/addNotice');
+        formData.append("notice_title", $("#notice_title").val());
+        formData.append("notice_content", $("#notice_content").val());
+        formData.append("timing_time", $('#timing_time').val());
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            cache: false,
+            processData: false,
+            contentType: false,
+            type: "post",    //请求类型
+            url: "/admin/addNotice",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data:formData,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+    //立即发送公告
+    function now_notice(){
+        if($("#notice_title").val() ==  ""){
+            toastr.warning('公告标题不能为空');
+            return false;
+        }
+        if($("#notice_content").val() ==  ""){
+            toastr.warning('公告内容不能为空');
+            return false;
+        }
+        if($("#notice_title").val().length >15){
+            toastr.warning('标题不能超过15个汉字');
+            return false;
+        }
+        var formData = new FormData();
+        if( $("#noticeId").val() != ""){
+            formData.append("notice_id", $("#noticeId").val());
+        }
+        if($('#notice_img')[0].files[0] != undefined){
+            formData.append("notice_img", $('#notice_img')[0].files[0]);
+        }
+        formData.append("token", $("#token").val());
+        formData.append("master_url", '/admin/nowAddNotice');
+        formData.append("notice_title", $("#notice_title").val());
+        formData.append("notice_content", $("#notice_content").val());
+        formData.append("notice_img", $('#notice_img')[0].files[0]);
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            cache: false,
+            processData: false,
+            contentType: false,
+            type: "post",    //请求类型
+            url: "/admin/nowAddNotice",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data:formData,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+    //保存公告
+    function save_notice(){
+        if($("#notice_title").val() ==  ""){
+            toastr.warning('公告标题不能为空');
+            return false;
+        }
+        if($("#notice_content").val() ==  ""){
+            toastr.warning('公告内容不能为空');
+            return false;
+        }
+        if($("#notice_title").val().length >15){
+            toastr.warning('标题不能超过15个汉字');
+            return false;
+        }
+        var formData = new FormData();
+        if( $("#noticeId").val() != ""){
+            formData.append("notice_id", $("#noticeId").val());
+        }
+        if($('#notice_img')[0].files[0] != undefined){
+            formData.append("notice_img", $('#notice_img')[0].files[0]);
+        }
+        formData.append("notice_title", $("#notice_title").val());
+        formData.append("token", $("#token").val());
+        formData.append("master_url", '/admin/saveNotice');
+        formData.append("notice_content", $("#notice_content").val());
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            cache: false,
+            processData: false,
+            contentType: false,
+            type: "post",    //请求类型
+            url: "/admin/saveNotice",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data:formData,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+    //删除公告
+    $(".del_notice").click(function(){
+        $('#del_notice_model').modal('show');
+        var title = $(".notice_title").text();
+        $("#delNotice").val($(this).parents("tr").find("#id").text());
+        $("#del_notice_model_msg").html(' 您确定要删除此公告吗？标题为：' + title)
+    })
+    function del_notice_model_on() {
+        var notice_id = $("#delNotice").val();
+        var master_url = '/admin/delNotice'
+        var token = $('#token').val()
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/delNotice",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {notice_id: notice_id, master_url: master_url, token: token},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+
+</script>
+
+</body>
+
+</html>

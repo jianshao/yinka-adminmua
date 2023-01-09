@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+    <style>
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+    </style>
+
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="btn-group hidden-xs form-inline">
+                            推荐状态:<select class="form-control" id="is_hot">
+                                <option value="0" {if $is_hot == 0} echo selected="selected" {/if}>否</option>
+                                <option value="1" {if $is_hot == 1} echo selected="selected" {/if}>是</option>
+                            </select>
+                            是否隐藏:<select class="form-control" id="is_hide">
+                            <option value="-1">全部</option>
+                            <option value="0" {if $is_hide == 0} echo selected="selected" {/if}>否</option>
+                            <option value="1" {if $is_hide == 1} echo selected="selected" {/if}>是</option>
+                        </select>
+                            是否封禁:<select class="form-control" id="is_block">
+                            <option value="-1">全部</option>
+                            <option value="0" {if $is_block == 0} echo selected="selected" {/if}>否</option>
+                            <option value="1" {if $is_block == 1} echo selected="selected" {/if}>是</option>
+                        </select>
+                            &#12288
+                            <select class="form-control" id="select_id">
+                                <option value="">请选择房间类型&#12288&#12288</option>
+                                {if condition="!empty($room_type_list)"}
+                                {volist name="room_type_list" id="lists"}
+                                <option value="{$lists.id}" {if $lists.id== $type} echo selected="selected" {/if}>{$lists.room_mode}</option>
+                                {/volist}
+                                {/if}
+                            </select>
+                            &#12288
+                            <input class="form-control input-outline" type="text"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                   placeholder="请输入房间Id" value="{$room_id}" id="room_id">
+                            &#12288
+                            <input class="form-control input-outline" type="text"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                   placeholder="请输入用户ID" value="{$user_id}" id="user_id">
+                            &#12288
+                            <button type="button" class="btn btn-outline btn-success" style="float:right;" id="pretty_room_id">
+                                <i aria-hidden="true"></i>房间靓号
+                            </button>
+                            <button type="button" class="btn btn-outline btn-success" style="float:right;" id="search">
+                                <i aria-hidden="true"></i>搜索
+                            </button>
+
+                        </div>
+                        <div class="example">
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">房间Id</th>
+                                    <th class="text-center">公会ID</th>
+                                    <th class="text-center">房间靓号</th>
+                                    <th class="text-center">房主Id</th>
+                                    <th class="text-center">房间密码</th>
+                                    <th class="text-center">房间名称</th>
+                                    <th class="text-center">C端房间类型</th>
+                                    <th class="text-center">背景图</th>
+                                    <th class="text-center">人气值</th>
+                                    <th class="text-center">手动热度值</th>
+                                    <th class="text-center">是否推荐</th>
+                                    <th class="text-center">首页是否展示</th>
+                                    <th class="text-center" width="20%">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($list)"}
+                                {volist name="list" id="lists"}
+                                <tr>
+                                    <td class="text-center rooms_id" id="rooms_id">{$lists.id}</td>
+                                    <td class="text-center guild_id">{$lists.guild_id}</td>
+                                    <td class="text-center " >{$lists.pretty_room_id}</td>
+                                    <td class="text-center"
+                                        onclick=on_user_item("{$lists.user_id}",'/admin/memberItem')>{$lists.user_id}
+                                    </td>
+                                    <td class="text-center room_password">{$lists.room_password}</td>
+                                    <td class="text-center room_name">{$lists.room_name}</td>
+                                    <td class="text-center exit-roomType" value="{$lists.room_type_id}">
+                                        {$lists.room_type}
+                                    </td>
+                                    <td class="text-center"><img src="{$lists.background_image}" style="width: 50px;"></td>
+                                    <input type="hidden" value="{$lists.channel_id}" name="channel_id">
+                                    <input type="hidden" class="text-center guild_id" name = "guild_id" value="{$lists.guild_id}">
+                                    <td class="text-center">{$lists.visitor_users}</td>
+                                    <td class="text-center">{$lists.visitor_externnumber}</td>
+                                    <td style="width: 20px;" class="text-center is_hot" value="{$lists.hot_status}">{$lists.is_hot}</td>
+                                    <td style="width: 20px;" class="text-center is_show" value="{$lists.is_show}">{if $lists.is_show == 1 } 展示 {else} 不展示 {/if}</td>
+                                  <td class="text-center">
+                                      {if condition="in_array('/admin/roomHideList',$user_role_menu)"}
+                                      <button class="btn btn-primary J_menuItem" href="/admin/roomHideList?master_url=/admin/roomHideList&token={$token}&room_id={$lists.id}" title="房间设置隐藏">房间隐藏</button>
+                                      {/if}
+                                      {if condition="in_array('/admin/addRoomParty',$user_role_menu)"}
+                                        <button class="btn btn-success room_channel">加入派对</button>
+                                        {/if}
+                                        {if condition="in_array('/admin/vsitorExternnumberLists',$user_role_menu)"}
+                                        <button class="btn btn-success visitor_externnumber">热度值设置</button>
+                                        {/if}
+                                        <br>
+                                        {if condition="in_array('/admin/editRoom',$user_role_menu)"}
+                                        <button class="btn btn-success room_edit" tagid="{$lists.tag_id}">编辑</button>
+                                        {/if}
+                                        {if condition="in_array('/admin/roomOssFile',$user_role_menu)"}
+                                        <button class="btn btn-success addGiftImage" id="ossFile">编辑背景图</button>
+                                        {/if}
+                                        {if condition="in_array('/admin/roomBackgroundChoice',$user_role_menu)"}
+                                        <button class="btn btn-primary"><a href="{$admin_url}/roomBackgroundChoice?master_url=/admin/roomBackgroundChoice&token={$token}&master_url=/admin/roomBackgroundChoice&page=1&room_id={$lists.id}">房间背景选择</a></button>
+                                        {/if}
+                                    </td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="7" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page > 1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+<!--查看热度值列表-->
+<div class="modal fade" id="selectVsitorExternnumber">
+    <div class="modal-dialog" style="width:80%">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>房间热度</h3>
+            </div>
+            <div class="pull-right search form-inline" style="padding-right: 1%">
+
+            </div>
+            {if condition="in_array('/admin/addRoomVisitorExternnumber',$user_role_menu)"}
+            <div class="btn-group hidden-xs" role="group" style="padding-left: 1%">
+                <button type="button" class="btn btn-outline btn-success" id="addRoomVisitorExternnumber">
+                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>新增热度
+                </button>
+            </div>
+            {/if}
+            <table class="table table-hover table-responsive" id="select_forum_reply_table">
+                <thead>
+                <tr>
+                    <th class="text-center">热度Id</th>
+                    <th class="text-center">房间Id</th>
+                    <th class="text-center">热度值</th>
+                    <th class="text-center">创建人</th>
+                    <th class="text-center">状态</th>
+                    <th class="text-center">开始时间</th>
+                    <th class="text-center">结束时间</th>
+                    <th class="text-center">操作</th>
+                </tr>
+                </thead>
+                <tbody id="a_tbody">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!--添加热度值-->
+<div class="modal fade" id="add_visitor_externnumber" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">手动设置热度值</h4>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <label class="control-label">热度值生效时间范围:</label>
+                <div class="form-group">
+                    <input type="text" id="datetimeStart" readonly class="form_datetime"> --
+                    <input type="text" id="datetimeEnd" readonly class="form_datetime">
+                </div>
+                <div class="form-group">
+                    <label class="control-label">热度值:</label>
+                    <input type="text" class="form-control" name='visitor_externnumber' id="visitor_externnumber_val">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="visitor_externnumber_modal()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--编辑热度值-->
+<div class="modal fade" id="edit_visitor_externnumber" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">手动修改热度值</h4>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <label class="control-label">热度值生效时间范围:</label>
+                <div class="form-group">
+                    <input type="text" id="editstart" readonly class="form_datetime">
+                    <input type="text" id="editend" readonly class="form_datetime">
+                </div>
+                <div class="form-group">
+                    <label class="control-label">热度值:</label>
+                    <input type="text" class="form-control" name='visitor_externnumber'
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '');" id="edit_visitor_externnumber_val">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="edit_visitor_externnumber_modal()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--外联渠道(加入派对)-->
+<div class="modal fade" id="room_channel_modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">加入派对</h4>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <hr>
+                <div class="form-group">
+                    {if condition="!empty($party_room_type)"}
+                    {volist name="$party_room_type" id="data"}
+                    <input type="radio" value="{$data.id}" name="checkbox_id" class="checkbox{$data.id}">&nbsp;{$data.room_mode}
+                    &nbsp;
+                    {/volist}
+                    {/if}
+                </div>
+                <div class="form-group">
+                    <label class="control-label">加入公会ID:</label>
+                    <input type="text" class="form-control" name='guild_id'
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '');" id="guild_id_val">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <!--<button type="button" class="btn btn-primary" onclick="edit_channel()">保存</button>-->
+                <button type="button" class="btn btn-primary" onclick="add_party_room()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="pretty_room_id_modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">设置房间靓号</h4>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <div class="form-group">
+                    房间ID:
+                    <input type="text" class="form-control" name='guild_id' oninput="this.value = this.value.replace(/[^0-9]/g, '');" id="roomId">
+                </div>
+                <div class="form-group">
+                    靓号:
+                    <input type="text" class="form-control" name='guild_id' oninput="this.value = this.value.replace(/[^0-9]/g, '');" id="pretty_room_id_val">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <!--<button type="button" class="btn btn-primary" onclick="edit_channel()">保存</button>-->
+                <button type="button" class="btn btn-primary" onclick="add_room_pretty()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!--删除手动热度值-->
+<div class="modal fade" id="del_v_e">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>删除操作</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <i class="fa fa-trash-o" id="del_v_e_msg"></i>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger" data-btn-danger="modal" onclick="del_v_e_op()">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--修改房间信息-->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="editModalLabel">编辑房间信息</h4>
+            </div>
+            <div class="modal-body edit-append">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="edit_room_ok()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="uploadFileModal" tabindex="-1" role="dialog" aria-labelledby="uploadFileModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="upload-file-name">背景图片编辑</h4>
+            </div>
+            <div class="modal-body">
+                <form id='uploads_files' method="post" enctype="multipart/form-data">
+                    <input type="hidden" id="saveRoomId" value="">
+                    <div class="form-group">
+                        <label class="control-label">房间背景图[PNG]</label>
+                        <input type="file" class="form-control background_image" name="avatar" id="background_image"  value="" required>
+                    </div>
+                    <div class='form-group'>
+                    <label class='control-label'>赋予时间:</label>
+                    <label class='radio-inline'>
+                        <input type='radio' name='failure_time' checked value='3'> 三个月
+                        </label>
+                    <label class='radio-inline'>
+                        <input type='radio' name='failure_time' value='6'> 六个月
+                        </label>
+                    <label class='radio-inline'>
+                        <input type='radio' name='failure_time' value='8'> 八个月
+                        </label>
+                    <label class='radio-inline'>
+                        <input type='radio' name='failure_time' value='12'> 一年
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="add_imgs()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{include file="../view/admin/common/userItem.html"}
+<input type="hidden" value="{$token}" id="token">
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="" id="to_id">
+<input type="hidden" value="" id="to_roomid">
+<input type="hidden" value="{$user_role_menu_input}" id="user_role_menu">
+<input type="hidden" value="{$roomType}" id="roomType">
+<input type="hidden" value="{$channels_id}" id="channels_id">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<script src="/admin/js/trap/fileinput.js" type="text/javascript"></script>
+<script src="/admin/js/trap/fileinput_locale_zh.js" type="text/javascript"></script>
+<script>
+    $('body').on('hidden.bs.modal', '#editModal', function () {
+        $("#editModal form").remove();
+    });
+    $('body').on('hidden.bs.modal', '#selectVsitorExternnumber', function () {
+        $("#a_tbody tr").remove();
+    });
+    $('body').on('hidden.bs.modal', '#room_channel_modal', function () {
+        $("input[name='checkbox_id']").attr("checked", false);
+    });
+    $('.visitor_externnumber').click(function () {
+        //查询当前房间存在的未执行的热度设置
+        var id = $(this).parents("tr").find("#rooms_id").text();
+        $('#to_id').val(id);
+        $('#to_roomid').val(id);
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/vsitorExternnumberLists",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {
+                id: id,
+                master_url: '/admin/vsitorExternnumberLists',
+                token: $("#token").val(),
+                page: 1,
+            },
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                if (rs.data.length > 0) {
+                    $(rs.data).each(function (i, n) {
+                        $("#a_tbody").prepend(
+                            "<tr class = " + n.id + ">" +
+                            "<td class='text-center'>" + n.id + "</td>" +
+                            "<td class='text-center'>" + n.room_id + "</td>" +
+                            "<td class='text-center' id='visitor_externnumbers'>" + n.visitor_externnumber + "</td>" +
+                            "<td class='text-center'>" + n.created_user + "</td>" +
+                            "<td class='text-center' id='status_name'>" + n.status_name + "</td>" +
+                            "<td class='text-center' id='start_times'>" + n.start_time + "</td>" +
+                            "<td class='text-center' id='end_times'>" + n.end_time + "</td>" +
+                            "<td class='text-center'>" +
+                            "<button class='btn btn-success edit_op' onclick=edit_op(" + n.id + ")>修改</button>" +
+                            "<button class='btn btn-danger del_op' onclick=del_op(" + n.id + ")>删除</button>" +
+                            "</td>" +
+                            "</tr>"
+                        );
+                        if (n.status == 2) {
+                            $('.' + n.id).find(".edit_op").remove();
+                        }
+                    });
+                    var user_role_menu = $("#user_role_menu").val();
+                    var user_role_menus = user_role_menu.split(",")
+                    var index = $.inArray("/admin/editRoomVisitorExternnumber", user_role_menus);   //结果：index=1
+                    if (index <= 0) {
+                        $(".edit_op").remove();
+                    }
+                    var indexs = $.inArray("/admin/delRoomVisitorExternnumber", user_role_menus);   //结果：index=1
+                    if (indexs <= 0) {
+                        $(".del_op").remove();
+                    }
+
+                } else {
+                    $("#a_tbody").prepend("<tr class='no-records-found'><td colspan='8' class='text-center'>没有找到匹配的记录</td></tr>");
+                }
+                $('#selectVsitorExternnumber').modal('show')
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+    })
+
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/roomList&token=' + $("#token").val() + '&id=' + $("#search_id").val() + '&type=' + $("#select_id").val() + '&is_hot='+$("#is_hot").val()+ '&pretty_room_id_select='+$("#pretty_room_id_select").val() + '&is_hide='+$("#is_hide").val()+'&is_block='+$("#is_block").val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+        /*   onPageClicked:function (event, originalEvent, type, page) {
+               location.href = "?page="+page;
+           }*/
+    });
+
+    $('#search').click(function () {
+        var type = $('#select_id').val();
+        var room_id = $('#room_id').val();
+        var token = $('#token').val();
+        var is_hot = $('#is_hot').val();
+        var user_id = $('#user_id').val();
+        var is_hide = $('#is_hide').val();
+        var is_block = $('#is_block').val();
+        window.location.href = "/admin/roomList?token=" + token + '&master_url=/admin/roomList&page=1&type=' + type + '&room_id=' + room_id + '&user_id=' + user_id + '&is_hot=' + is_hot+ '&pretty_room_id_select=' + $('#pretty_room_id_select').val() + '&is_hide='+is_hide+'&is_block='+is_block;
+    });
+
+    function del_op($id) {
+        $("#del_v_e").modal('show');
+        $("#to_id").val($id);
+        $("#del_v_e_msg").html(' 您确定要删除手动热度值Id：' + $id + ' ? ')
+    }
+
+    function del_v_e_op() {
+        var id = $("#to_id").val();
+        var master_url = '/admin/delRoomVisitorExternnumber';
+        var token = $("#token").val();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/delRoomVisitorExternnumber",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {
+                id: id,
+                master_url: master_url,
+                token: token,
+            },
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg)
+                //删除成功后删除class
+                $('#del_v_e').modal('hide')
+                $("." + id).remove();
+                if ($("#a_tbody > tr").length == 0) {
+                    $("#a_tbody").prepend("<tr class='no-records-found'><td colspan='8' class='text-center'>没有找到匹配的记录</td></tr>");
+                }
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+    }
+
+    function visitor_externnumber_modal() {
+        var visitor_externnumber_val = $('#visitor_externnumber_val').val();
+
+        if(visitor_externnumber_val > 1000000){
+            toastr.warning('热度值不能超过1000000');
+            return false;
+        }
+        if (isNaN(visitor_externnumber_val)) {
+            toastr.warning('热度值必须为数字');
+            return false;
+        }
+        var id = $("#to_roomid").val();
+        var start_time = $("#datetimeStart").val();
+        var end_time = $("#datetimeEnd").val();
+        var master_url = '/admin/addRoomVisitorExternnumber';
+        var token = $("#token").val();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/addRoomVisitorExternnumber",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {
+                id: id,
+                master_url: master_url,
+                token: token,
+                visitor_externnumber: visitor_externnumber_val,
+                start_time: start_time,
+                end_time: end_time
+            },
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+
+                toastr.success(rs.msg);
+                $(".no-records-found").remove();
+                $("#add_visitor_externnumber").modal('hide');
+                //成功后 ajax 获取该条数据 写入到 模态框中
+                $.ajax({
+                    async: false,    //表示请求是否异步处理
+                    type: "post",    //请求类型
+                    url: "/admin/vsitorExternnumberLists",//请求的 URL地址
+                    dataType: "json",//返回的数据类型
+                    data: {
+                        v_id: rs.data,
+                        master_url: master_url,
+                        token: token,
+                    },
+                    success: function (rss) {
+
+                        if (rss.code !== 200) {
+                            toastr.warning(rss.msg);
+                            return false;
+                        }
+                        $(rss.data).each(function (i, ns) {
+                            $("#a_tbody").prepend("<tr class = " + ns.id + ">" +
+                                "<td class='text-center'>" + ns.id + "</td>" +
+                                "<td class='text-center'>" + ns.room_id + "</td>" +
+                                "<td class='text-center id='visitor_externnumbers'>" + ns.visitor_externnumber + "</td>" +
+                                "<td class='text-center'>" + ns.created_user + "</td>" +
+                                "<td class='text-center' id='status_name'>" + ns.status_name + "</td>" +
+                                "<td class='text-center' id='start_times'>" + ns.start_time + "</td>" +
+                                "<td class='text-center' id='end_times'>" + ns.end_time + "</td>" +
+                                "<td class='text-center'>" +
+                                "<button class='btn btn-success edit_op' onclick=edit_op(" + ns.id + ")>修改</button>" +
+                                "<button class='btn btn-danger del_op' onclick=del_op(" + ns.id + ")>删除</button>" +
+                                "</td>" +
+                                "</tr>"
+                            );
+                            if (ns.status == 2) {
+                                $('.' + ns.id).find(".edit_op").remove();
+                            }
+                        });
+                        var user_role_menu = $("#user_role_menu").val();
+                        var user_role_menus = user_role_menu.split(",")
+                        var index = $.inArray("/admin/editRoomVisitorExternnumber", user_role_menus);   //结果：index=1
+                        if (index <= 0) {
+                            $(".edit_op").remove();
+                        }
+                        var indexs = $.inArray("/admin/delRoomVisitorExternnumber", user_role_menus);   //结果：index=1
+                        if (indexs <= 0) {
+                            $(".del_op").remove();
+                        }
+
+                    },
+                    error: function (rs) {
+                        toastr.warning('请求失败');
+                    }
+                });
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        return false;
+    }
+
+    $('#addRoomVisitorExternnumber').click(function () {
+        $("#add_visitor_externnumber").modal('show')
+    })
+
+    function edit_op($id) {
+        $("#to_id").val($id);
+        //查询该id数据
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/vsitorExternnumberLists",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {
+                v_id: $id,
+                master_url: '/admin/vsitorExternnumberLists',
+                token: $("#token").val(),
+                page: 1,
+            },
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                var data = rs.data[0];
+                $("#editstart").val(data.start_time);
+                $("#editend").val(data.end_time);
+                $("#edit_visitor_externnumber_val").val(data.visitor_externnumber);
+                $("#edit_visitor_externnumber").modal('show');
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+    }
+
+    function edit_visitor_externnumber_modal() {
+        var id = $("#to_id").val();
+        var start_time = $("#editstart").val();
+        var end_time = $("#editend").val();
+        var visitor_externnumber = $("#edit_visitor_externnumber_val").val();
+        if(visitor_externnumber < 0){
+            toastr.warning('热度值不能为负数');
+            return false;
+        }
+        if(visitor_externnumber > 1000000){
+            toastr.warning('热度值不能超过1000000');
+            return false;
+        }
+        if (isNaN(visitor_externnumber)) {
+            toastr.warning('热度值必须为数字');
+            return false;
+        }
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/editRoomVisitorExternnumber",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {
+                id: id,
+                master_url: '/admin/editRoomVisitorExternnumber',
+                token: $("#token").val(),
+                start_time: start_time,
+                end_time: end_time,
+                visitor_externnumber: visitor_externnumber,
+            },
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                $('.' + id).find("#visitor_externnumbers").text(visitor_externnumber);
+                $('.' + id).find("#start_times").text(start_time);
+                $('.' + id).find("#end_times").text(end_time);
+                if (rs.data == 1) {
+                    $('.' + id).find("#status_name").text('开始中');
+                    $('.' + id).find(".edit_op").remove();
+                } else if (rs.data == 2) {
+                    $('.' + id).find("#status_name").text('未开始');
+                }
+                $("#edit_visitor_externnumber").modal('hide');
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+    }
+
+    $(".exit-roomType").on('click', function () {
+        var user_role_menu = $("#user_role_menu").val();
+        var user_role_menus = user_role_menu.split(",");
+        var index = $.inArray("/admin/exitRoomType", user_role_menus);   //结果：index=1
+        if (index <= 0) {
+            return false;
+        } else {
+            var oldType = $(this).attr('value'); //修改之前的值
+            var oldTpyeName = $(this).text();
+            $(this).html('');
+            $(this).prepend("<select class='form-control' id='select_ids'>"
+                + "<option class='text-center'>请选择房间类型</option>"
+                + "</select>");
+            $(this).unbind('click'); //绑定click事件
+            var roomType = $("#roomType").val().split(',');
+            var roomList = new Array(roomType.length);
+            for (var i = 0; i < roomType.length; i++) {
+                var temp = new Array(2);
+                temp = roomType[i].split('-');
+                roomList[i] = new Array(temp.length);
+                for (var j = 0; j < temp.length; j++) {
+                    roomList[i][j] = temp[j];
+                }
+            }
+            $(roomList).each(function (i, n) {
+                $("#select_ids").prepend("<option class='text-center' value=" + n[0] + " >" + n[1] + "</option>");
+            });
+            var child = $(this).children('select');
+            var that = $(this);
+            var newType = '';
+            var newTypeName = '';
+            $("#select_ids").change(function () {
+                newType = $("#select_ids option:selected").val();//修改之后的值
+                newTypeName = $("#select_ids option:selected").text();
+            });
+            child.blur(function () {
+                var room_id = $(this).parents("tr").find("#rooms_id").text(); //修改的工会ID
+                var field = 'room_type'; //修改的字段
+                var master_url = '/admin/exitRoomType';
+                var token = $('#token').val();
+                if (newType == oldType) {
+                    that.text(oldTpyeName);
+                    history.go(0);
+                    return;
+                } else if (newType == "") {
+                    that.text(oldTpyeName);
+                    history.go(0);
+                    return;
+                } else {
+                    that.text(newTypeName);
+                }
+                $.ajax({
+                    async: false,    //表示请求是否异步处理
+                    type: "post",    //请求类型
+                    url: "/admin/exitRoomType",//请求的 URL地址
+                    dataType: "json",//返回的数据类型
+                    data: {value: newType, field: field, room_id: room_id, master_url: master_url, token: token},
+                    success: function (rs) {
+                        if (rs.code !== 200) {
+                            toastr.warning(rs.msg);
+                            return false;
+                        }
+                        toastr.success(rs.msg);
+                        setTimeout(location, 500);   //延迟5秒刷新页面
+                    },
+                    error: function (rs) {
+                        toastr.warning('修改失败');
+                        setTimeout(location, 500);   //延迟5秒刷新页面
+                    }
+                });
+            });
+        }
+        that.remove('select');
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+    });
+
+    $('.room_channel').click(function () {
+        var id = $(this).parents("tr").find("#rooms_id").text();
+        $('#to_id').val(id);
+        var channel = $(this).parents("tr").find(":input").val();
+        if (channel) {
+            var channels = channel.split(",")
+            $.each(channels, function (index, value) {
+                $(".checkbox" + value).prop("checked", true)
+            });
+        }
+        $("#room_channel_modal").modal('show');
+    });
+
+    $('#pretty_room_id').click(function () {
+        $("#pretty_room_id_modal").modal('show');
+    });
+
+    function add_party_room() {
+        var id = $('#to_id').val();
+        var check_id = 0;
+        $("input[name='checkbox_id']:checked").each(function (i) {
+            check_id += Number($(this).val());
+        });
+        if(check_id==0){
+            toastr.warning('房间类型不可为空');
+            return false;
+        }
+        var guild_id = $('#guild_id_val').val();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            //url: "/admin/exitRoomChannel",//请求的 URL地址
+            url: "/admin/addRoomParty",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {
+                id: id,
+                //master_url: '/admin/exitRoomChannel',
+                master_url: '/admin/addRoomParty',
+                token: $("#token").val(),
+                check_id: check_id,
+                guild_id: guild_id,
+            },
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 200);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+    }
+    //添加房间靓号
+    function add_room_pretty() {
+        var pretty_room_id_val = $('#pretty_room_id_val').val();
+        var roomId = $('#roomId').val();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/addRoomPretty",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {id: roomId,master_url: '/admin/addRoomParty',token: $("#token").val(),pretty_room_id_val: pretty_room_id_val,},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 200);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+    }
+
+    //添加或更改图片
+    $('.room_edit').on('click',function(){
+        $(".edit-append").prepend(
+                "<form id='add_form' method=\"post\" enctype=\"multipart/form-data\">"+
+                " <div class=\"form-group\">"+
+                "<label class=\"control-label\">"+"房间名称"+"</label>"+
+                "<input type=\"text\" class=\"form-control \" name='room_name' id=\"room_name\" required=\"required\">"+
+                "</div>"+
+                " <div class=\"form-group\">"+
+                "<label class=\"control-label\">"+"公会ID"+"</label>"+
+                "<input type=\"text\" class=\"form-control \" name='guild_id' id=\"guild_id\" required=\"required\">"+
+                "</div>"+
+
+                "<div class=\"form-group\">"+
+                    "<label class=\"control-label\">"+"是否推荐"+"</label>"+
+                    "<label class='radio-inline'>"+
+                    "<input type='radio' name='is_hot' class='is_hot'  value='1'>"+" 是"+
+                    "</label>"+
+                    "<label class='radio-inline'>"+
+                    "<input type='radio' name='is_hot' class='is_hot'  value='0'>"+" 否"+
+                    "</label>"+
+                "</div>"+
+
+                "<div class=\"form-group\">"+
+                    "<label class=\"control-label\">"+"首页是否展示"+"</label>"+
+                    "<label class='radio-inline'>"+
+                    "<input type='radio' name='is_show' class='is_show'  value='1'>"+" 首页展示"+
+                    "</label>"+
+                    "<label class='radio-inline'>"+
+                    "<input type='radio' name='is_show' class='is_show'  value='2'>"+" 首页不展示"+
+                    "</label>"+
+                "</div>"+
+
+                "<div class=\"form-group\" id='tag-div'>"+
+                "<label class=\"control-label\">"+"标签地址[ JPEG & PNG ]"+"</label>"+
+                "<select class='form-control' id='tag_id' name='tag_id'>"+
+                "<option value='' >---------请选择个性标签--------</option>"+
+                "</select>"+
+                "</div>"+
+                " <input type='hidden' value='/admin/editRoom' name='master_url'>"+
+                " <input type='hidden' id='editRoom-room-id' name='room_id'>"+
+                "<input type='hidden' value='{$token}' name='token'>"+
+                " </form>"
+        );
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "get",    //请求类型
+            url: "/admin/getRoomTag",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {token:$('#token').val(),master_url:'/admin/editRoom'},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning('获取标签失败');
+                    return false;
+                }
+                if (rs.data.length > 0) {
+                    $(rs.data).each(function (i, n) {
+                        $("#tag_id").append(
+                            "<option value='"+n.id+"' >---------"+n.tag_name+"--------</option>"
+                        );
+                    });
+                } else {
+                    $("#tag-div").prepend("<tr class='no-records-found'><td colspan='7' class='text-center'>获取的是礼物失败，请联系小董同学解决问题</td></tr>");
+                }
+            },
+            error: function (rs) {
+                toastr.warning('获取标签失败');
+            }
+        });
+        $("#tag_id option[value='"+$(this).attr('tagid')+"']").attr("selected","select");
+        var room_id = $(this).parents("tr").find(".rooms_id").text();
+        $("#room_name").val($(this).parents("tr").find(".room_name").text());
+        $("#guild_id").val($(this).parents("tr").find(".guild_id").text());
+        var is_hot = $(this).parents("tr").find(".is_hot").attr('value');
+        $(":radio[name='is_hot'][value="+is_hot+"]").attr("checked","checked");
+        var is_show = $(this).parents("tr").find(".is_show").attr('value');
+        $(":radio[name='is_show'][value="+is_show+"]").attr("checked","checked");
+        $("#editRoom-room-id").val(room_id);
+
+        $('#editModal').modal('show');
+    })
+
+    function edit_room_ok() {
+        var edit_info = $("#add_form").serializeArray();
+        if($("#room_name").val() ==  ""){
+            toastr.warning('房间名称不能为空');
+            return false;
+        }
+
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/editRoom",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: edit_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+
+    //图片上传
+    $(document).on("change",".images_tags",function(){
+        var $this = $(this)
+        if($this[0].files[0]){
+            var animationType = $this[0].files[0].name.split('.');
+            if (animationType[1] != "bmp"&&animationType[1] != "png"&&animationType[1] != "gif" && animationType[1]!="jpg" && animationType[1]!="jpeg" && animationType[1] != "svga") {
+                toastr.warning("不支持文件");
+                return false;
+            }
+        }
+        var imagename = $(this).attr('imagename');
+        var $this = $(this);
+        var formData = new FormData();
+        formData.append("token", $("#token").val());
+        formData.append("master_url", '/admin/giftConfAdd');
+        formData.append("image", $this[0].files[0]);
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            cache: false,
+            processData: false,
+            contentType: false,
+            type: "post",    //请求类型
+            url: "/admin/ossAttireFile",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: formData,
+            success: function (rs) {
+                if (rs.status !== 1) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                $this.parent().append("<input type='hidden' name="+imagename+"  value="+rs.image+">");
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+    });
+
+    //添加或更改图片
+    $('.addGiftImage').on('click',function(){
+        $("#saveRoomId").val($(this).parents("tr").find(".rooms_id").text());
+        $('#uploadFileModal').modal('show');
+    })
+
+    function add_imgs(){
+        if($("#saveRoomId").val() == ""){
+            toastr.warning('未获得房间ID');
+            return false;
+        }
+        if($('#background_image')[0].files[0]){
+            var gift_imageType = $('#background_image')[0].files[0].name.split('.');
+            if(gift_imageType[1] != 'png'){
+                toastr.warning('请选择png格式文件');
+                return false;
+            }
+        }
+        var formData = new FormData();
+        formData.append("id", $("#saveRoomId").val());
+        formData.append("failure_time", $( "input[name='failure_time']").val());
+        formData.append("token", $("#token").val());
+        formData.append("master_url", $("#master_url").val());
+        formData.append("background_image", $('#background_image')[0].files[0]);
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            cache: false,
+            processData: false,
+            contentType: false,
+            type: "post",    //请求类型
+            url: "/admin/roomOssFile",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: formData,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+
+</script>
+<script src="/admin/js/laydate/laydate.js"></script>
+<script>
+    //执行一个laydate实例
+    laydate.render({
+        elem: '#datetimeStart',
+        type: 'datetime',
+        value: getRecentDay(18,0)
+    });
+
+    laydate.render({
+        elem: '#datetimeEnd',
+        type: 'datetime',
+        value: getRecentDay(24,0)
+    });
+
+	laydate.render({
+        elem: '#editstart',
+        type: 'datetime',
+        value: $("#edidStart").val()
+    });
+
+    laydate.render({
+        elem: '#editend',
+        type: 'datetime',
+        value: $("#editend").val()
+    });
+
+    /**获取近N小时*/
+    function getRecentDay(hour,second){
+        var today = new Date();
+        var start=new Date(today.toLocaleDateString()).getTime() + 1000*60*60*hour - second;
+
+        console.log(formatDate(start))
+        return formatDate(start);
+    }
+
+    function formatDate(time){
+        date = new Date(time);
+        var y = date.getFullYear();
+        var m = date.getMonth() + 1;//注意这个“+1”
+        m = m < 10 ? ('0' + m) : m;
+        var d = date.getDate();
+        d = d < 10 ? ('0' + d) : d;
+        var h = date.getHours();
+        h=h < 10 ? ('0' + h) : h;
+        var minute = date.getMinutes();
+        minute = minute < 10 ? ('0' + minute) : minute;
+        var second=date.getSeconds();
+        second=second < 10 ? ('0' + second) : second;
+        return y + '-' + m + '-' + d+' '+h+':'+minute+':'+second;
+    }
+
+
+
+    $(function(){
+
+            $('.J_menuItem').on('click', function () {
+                parent.childMenu(this)
+            });
+
+    })
+</script>
+</body>
+</html>

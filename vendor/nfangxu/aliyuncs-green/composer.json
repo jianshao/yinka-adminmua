@@ -1,0 +1,20 @@
+{
+    "name": "nfangxu/aliyuncs-green",
+    "description": "aliyun-php-sdk-core & aliyun-php-sdk-green",
+    "keywords": ["laravel","composer","aliyun"],
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "files":[
+            "aliyun-php-sdk-core/Config.php"
+        ]
+    },
+    "require" : {},
+    "authors": [
+        {
+          "name": "nfangxu",
+          "email": "nfangxu@gmail.com",
+          "homepage": "https://nfangxu.com"
+        }
+    ]
+}

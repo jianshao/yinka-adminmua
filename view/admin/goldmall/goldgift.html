@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="example">
+                            {if condition="in_array('/admin/goldGiftList',$user_role_menu)"}
+                            <div class="pull-right search form-inline">
+                                <input class="form-control input-outline" type="text"
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                       placeholder="请输入Id" value="{$search_id}"
+                                       id="search_id">
+                                <!-- <input class="form-control input-outline" type="text"
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                       placeholder="输入1是上架，2是下架" value="{$status}"
+                                       id="status"> -->
+                                是否上下架:<select class="form-control" id="status">
+                                <option value="1" {if $status == 1} echo selected="selected" {/if}>是</option>
+                                <option value="2" {if $status == 2} echo selected="selected" {/if}>否</option>
+                            </select>
+                                是否展示礼物列表:<select class="form-control" id="isshow">
+                                <option value="3" {if $isshow == 3} echo selected="selected" {/if}>全部</option>
+                                <option value="1" {if $isshow == 1} echo selected="selected" {/if}>是</option>
+                                <option value="2" {if $isshow == 2} echo selected="selected" {/if}>否</option>
+                            </select>
+                                <button type="button" class=" btn btn-primary" id="search">搜索</button>
+                            </div>
+                            {/if}
+                            <div class="example">
+                                {if condition="in_array('/admin/addGoldGift',$user_role_menu)"}
+                                <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                    <button type="button" class="btn btn-outline btn-success" id="add_gift">
+                                        <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加礼物
+                                    </button>
+<!--                                    <button type="button" class="btn btn-outline btn-success" id="clearGoldCache">-->
+<!--                                        <i class="glyphicon glyphicon-fire" aria-hidden="true"></i>清除缓存-->
+<!--                                    </button>-->
+                                </div>
+                                {/if}
+                                <table class="table table-hover table-responsive" id="data_table" style="word-wrap: break-word; word-break: break-all;">
+                                    <thead>
+                                    <tr>
+                                        <th class="text-center">ID</th>
+                                        <th class="text-center">名称</th>
+                                        <th class="text-center">财富值</th>
+                                        <th class="text-center">礼物列表</th>
+                                        <th class="text-center">金币</th>
+                                        <th class="text-center">图标</th>
+                                        <th class="text-center">GIF动画</th>
+                                        <th class="text-center">礼物动画</th>
+                                        <th class="text-center">类型</th>
+                                        <th class="text-center">分类</th>
+                                        <th class="text-center">广播</th>
+                                        <th class="text-center">状态</th>
+                                        <th class="text-center">砸银蛋权重</th>
+                                        <th class="text-center">砸金蛋权重</th>
+                                        <th class="text-center">排序权重</th>
+                                        <th class="text-center">中奖概率</th>
+                                        <th class="text-center">操作</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {if condition="!empty($data)"}
+                                    {volist name="data" id="list"}
+                                    <tr>
+                                        <td style="width: 20px;" class="text-center id" id="gift_id" >{$list.id}</td>
+                                        <td style="width: 20px;" class="text-center gift_name" >{$list.gift_name}</td>
+                                        <td style="width: 20px;" class="text-center gift_number" >{$list.gift_number}</td>
+                                        <td style="width: 20px;" class="text-center is_show" value="{$list.is_show}">{$list.is_shows}</td>
+                                        <td style="width: 20px;" class="text-center reward_price" >{$list.reward_price}</td>
+
+                                        <td style="width: 20px;" class="text-center "><img src="{$list.gift_image}" style="width: 50px;"></td>
+                                        <td style="width: 20px;" class="text-center"><img src="{$list.animation}" style="width: 50px;"></td>
+                                        <td style="width: 20px;" class="text-center" value="{$list.gift_animation}">{$list.gift_animation}</td>
+                                        <td style="width: 20px;" class="text-center gift_type" value="{$list.gift_types}">{$list.gift_type}</td>
+                                        <td style="width: 20px;" class="text-center class_type" value="{$list.class_types}">{$list.class_type}</td>
+                                        <td style="width: 20px;" class="text-center broadcast" value="{$list.broadcasts}">{$list.broadcast}</td>
+                                        <td style="width: 20px;" class="text-center status" value="{$list.statuss}">{$list.status}</td>
+                                        <td style="width: 20px;" class="text-center one_weight">{$list.one_weight}</td>
+                                        <td style="width: 20px;" class="text-center color_weight">{$list.color_weight}</td>
+                                        <td style="width: 20px;" class="text-center is_sort">{$list.is_sort}</td>
+                                        <td style="width: 20px;" class="text-center prize_rate">{$list.prize_rate}</td>
+                                        <td style="width: 20px;" class="text-center">
+                                            {if condition="in_array('/admin/exitGoldGift',$user_role_menu)"}
+                                            <button class="btn btn-success editGift" id="editGift">编辑</button>
+                                            <button class="btn btn-success addGoldGiftImage" id="ossGoldFile">添加图片</button>
+                                            {/if}
+                                        </td>
+                                    </tr>
+                                    {/volist}
+                                    {else}
+                                    <tr class="no-records-found">
+                                        <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                    </tr>
+                                    {/if}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {if condition = "$page.total_page >1"}
+                        <div id="Paginator" style="text-align: center">
+                            <ul id="pageLimit"></ul>
+                        </div>
+                        {/if}
+                        <!-- End Example Events -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Panel Other -->
+    </div>
+    <!--添加礼物信息-->
+    <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="addModalLabel">添加礼物</h4>
+                </div>
+                <div class="modal-body">
+                    <form id='add_form' method="post">
+                        <div class="form-group">
+                            <label class="control-label">礼物名称:</label>
+                            <input type="text" class="form-control" name='gift_name'  value="" required="required">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">财富值:</label>
+                            <input type="text" class="form-control" name="gift_number"  value="" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">金币:</label>
+                            <input type="text" class="form-control" name="reward_price" value="" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">是否展示礼物列表：</label>
+                            <select class="form-control " name="is_show"  required="" aria-required="true">
+                                <option value="1">是</option>
+                                <option value="0">否</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">礼物类型：</label>
+                            <select class="form-control " name="gift_type"  required="" aria-required="true">
+                                <option value="1">普通礼物</option>
+                                <option value="2">动画礼物</option>
+                                <option value="3">免费礼物</option>
+                                <option value="4">终极礼物</option>
+                                <option value="5">极品礼物</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">礼物分类：</label>
+                            <select class="form-control " name="class_type"  required="" aria-required="true">
+                                <option value="1">礼物</option>
+                                <option value="2">小礼物</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">全服广播：</label>
+                            <select class="form-control " name="broadcast" required="broadcast" aria-required="true">
+                                <option value="2">不广播</option>
+                                <option value="1">广播</option>
+                            </select>
+                        </div>
+<!--                        <div class="form-group">-->
+<!--                            <label class="control-label">礼物状态：</label>-->
+<!--                            <select class="form-control " name="status"  required="" aria-required="true">-->
+<!--                                <option value="2">下架</option>-->
+<!--                                <option value="1">上架</option>-->
+<!--                            </select>-->
+<!--                        </div>-->
+                        <div class="form-group">
+                            <label class="control-label">砸金蛋权重:</label>
+                            <input type="text" class="form-control " name="color_weight" id="color_weight" value="" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">砸银蛋权重:</label>
+                            <input type="text" class="form-control " name="one_weight" id="one_weight" value="" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">礼物排序权重:</label>
+                            <input type="text" class="form-control " name="is_sort"  id="is_sort" value="" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">中奖概率:</label>
+                            <input type="text" class="form-control " name="prize_rate" id="prize_rate"  value="" required>
+                        </div>
+                        <input type="hidden" value="/admin/addGoldGift" name="master_url">
+                        <input type="hidden" value="{$token}" name="token">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="add_info()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--编辑图片-->
+    <div class="modal fade" id="uploadFileModal" tabindex="-1" role="dialog" aria-labelledby="uploadFileModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="upload-file-name">图片编辑</h4>
+                </div>
+                <div class="modal-body">
+                    <form id='uploads_files' method="post" enctype="multipart/form-data">
+                        <input type="hidden" id="gifts_id" value="">
+                        <div class="form-group">
+                            <label class="control-label">添加礼物图片[PNG]</label>
+                            <input type="file" class="form-control gift_image" name="gift_image" id="gift_image"  value="" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">添加礼物动画[GIF]:</label>
+                            <input type="file" class="form-control animation" name="animation"  id="animation" value="" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">添加大动画[SVGA]:</label>
+                            <input type="file" class="form-control gift_animation" name="gift_animation" id="gift_animation" value="" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="add_imgs()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--编辑礼物信息-->
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="editModalLabel">编辑礼物信息</h4>
+                </div>
+                <div class="modal-body edit-append">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="edit_info()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--操作modal-->
+    <input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+    <input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+    <input type="hidden" value="{$token}" name="token" id="token">
+    <input type="hidden" value="/admin/ossGoldFile" name="master_url" id="master_url">
+    <!-- 全局js -->
+    {include file="../view/admin/common/jsHeader.html"}
+    <script src="/admin/js/trap/fileinput.js" type="text/javascript"></script>
+    <script src="/admin/js/trap/fileinput_locale_zh.js" type="text/javascript"></script>
+    <script>
+        $('body').on('hidden.bs.modal', '#editModal', function () {
+            $("#editModal form").remove();
+        });
+        //添加或更改图片
+        $('.addGoldGiftImage').on('click',function(){
+            $("#gifts_id").val($(this).parents("tr").find(".id").text());
+            $('#uploadFileModal').modal('show');
+        })
+
+        //添加图片
+        function add_imgs(){
+            if($("#gifts_id").val() == ""){
+                toastr.warning('未获得礼物ID');
+                return false;
+            }
+            if($('#gift_image')[0].files[0]){
+                var gift_imageType = $('#gift_image')[0].files[0].name.split('.');
+                if(gift_imageType[1] != 'png'){
+                    toastr.warning('礼物图标请选择png格式文件');
+                    return false;
+                }
+            }
+            if($('#animation')[0].files[0]){
+                var animationType = $('#animation')[0].files[0].name.split('.');
+                if(animationType[1]!='gif'){
+                    toastr.warning('礼物动画请选择gif格式文件');
+                    return false;
+                }
+            }
+            if($('#gift_animation')[0].files[0]){
+                var gift_animationType = $('#gift_animation')[0].files[0].name.split('.');
+                if(gift_animationType[1]!='svga'){
+                    toastr.warning('礼物大动画请选择svga格式文件');
+                    return false;
+                }
+            }
+            var formData = new FormData();
+            formData.append("id", $("#gifts_id").val());
+            formData.append("token", $("#token").val());
+            formData.append("master_url", $("#master_url").val());
+            formData.append("gift_image", $('#gift_image')[0].files[0]);
+            formData.append("animation", $('#animation')[0].files[0]);
+            formData.append("gift_animation", $('#gift_animation')[0].files[0]);
+            $.ajax({
+                async: false,    //表示请求是否异步处理
+                cache: false,
+                processData: false,
+                contentType: false,
+                type: "post",    //请求类型
+                url: "/admin/ossGoldFile",//请求的 URL地址
+                dataType: "json",//返回的数据类型
+                data: formData,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000);   //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        }
+        //清除缓存
+        $("#clearGoldCache").on('click',function(){
+            var master_url = "/admin/clearGoldCache";
+            var token = $("#token").val();
+            $.ajax({
+                async: false,    //表示请求是否异步处理
+                type: "post",    //请求类型
+                url: "/admin/clearGoldCache",//请求的 URL地址
+                dataType: "json",//返回的数据类型
+                data:{master_url:master_url,token:token},
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 500);   //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        })
+
+        $('#pageLimit').bootstrapPaginator({
+            currentPage: $("#page").val(),
+            totalPages: $("#total_page").val(),
+            size: "normal",
+            bootstrapMajorVersion: 3,
+            alignment: "right",
+            numberOfPages: '5',
+            pageUrl: function (type, page, current) {
+                //是每个分页码变成一个超链接
+                return '?page=' + page + '&master_url=/admin/goldGiftList&token=' + $("#token").val() + '&user_name=' + $("#search_name").val()+'&status=' + $("#status").val()+'&isshow=' + $("#isshow").val();
+            },
+            itemTexts: function (type, page, current) {
+                switch (type) {
+                    case "first":
+                        return "首页";
+                    case "prev":
+                        return "上一页";
+                    case "next":
+                        return "下一页";
+                    case "last":
+                        return "末页";
+                    case "page":
+                        return page;
+                }
+            }
+        });
+        //搜索
+        $("#search").click(function () {
+            var gift_id = $("#search_id").val();
+            var status = $("#status").val();
+            var isshow = $("#isshow").val();
+            if (isNaN(gift_id)) {
+                toastr.warning('请输入正确的Id');
+                return false;
+            }
+            var token = $('#token').val();
+            window.location.href = "/admin/goldGiftList?token=" + token + '&master_url=/admin/goldGiftList&page=1&gift_id=' + gift_id+'&status=' + status+'&isshow=' + isshow;
+        })
+
+        //添加礼物信息
+        $('#add_gift').on('click',function(){
+            $("#one_weight").val(0);
+            $("#color_weight").val(0);
+            $("#is_sort").val(0);
+            $("#prize_rate").val(0);
+            $('#addModal').modal('show');
+        });
+
+        //添加礼物保存
+        function add_info(){
+            var add_info = $("#add_form").serializeArray();
+            if (add_info[0]['value'] == '') {
+                toastr.warning('礼物名称不能为空');
+                return false;
+            }
+            if(add_info[5]['vaule'] == 3) {
+                if(add_info[3]['value'] == '') {
+                    toastr.warning('礼物金币不能为空');
+                    return false;
+                }
+            }else{
+                if(add_info[2]['value'] < 0){
+                    toastr.warning('金币不能为负数');
+                    return false;
+                }
+                if (add_info[2]['value'] == '') {
+                    toastr.warning('金币不能为空');
+                    return false;
+                }
+            }
+
+            $.ajax({
+                async: false,    //表示请求是否异步处理
+                type: "post",    //请求类型
+                url: "/admin/addGoldGift",//请求的 URL地址
+                dataType: "json",//返回的数据类型
+                data: add_info,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000);   //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        }
+        //编辑礼物信息
+        $('.editGift').on('click',function(){
+            $(".edit-append").prepend(
+                "<form id='edit_form' method='post'>"+
+                " <input type='hidden' value='/admin/exitGoldGift' name='gift_id' class='gift_id'>"+
+                "<div class='form-group'>"+
+                "<label class='control-label'>" + "礼物名称： "+"</label>"+
+                "<input type='text' class='form-control gift_name' name='gift_name'  value='' required='required'>"+
+                "</div>"+
+                "<div class='form-group'>"+
+                "<label class='control-label'>"+"财富值:"+"</label>" +
+                "<input type='text' class='form-control gift_number' name='gift_number'>"+
+                "</div>"+
+                "<div class='form-group'>"+
+                "<label class='control-label'>"+"金币:"+"</label>"+
+                "<input type='text' class='form-control reward_price' name='reward_price' value='' required>"+
+                "</div>"+
+                "<div class='form-group'>"+
+                "<label class='control-label'>"+"是否展示礼物列表:"+"</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='is_show' class='is_show'  value='1'>"+" 是"+
+                "</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='is_show' class='is_show'  value='0'>"+" 否"+
+                "</label>"+
+                "</div>"+
+                "<div class='form-group'>"+
+                "<label class='control-label'>"+"礼物类型:"+"</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='gift_type' class='gift_type'  value='1'>"+" 普通礼物"+
+                "</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='gift_type' class='gift_type'  value='2'>"+" 动画礼物"+
+                "</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='gift_type' class='gift_type'  value='3'>"+" 免费礼物"+
+                "</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='gift_type' class='gift_type'  value='4'>"+" 终极礼物"+
+                "</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='gift_type' class='gift_type'  value='5'>"+" 极品礼物"+
+                "</label>"+
+                "</div>"+
+                "<div class='form-group'>"+
+                "<label class='control-label'>"+"礼物分类:"+"</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='class_type' class='class_type'  value='1'>"+" 礼物"+
+                "</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='class_type' class='class_type'  value='2'>"+" 小礼物"+
+                "</label>"+
+                "</div>"+
+                "<div class='form-group'>"+
+                "<label class='control-label'>"+"是否广播:"+"</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='broadcast' class='broadcast'  value='1'>"+" 广播"+
+                "</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='broadcast' class='broadcast'  value='2'>"+" 不广播"+
+                "</label>"+
+                "</div>"+
+                "<div class='form-group'>"+
+                "<label class='control-label'>"+"礼物状态:"+"</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='status' class='status'  value='1'>"+" 上架"+
+                "</label>"+
+                "<label class='radio-inline'>"+
+                "<input type='radio' name='status' class='status'  value='2'>"+" 下架"+
+                "</label>"+
+                "</div>"+
+                "<div class='form-group'>"+
+                "<label class='control-label'>"+"砸金蛋权重:"+"</label>"+
+                "<input type='text' class='form-control color_weight' name='color_weight' value='' required>"+
+                "</div>"+
+                "<div class='form-group'>"+
+                "<label class='control-label'>"+"砸银蛋权重:"+"</label>"+
+                "<input type='text' class='form-control one_weight' name='one_weight' value='' required>"+
+                "</div>"+
+                "<div class='form-group'>"+
+                "<label class='control-label'>"+"礼物排序权重:"+"</label>"+
+                "<input type='text' class='form-control is_sort' name='is_sort' value='' required>"+
+                "</div>"+
+                "<div class='form-group'>"+
+                "<label class='control-label'>"+"中奖概率:"+"</label>"+
+                "<input type='text' class='form-control prize_rate' name='prize_rate' value='' required>"+
+                "</div>"+
+                " <input type='hidden' value='/admin/exitGoldGift' name='master_url'>"+
+                "<input type='hidden' value='{$token}' name='token'>"+
+                " </form>"
+            );
+            var id = $(this).parents("tr").find(".id").text();
+            $(".gift_name").val($(this).parents("tr").find(".gift_name").text());
+            $(".gift_number").val($(this).parents("tr").find(".gift_number").text());
+            $(".reward_price").val($(this).parents("tr").find(".reward_price").text());
+            var is_show = $(this).parents("tr").find(".is_show").attr('value');
+            $(":radio[name='is_show'][value="+is_show+"]").attr("checked","checked");
+            $(".one_weight").val($(this).parents("tr").find(".one_weight").text());
+            $(".color_weight").val($(this).parents("tr").find(".color_weight").text());
+            $(".is_sort").val($(this).parents("tr").find(".is_sort").text());
+            $(".prize_rate").val($(this).parents("tr").find(".prize_rate").text());
+            var gift_type = $(this).parents("tr").find(".gift_type").attr('value')
+            $(":radio[name='gift_type'][value="+gift_type+"]").attr("checked","checked");
+            var class_type = $(this).parents("tr").find(".class_type").attr('value');
+            $(":radio[name='class_type'][value="+class_type+"]").attr("checked","checked");
+            var broadcast = $(this).parents("tr").find(".broadcast").attr('value');
+            $(":radio[name='broadcast'][value="+broadcast+"]").attr("checked","checked");
+            var status = $(this).parents("tr").find(".status").attr('value');
+            $(":radio[name='status'][value="+status+"]").attr("checked","checked");
+            $(".gift_id").val(id);
+            $('#editModal').modal('show');
+        });
+        //编辑保存
+        function edit_info(){
+            var edit_info = $("#edit_form").serializeArray();
+            var reward_price = edit_info[3]['value'];
+            if(reward_price < 0){
+                toastr.warning('金币不能为负数');
+                return false;
+            }
+            if (isNaN(reward_price)) {
+                toastr.warning('金币必须为数字');
+                return false;
+            }
+            $.ajax({
+                async: false,    //表示请求是否异步处理
+                type: "post",    //请求类型
+                url: "/admin/exitGoldGift",//请求的 URL地址
+                dataType: "json",//返回的数据类型
+                data: edit_info,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000);   //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        }
+    </script>
+</body>
+</html>

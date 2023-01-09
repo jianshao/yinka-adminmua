@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/time/daterangepicker.css">
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+
+        <div class="ibox-content">
+
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        {if condition="in_array('/admin/online',$user_role_menu)"}
+                        <div class="pull-right search form-inline">
+                            <input class="form-control input-outline" type="text" oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="请输入用户Id" value="{$user_id}" id="user_id">
+                            <input class="form-control input-outline" type="tel"  placeholder="请输入用户手机号" value="{$username}" id="username">
+                            <button type="button" class=" btn btn-primary" id="search">搜索</button>
+                        </div>
+                        {/if}
+                        <div class="example">
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">用户ID</th>
+                                    <th class="text-center">用户手机号</th>
+                                    <th class="text-center">第一次登陆</th>
+                                    <th class="text-center">最后登陆</th>
+                                    <th class="text-center">充值总金额</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($data)"}
+                                {volist name="$data" id="data"}
+                                <tr>
+                                    <td class="text-center">{$data.id}</td>
+                                    <td class="text-center">{$data.username}</td>
+                                    <td class="text-center">{$data.register_time}</td>
+                                    <td class="text-center">{$data.ctime}</td>
+                                    <td class="text-center">{$data.rmb}</td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="9" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+                {if condition = "$page.total_page >1"}
+                <div id="Paginator" style="text-align: center">
+                    <ul id="pageLimit"></ul>
+                </div>
+                {/if}
+                <!-- End Example Events -->
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Panel Other -->
+</div>
+<!--操作modal-->
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$token}" name="token" id="token">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<script src="/admin/js/fileinput/fileinput.js" type="text/javascript"></script>
+<script src="/admin/js/fileinput/zh.js" type="text/javascript"></script>
+<script src="/admin/js/plugins/toastr/toastr.min.js"></script>
+<script src="/time/moment.min.js"></script>
+<script src="/time/daterangepicker.min.js"></script>
+<script>
+    $("#search").click(function () {
+        var id = $("#user_id").val();
+        var username = $("#username").val();
+        if (isNaN(id)) {
+            toastr.warning('请输入正确的用户Id');
+            return false;
+        }
+        var token = $('#token').val();
+        window.location.href = "/admin/online?token=" + token + '&master_url=/admin/guildList&page=1&user_id=' + id+'&username='+username;
+    })
+
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/online&token=' + $("#token").val() + '&user_id=' + $("#user_id").val()+'&username='+$('#username').val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+    });
+
+
+</script>
+</body>
+
+</html>

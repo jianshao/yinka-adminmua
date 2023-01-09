@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>登录账号</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<link href="/web/css/withdrawal.css" rel="stylesheet" type="text/css" media="all">
+<body>
+<div class="box">
+	<div class="head-logo">
+		<img src="http://image.muayuyin.com/banner/20200707/275a6d3443c1f4e305e14245b333f302.png" alt="" class="logo-img">
+	</div>
+	<div class="body-form">
+		<div class="body-input">
+			<div class="validate-input m-b-23" data-validate="请输入手机号">
+				<img src="http://image.fqparty.com/image/phone.png" alt="" class="body-input-img">
+				<input type="number" name="phone" id="phone" oninput="this.value = this.value.replace(/[^0-9]/g, '');" class="body-input-style" autocomplete="off"  placeholder="请输入手机号" >
+			</div>
+			<div class="validate-input"  data-validate="请输入验证码">
+				<img src="http://image.fqparty.com/image/pwd.png" alt="" class="body-input-img">
+				<input type="text" maxlength="6"  id="verify"  name="verify" autocomplete="off" class="body-input-style" placeholder="输入验证码" >
+				<button id="get_verify" class="body-form-verify-no">获取验证码</button>
+			</div>
+		</div>
+		<div class="body-sbtn">
+			<button id="sub"  class="body-from-btn" disabled>登录</button>
+		</div>
+		<p class="body-hint">注册代表您同意<a href="https://www.fqparty.com/pact.html" class="body-hint-a">《用户协议》</a></p>
+	</div>
+</div>
+</body>
+</html>
+<script type="text/javascript" src="/web/js/jquery-1.8.2.min.js"></script>
+<script type="text/javascript" src="/web/js/master/dist/dialog.js"></script>
+<script>
+	//rem计算尺寸
+	var fun = function (doc, win) {
+		var docEl = doc.documentElement,
+				resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize',
+				recalc = function () {
+					var clientWidth = docEl.clientWidth;
+					if (!clientWidth) return;
+
+					//1rem = 100px；
+					//可以根据实际需要修改
+					docEl.style.fontSize = 100 * (clientWidth / 1080) + 'px';
+				};
+		if (!doc.addEventListener) return;
+		win.addEventListener(resizeEvt, recalc, false);
+		doc.addEventListener('DOMContentLoaded', recalc, false);
+	}
+	fun(document, window);
+	$(".body-input-style").bind("input propertychange",function(event){
+		if($("#phone").val() =="" || $("#verify").val() ==""){
+			$(".body-from-btn").attr("disabled",true);
+			$(".body-from-btn").css('background-color','#BBBBBB');
+		}else{
+			$(".body-from-btn").attr("disabled",false);
+			$(".body-from-btn").css('background-color','#FF87A2');
+		}
+	});
+	var time = 60;
+	var flag = true;
+	//验证码
+	$(document).on("click","#get_verify",function(){
+		var phone = $("#phone").val();
+
+		if(phone == ''){
+			alerts('手机号码不能为空');
+			return false;
+		}
+		if(!(/^1[3456789]\d{9}$/.test(phone))){
+			alerts("手机号码格式不正确");
+			return false;
+		}
+
+		if(flag){
+			$(this).attr("disabled",true);
+			var timer = setInterval(function(){
+				if(time == 60 && flag){
+					flag = false;
+					$.ajax({
+						async: false,    //表示请求是否异步处理
+						type:"get",
+						url:"/web/webUserWithdrawal/webUserWithdrawalCodeCheck",
+						dataType: "json",//返回的数据类型
+						data:{phone:phone},
+						success: function (rs) {
+							if(rs.code == 200){
+								alerts(rs.msg);
+								$("#get_verify").html("已发送");
+							}else{
+								$("#get_verify").removeAttr("disabled");
+								alerts(rs.msg);
+								falg = true;
+								time = 60;
+								clearInterval(timer);
+								return false;
+							}
+						},
+						error: function (rs) {
+							toastr.warning('请求失败');
+						}
+					});
+				}else if(time == 0){
+					$("#get_verify").removeAttr("disabled");
+					$("#get_verify").html("获取验证码");
+					clearInterval(timer);
+					time = 60;
+					flag = true;
+				}else{
+					$("#get_verify").html(time + " s");
+					time--;
+				}
+			},1000)
+		}
+	})
+
+	$("#sub").on('click',function(){
+		var phone = $("#phone").val();
+		if(phone == ""){
+			alerts('手机号码不能为空');
+			return false;
+		}
+		if(!(/^1\d{10}$/.test(phone))){
+			alerts("手机号码格式不正确");
+			return false;
+		}
+		var verify = $('#verify').val();
+		if(verify ==''){
+			alerts("请输入验证码");
+			return false;
+		}
+		$.ajax({
+			type:"post",
+			dataType:"json",
+			data:{phone:phone,code:verify},
+			url:"/web/webUserWithdrawal/webUserWithdrawalLogin",
+			success: function (rs) {
+				if(rs.code !== 200){
+					alerts(rs.msg);
+					return false;
+				}
+				window.location.href="/web/webUserWithdrawal/userWithdrawalOption";
+				return false;
+			},
+			error:function (rs) {
+				alerts(rs.msg);
+				return false;
+			},
+		});
+		return false;
+	});
+
+	//弹出框
+	function alerts(content){
+		var hint = dialog({
+			content: content
+		});
+		hint.show();
+		setTimeout(function () {
+			hint.close().remove();
+		}, 2000);
+	}
+	function onBridgeReady() {
+		WeixinJSBridge.call('hideOptionMenu');
+	}
+</script>

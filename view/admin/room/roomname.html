@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+
+    <style>
+
+        .form-control:focus {
+            border-color: #66afe9;
+            outline: 0;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
+            box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
+        }
+
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+    </style>
+
+</head>
+<body class="gray-bg">
+
+<!--数据表格-->
+<div class="wrapper wrapper-content animated fadeInRight" >
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="example">
+                            <!--                            添加-->
+                            <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                <button type="button" class="btn editGift btn-outline btn-success" id="add_gift">
+                                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加
+                                </button>
+                            </div>
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">ID</th>
+                                    <th class="text-center">推荐房间名称</th>
+                                    <th class="text-center">添加时间</th>
+                                    <th class="text-center">房间类型</th>
+                                    <th class="text-center">是否在创建房间时展示</th>
+                                    <th class="text-center">删除操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($list)"}
+                                {volist name="list" id="lists"}
+                                <tr>
+                                    <td class="text-center" id="id">{$lists.id}</td>
+                                    <td class="text-center">{$lists.name}</td>
+                                    <td class="text-center">{$lists.time}</td>
+                                    <td class="text-center">
+                                        {volist name="roomModel" id="roommodel"}
+                                        {if condition="($lists.type) == $roommodel.id"}
+                                        {$roommodel.room_mode}
+                                        {/if}
+                                        {/volist}
+                                    </td>
+                                    <td class="text-center">
+                                        {if condition="in_array('/admin/editTypeStatus',$user_role_menu)"}
+                                        {if condition="($lists.status) == 2"}
+                                        <span>是状态：否</span><br>
+                                        <button class="btn btn-success editTypeStatus" value="1">切换</button>
+                                        {else}
+                                        <span>是状态：是</span><br>
+                                        <button class="btn btn-success editTypeStatus" value="2" >切换</button>
+                                        {/if}
+                                        {/if}
+                                    </td>
+
+                                    <td class="text-center">
+                                        <button class="btn btn-success del" >删除</button>
+                                    </td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="7" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page >1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+
+<!--编辑装扮信息-->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true"
+                                                                                                  onclick="empty()">&times;</span>
+                </button>
+                <h4 class="modal-title" id="editModalLabel">编辑装扮信息</h4>
+            </div>
+            <div class="modal-body edit-append">
+                <form id='edit_form' method='post' >
+
+                <input type='hidden' value='{$token}' name='token'>
+                <input type='hidden' value='/admin/roomTypeList' id='master_url' name='master_url'>
+                房间类型:<select name='type' class="form-control" id="type">
+                    {volist name="roomModel" id="lists"}
+                    <option value="{$lists.id}" >{$lists.room_mode}</option>
+                    {/volist}
+                    </select>
+                <div class='form-group'>
+                    <label class='control-label'>推荐房间名称:</label>
+                    <input type='text' class='form-control' id='name' placeholder='分类名称' name='name'  value='' required='required'>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" >关闭</button>
+                <button type="button" class="btn btn-primary" onclick="edit_info()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="attireModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true"
+                                                                                                  onclick="empty()">&times;</span>
+                </button>
+                <h4 class="modal-title" id="attireModalLabel">编辑装扮信息</h4>
+            </div>
+            <div class="modal-body attire-append">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" >关闭</button>
+                <button type="button" class="btn btn-primary" id="search2">修改</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--操作modal-->
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$token}" name="token" id="token">
+<input type="hidden" value="/admin/roomName" name="master_url" id="master_url">
+
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<script>
+    //添加
+    $('.editGift').on('click',function(){
+        $('#editModal').modal('show');
+    });
+    //添加执行
+    function edit_info(){
+        var edit_info = $("#edit_form").serializeArray();
+
+        if($('#name').val()==''){
+            toastr.warning("宝贝儿，参数必填哦！");
+            return false;
+        }
+        console.log(edit_info)
+        $.ajax({
+            async: false,    //表示请求是是异步处理
+            type: "post",    //请求类型
+            url: "RoomNameController/addRoomName",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data: edit_info,
+            success: function (rs) {
+                var rs = JSON.parse(rs);
+                if (rs.code != 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    }
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/roomTypeList&token=' + $("#token").val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+    });
+    //修改上状态
+    $(".editTypeStatus").on('click',function(){
+        var id = $(this).parents("tr").find("#id").text();
+        var status = $(this).val();
+
+        var master_url = $("#master_url").val()
+        var token = $("#token").val()
+        $.ajax({
+            async: false,    //表示请求是是异步处理
+            type: "post",    //请求类型
+            url: "RoomNameController/updateRoomName",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data: {id:id,status:status,token:token,master_url:master_url},
+            success: function (rs) {
+                var rs = JSON.parse(rs);
+                if (rs.code != 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    })
+    //修改类型
+    $(".editType").on('click',function(){
+        var id = $(this).parents("tr").find("#id").text();
+        var type = $(this).val();
+        var master_url = $("#master_url").val()
+        var token = $("#token").val()
+        $.ajax({
+            async: false,    //表示请求是是异步处理
+            type: "post",    //请求类型
+            url: "RoomNameController/updateRoomName",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data: {id:id,type:type,token:token,master_url:master_url},
+            success: function (rs) {
+                var rs = JSON.parse(rs);
+                if (rs.code != 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    })
+    $(".del").on('click',function(){
+        var id = $(this).parents("tr").find("#id").text();
+        var type = $(this).val();
+        var master_url = $("#master_url").val()
+        var token = $("#token").val()
+        $.ajax({
+            async: false,    //表示请求是是异步处理
+            type: "post",    //请求类型
+            url: "/admin/delRoomName",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data: {id:id,token:token,master_url:master_url},
+            success: function (rs) {
+                var rs = JSON.parse(rs);
+                if (rs.code != 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    })
+</script>
+</body>
+</html>

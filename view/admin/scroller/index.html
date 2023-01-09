@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+
+    <style>
+        .form-control:focus {
+            border-color: #66afe9;
+            outline: 0;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, 0.6);
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, 0.6);
+        }
+
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+
+</head>
+
+<body class="gray-bg">
+
+    <!--数据表格-->
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <!-- Panel Other -->
+        <div class="ibox float-e-margins">
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <!-- Example Events -->
+                        <div class="example-wrap">
+                            <div class="example">
+                                <!--添加-->
+                                <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                    <!-- <button type="button" class="btn edit btn-outline btn-success" id="add_gift">
+                                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加
+                                </button> -->
+                                    <button type="button" class="btn btn-outline btn-success" id="clearCache">
+                                        <i class="glyphicon glyphicon-fire" aria-hidden="true"></i>清除缓存
+                                    </button>
+                                </div>
+
+                                <table class="table table-hover table-responsive" id="data_table">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center" width="50">ID</th>
+                                            <th class="text-center">类型</th>
+                                            <th class="text-center">顶部图片</th>
+                                            <th class="text-center">底部图片</th>
+                                            <th class="text-center">色值</th>
+                                            <th class="text-center">字体颜色值</th>
+                                            <th class="text-center">描述</th>
+                                            <th class="text-center">操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {if condition="!empty($list)"}
+                                        {volist name="list" id="lists"}
+                                        <tr>
+                                            <td class="text-center id">{$lists.id}</td>
+                                            <td class="text-center type">{$lists.type}</td>
+                                            <td class="text-center img_top"><img src="{$lists.img_top}" width="30"
+                                                    heght="30"></td>
+                                            <td class="text-center img_end"><img src="{$lists.img_end}" width="30"
+                                                    heght="30"></td>
+                                            <td class="text-center color">{$lists.color}</td>
+                                            <td class="text-center border_color">{$lists.border_color}</td>
+                                            <td class="text-center description">{$lists.description}</td>
+                                            <td class="text-center">
+                                                <div class="btn-group hidden-xs form-inline">
+                                                    <button class="btn btn-success addImage" id="ossFile">添加图片</button>
+                                                </div>
+                                                <div class="btn-group hidden-xs form-inline">
+                                                    <button class="btn update btn-success">修改</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {/volist}
+                                        {else}
+                                        <tr class="no-records-found">
+                                            <td colspan="7" class="text-center">没有找到匹配的记录</td>
+                                        </tr>
+                                        {/if}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {if condition = "$page.total_page >1"}
+                        <div id="Paginator" style="text-align: center">
+                            <ul id="pageLimit"></ul>
+                        </div>
+                        {/if}
+                        <!-- End Example Events -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Panel Other -->
+    </div>
+    <!--编辑信息-->
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true"
+                            onclick="empty()">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="editModalLabel">添加</h4>
+                </div>
+                <div class="modal-body edit-append">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="edit_info()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="saveModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true"
+                            onclick="empty()">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="saveModalLabel">编辑信息</h4>
+                </div>
+                <div class="modal-body attire-append">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="search2">修改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--编辑图片-->
+    <div class="modal fade" id="uploadFileModal" tabindex="-1" role="dialog" aria-labelledby="uploadFileModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="upload-file-name">图片编辑</h4>
+                </div>
+                <div class="modal-body">
+                    <form id='uploads_files' method="post" enctype="multipart/form-data">
+                        <input type="hidden" id="scroller_id" value="">
+                        <div class="form-group">
+                            <label class="control-label">添加顶部图片[PNG]</label>
+                            <input type="file" class="form-control img_top" name="img_top" id="img_top" value=""
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">添加底部图片[PNG]:</label>
+                            <input type="file" class="form-control img_end" name="img_end" id="img_end" value=""
+                                required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="add_imgs()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--操作modal-->
+    <input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+    <input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+    <input type="hidden" value="{$token}" name="token" id="token">
+    <input type="hidden" value="/admin/scroller/list" name="master_url" id="master_url">
+
+    <!-- 全局js -->
+    {include file="../view/admin/common/jsHeader.html"}
+
+    <script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+    <script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+    <script>
+        //添加或更改图片
+        $('.addImage').on('click', function () {
+            $("#scroller_id").val($(this).parents("tr").find(".id").text());
+            $('#uploadFileModal').modal('show');
+        })
+
+        function add_imgs() {
+            if ($("#scroller_id").val() == "") {
+                toastr.warning('未获得礼物ID');
+                return false;
+            }
+            if ($('#img_top')[0].files[0]) {
+                var img_topType = $('#img_top')[0].files[0].name.split('.');
+                if (img_topType[1] != 'png') {
+                    toastr.warning('礼物图标请选择png格式文件');
+                    return false;
+                }
+            }
+            if ($('#img_end')[0].files[0]) {
+                var imgType = $('#img_end')[0].files[0].name.split('.');
+                if (imgType[1] != 'png') {
+                    toastr.warning('礼物动画请选择png格式文件');
+                    return false;
+                }
+            }
+
+            var formData = new FormData();
+            formData.append("id", $("#scroller_id").val());
+            formData.append("token", $("#token").val());
+            formData.append("master_url", $("#master_url").val());
+            formData.append("img_top", $('#img_top')[0].files[0]);
+            formData.append("img_end", $('#img_end')[0].files[0]);
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                cache: false,
+                processData: false,
+                contentType: false,
+                type: "post", //请求类型
+                url: "/admin/scroller/ossFile", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: formData,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000); //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        }
+        //分页
+        $('#pageLimit').bootstrapPaginator({
+            currentPage: $("#page").val(),
+            totalPages: $("#total_page").val(),
+            size: "normal",
+            bootstrapMajorVersion: 3,
+            alignment: "right",
+            numberOfPages: '5',
+            pageUrl: function (type, page, current) {
+                //是每个分页码变成一个超链接
+                return '?page=' + page + '&master_url=/admin/scroller/list&token=' + $("#token").val() +
+                    '&is_lock=' + $("#is_lock").val()
+            },
+            itemTexts: function (type, page, current) {
+                switch (type) {
+                    case "first":
+                        return "首页";
+                    case "prev":
+                        return "上一页";
+                    case "next":
+                        return "下一页";
+                    case "last":
+                        return "末页";
+                    case "page":
+                        return page;
+                }
+            }
+        });
+
+        //添加信息
+        $('.edit').on('click', function () {
+            $(".edit-append").empty();
+            $(".edit-append").prepend(
+                "<form id='edit_form' method='post' >" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "类型:" + "</label>" +
+                "<input type='text' id='type' class='form-control type' name='type' value='' required>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "色值:" + "</label>" +
+                "<input type='text' id='color' class='form-control color' name='color' value='' required>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "字体颜色值:" + "</label>" +
+                "<input type='text' id='border_color' class='form-control border_color' name='border_color' value='' required>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "描述:" + "</label>" +
+                "<input type='text' id='description' class='form-control description' name='description' value='' required>" +
+                "</div>" +
+
+                "<input type='hidden' value='{$token}' name='token'>" +
+                "<input type='hidden' value='/admin/addAttire' id='master_url' name='master_url'>" +
+                " </form>"
+            );
+            $('#editModal').modal('show');
+        });
+
+        //图片上传
+        $(document).on("change", "#image_top", function () {
+            if ($('#image_top')[0].files[0]) {
+                var imgType = $('#image_top')[0].files[0].name.split('.');
+                if (imgType[1] != "bmp" && imgType[1] != "png" && imgType[1] != "gif" && imgType[1] != "jpg" &&
+                    imgType[1] != "jpeg" && imgType[1] != "svga") {
+                    toastr.warning("文件只限图片");
+                    return false;
+                }
+            }
+            var formData = new FormData();
+            formData.append("token", $("#token").val());
+            formData.append("master_url", $("#master_url").val());
+            formData.append("image_top", $('#image_top')[0].files[0]);
+
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                cache: false,
+                processData: false,
+                contentType: false,
+                type: "post", //请求类型
+                url: "/admin/scroller/ossFile", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: formData,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    $('#image_top').parent().append("<input type='hidden' name='image_top'  value=" + rs.image + ">");
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        })
+
+        //动图上传
+        $(document).on("change", "#image_end", function () {
+            if ($('#image_end')[0].files[0]) {
+                var imgType = $('#image_end')[0].files[0].name.split('.');
+                if (imgType[1] != "bmp" && imgType[1] != "png" && imgType[1] != "gif" && imgType[1] != "jpg" &&
+                    imgType[1] != "jpeg" && imgType[1] != "svga") {
+                    toastr.warning("文件只限图片");
+                    return false;
+                }
+            }
+            var formData = new FormData();
+            formData.append("token", $("#token").val());
+            formData.append("master_url", $("#master_url").val());
+            formData.append("image_end", $('#image_end')[0].files[0]);
+
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                cache: false,
+                processData: false,
+                contentType: false,
+                type: "post", //请求类型
+                url: "/admin/scroller/ossFile", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: formData,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    $('#image_end').parent().append("<input type='hidden' name='image_end'  value=" + rs.image + ">");
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        })
+
+        //添加执行
+        function edit_info() {
+
+            var edit_info = $("#edit_form").serializeArray();
+
+            if ($('#type').val() == '') {
+                toastr.warning('名称不可为空');
+                return false;
+            }
+            if ($('#image_top').val() == '') {
+                toastr.warning("图片必选");
+                return false;
+            }
+            if ($('#is_sort').val() == '') {
+                toastr.warning('排序必填');
+                return false;
+            }
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                url: "/admin/addEmoticon", //请求的 URL地址
+                token: $("#token").val(),
+                dataType: "json", //返回的数据类型
+                data: edit_info,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000); //延迟5秒刷新页面
+
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+
+            return false;
+        }
+
+        //搜索
+        $("#search").click(function () {
+            var mold = $("#mold").val();
+            var token = $('#token').val();
+            window.location.href = "/admin/scroller/list?token=" + token +
+                '&master_url=/admin/scroller/list&page=1&mold=' + mold
+        })
+
+        //修改框追加
+        $('.update').on('click', function () {
+            $(".attire-append").empty();
+            $(".attire-append").prepend(
+                "<form id='save_form' method='post' >" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "类型:" + "</label>" +
+                "<input type='text' id='type' class='form-control type' name='type' value='' disabled = 'disabled' required>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "色值:" + "</label>" +
+                "<input type='text' id='color' class='form-control color' name='color' value='' required>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "字体颜色值:" + "</label>" +
+                "<input type='text' id='border_color' class='form-control border_color' name='border_color' value='' required>" +
+                "</div>" +
+
+                "<div class='form-group'>" +
+                "<label class='control-label'>" + "描述:" + "</label>" +
+                "<input type='text' id='description' class='form-control description' name='description' value='' required>" +
+                "</div>" +
+
+                "<input type='hidden' value='{$token}' name='token'>" +
+                "<input type='hidden' class='id' name='id'>" +
+                "<input type='hidden' value='/admin/scroller/save' id='master_url' name='master_url'>" +
+                " </form>"
+            );
+
+            $(".id").val($(this).parents("tr").find(".id").text());
+            $(".type").val($(this).parents("tr").find(".type").text());
+            $(".color").val($(this).parents("tr").find(".color").text());
+            $(".border_color").val($(this).parents("tr").find(".border_color").text());
+            $(".description").val($(this).parents("tr").find(".description").text());
+
+            $('#saveModal').modal('show');
+        });
+
+
+        //修改按钮
+        $('#search2').click(function () {
+            var attire_info = $("#save_form").serializeArray();
+            if ($('#type').val() == '') {
+                toastr.warning('名称不可为空');
+                return false;
+            }
+            if ($('#is_sort').val() == '') {
+                toastr.warning('排序必填');
+                return false;
+            }
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                url: "/admin/scroller/save", //请求的 URL地址
+                token: $("#token").val(),
+                dataType: "json", //返回的数据类型
+                data: attire_info,
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000); //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        })
+
+
+        //删除
+        $('.del').on('click', function () {
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                token: $("#token").val(),
+                url: "/admin/scroller/del", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: {
+                    master_url: '/admin/scroller/del',
+                    id: $(this).attr('id'),
+                    token: $("#token").val()
+                },
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 1000); //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        })
+        //清除缓存
+        $("#clearCache").on('click', function () {
+            var master_url = "/admin/scroller/clear";
+            var token = $("#token").val();
+            $.ajax({
+                async: false, //表示请求是否异步处理
+                type: "post", //请求类型
+                url: "/admin/scroller/clear", //请求的 URL地址
+                dataType: "json", //返回的数据类型
+                data: {
+                    master_url: master_url,
+                    token: token
+                },
+                success: function (rs) {
+                    if (rs.code !== 200) {
+                        toastr.warning(rs.msg);
+                        return false;
+                    }
+                    toastr.success(rs.msg);
+                    setTimeout(location, 500); //延迟5秒刷新页面
+                },
+                error: function (rs) {
+                    toastr.warning('请求失败');
+                }
+            });
+
+            function location() {
+                window.location.href = window.location.href;
+            }
+            return false;
+        })
+    </script>
+</body>
+
+</html>

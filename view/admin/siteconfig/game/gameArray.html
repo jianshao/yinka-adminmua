@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="example">
+                            <div class="example">
+                                <div class="pull-right search form-inline">
+                                    <button type="button" class="btn btn-outline btn-success" id="clearCache">
+                                        <i class="glyphicon glyphicon-fire" aria-hidden="true"></i>清除缓存
+                                    </button>
+                                </div>
+                                <table class="table table-hover table-responsive" id="data_table" style="word-wrap: break-word; word-break: break-all;">
+                                    <thead>
+                                    <tr>
+                                        <th class="text-center" style="width: 10%;">格子</th>
+                                        <th class="text-center" style="width: 10%;">奖励</th>
+                                        <th class="text-center"style="width: 10%;">数量</th>
+                                        <th class="text-center"style="width: 10%;">权重</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {if condition="!empty($data)"}
+                                    {volist name="data" id="list"}
+                                    <tr>
+                                        <td  class="text-center greet_message" >{$list.sid}</td>
+                                        <td  class="text-center greet_message" >
+
+                                            {if $list.giftid == $jin}
+                                            <p class="giftp">金矿石</p>
+                                            {elseif $list.giftid == $yin}
+                                            <p class="giftp">银矿石</p>
+                                            {elseif $list.giftid == $tie}
+                                            <p class="giftp">铁矿石</p>
+                                            {elseif $list.giftid == $hua}
+                                            <p class="giftp">化石</p>
+                                            {else}
+                                            <p class="giftp">M豆</p>
+                                            {/if}
+
+                                            <select class="giftidselect" style="display: none;" sid="{$list.sid}" id="head_frame" style="width: 20%;display: none;">
+                                                <option value="0" {if $list.giftid == 0} echo selected="selected" {/if}>M豆</option>
+                                                <option value="{$jin}" {if $list.giftid == $jin} echo selected="selected" {/if}>金矿石</option>
+                                                <option value="{$yin}" {if $list.giftid == $yin} echo selected="selected" {/if}>银矿石</option>
+                                                <option value="{$tie}" {if $list.giftid == $tie} echo selected="selected" {/if}>铁矿石</option>
+                                                <option value="{$hua}" {if $list.giftid == $hua} echo selected="selected" {/if}>化石</option>
+                                            </select>
+                                        </td>
+                                        <td  class="text-center greet_message" >
+                                            <p class="giftnumtp">{$list.giftnum}</p>
+                                            <input type="text" value="{$list.giftnum}" class="giftnuminput" sid="{$list.sid}" style="width: 20%;display: none;" >
+                                        </td>
+                                        <td class="text-center greet_message" >
+                                            <p class="weightp">{$list.weight}</p>
+                                            <input style="width: 20%;display: none;" type="text" value="{$list.weight}" sid="{$list.sid}" class="weightinput">
+                                        </td>
+                                    </tr>
+                                    {/volist}
+                                    {else}
+                                    <tr class="no-records-found">
+                                        <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                    </tr>
+                                    {/if}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- End Example Events -->
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <!-- End Panel Other -->
+    </div>
+
+    <input type="hidden" value="/admin/ossFileStart" name="master_url" id="master_url">
+    <input type="hidden" value="{$id}" id="gameid">
+    <input type="hidden" value="{$token}" id="token">
+    <!-- 全局js -->
+    {include file="../view/admin/common/jsHeader.html"}
+
+    <script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+    <script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+    <script>
+
+        $(function () {
+            //权重修改
+            $(document).on('click','.weightp',function () {
+                $('.weightinput').hide();
+                var $this = $(this);
+                $this.hide();
+                $this.next('.weightinput').show();
+                $(this).next('.weightinput').trigger("focus");
+            })
+            $(document).on('blur','.weightinput',function () {
+                $('.weightinput').hide();
+                var $this = $(this);
+                $this.hide();
+                $this.prev('.weightp').show();
+                $this.prev('.weightp').text($(this).val());
+                var weight = $(this).val();
+                if(weight<=0||weight==''){
+                    toastr.warning('不可为0或空');
+                    return false;
+                }
+                var sid = $(this).attr('sid');
+                var token = $('#token').val();
+                var id = $('#gameid').val();
+                $.ajax({
+                    async: false,    //表示请求是否异步处理
+                    type: "get",    //请求类型
+                    url: "/admin/saveGame",//请求的 URL地址
+                    dataType: "json",//返回的数据类型
+                    data: {token:token,master_url:'/admin/saveGame',sid:sid,gameid:id,weight:weight},
+                    success: function (rs) {
+                        if (rs.code !== 200) {
+                            toastr.warning(rs.msg);
+                            return false;
+                        }
+                        toastr.success(rs.msg);
+                    },
+                    error: function (rs) {
+                        toastr.warning('请求失败');
+                    }
+                });
+            })
+            //数量修改
+            $(document).on('click','.giftnumtp',function () {
+                $('.giftnuminput').hide();
+                var $this = $(this);
+                $this.hide();
+                $this.next('.giftnuminput').show();
+                $(this).next('.giftnuminput').trigger("focus");
+            })
+            $(document).on('blur','.giftnuminput',function () {
+                $('.giftnuminput').hide();
+                var $this = $(this);
+                $this.hide();
+                $this.prev('.giftnumtp').show();
+                $this.prev('.giftnumtp').text($(this).val());
+                var giftnum = $(this).val();
+                if(giftnum<=0||giftnum==''){
+                    toastr.warning('不可为0或空');
+                    return false;
+                }
+
+                var sid = $(this).attr('sid');
+                var token = $('#token').val();
+                var id = $('#gameid').val();
+
+                $.ajax({
+                    async: false,    //表示请求是否异步处理
+                    type: "get",    //请求类型
+                    url: "/admin/saveGame",//请求的 URL地址
+                    dataType: "json",//返回的数据类型
+                    data: {token:token,master_url:'/admin/saveGame',sid:sid,gameid:id,giftnum:giftnum},
+                    success: function (rs) {
+                        if (rs.code !== 200) {
+                            toastr.warning(rs.msg);
+                            return false;
+                        }
+
+                        toastr.success(rs.msg);
+                    },
+                    error: function (rs) {
+                        toastr.warning('请求失败');
+                    }
+                });
+            })
+            //奖励
+            $(document).on('click','.giftp',function () {
+                $('.giftidselect').hide();
+                var $this = $(this);
+                $this.hide();
+                $this.next('.giftidselect').show();
+                $(this).next('.giftidselect').trigger("focus");
+            })
+            $(document).on('blur','.giftidselect',function () {
+                $('.giftidselect').hide();
+                var $this = $(this);
+                $this.hide();
+                $this.prev('.giftp').show();
+                $this.prev('.giftp').text($(this).find("option:selected").text());
+                var giftid = $(this).val();
+                var sid = $(this).attr('sid');
+                var token = $('#token').val();
+                var id = $('#gameid').val();
+
+                $.ajax({
+                    async: false,    //表示请求是否异步处理
+                    type: "get",    //请求类型
+                    url: "/admin/saveGame",//请求的 URL地址
+                    dataType: "json",//返回的数据类型
+                    data: {token:token,master_url:'/admin/saveGame',sid:sid,gameid:id,giftid:giftid},
+                    success: function (rs) {
+                        if (rs.code !== 200) {
+                        }
+                        toastr.success(rs.msg);
+                    },
+                    error: function (rs) {
+                        toastr.warning('请求失败');
+                    }
+                });
+            })
+
+            //清除缓存
+            $("#clearCache").on('click',function(){
+                var master_url = "/admin/clearCache";
+                var token = $("#token").val();
+                $.ajax({
+                    async: false,    //表示请求是否异步处理
+                    type: "post",    //请求类型
+                    url: "/admin/clearCache",//请求的 URL地址
+                    dataType: "json",//返回的数据类型
+                    data:{master_url:master_url,token:token,type:'taojin_conf'},
+                    success: function (rs) {
+                        if (rs.code !== 200) {
+                            toastr.warning(rs.msg);
+                            return false;
+                        }
+                        toastr.success(rs.msg);
+                        setTimeout(location, 500);   //延迟5秒刷新页面
+                    },
+                    error: function (rs) {
+                        toastr.warning('请求失败');
+                    }
+                });
+                function location() {
+                    window.location.href = window.location.href;
+                }
+                return false;
+            })
+        })
+
+    </script>
+</body>
+</html>

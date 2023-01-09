@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <script src="/admin/js/jquery.min.js"></script>
+    <script src="/admin/js/BenzAMRRecorder.js"></script>
+    <style>
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="example">
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center">ID</th>
+                                    <th class="text-center">昵称</th>
+                                    <th class="text-center" style="color:#1c84c6">用户Id</th>
+                                    <th class="text-center">用户等级</th>
+                                    <th class="text-center">内容</th>
+                                    <th class="text-center">图片</th>
+                                    <th class="text-center">语音</th>
+                                    <th class="text-center">状态</th>
+                                    <th class="text-center">发布时间</th>
+                                    <th class="text-center">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($list)"}
+                                    {volist name="list" id="lists"}
+                                    <tr>
+                                        <td class="text-center" id="id" >{$lists.forum_id}</td>
+                                        <td class="text-center">{$lists.nickname}</td>
+                                        <td class="text-center" style="color:#1c84c6" onclick=on_user_item("{$lists.forum_uid}",'/admin/memberItem')>{$lists.forum_uid}</td>
+                                        <td class="text-center">{$lists.lv_dengji}</td>
+                                        <td class="text-center" id="forum_content" title="{$lists.forum_content}">
+                                            {$lists.forum_content}
+                                        </td>
+                                        <td class="text-center">
+                                            {volist name="$lists.forum_image" id="img_list"}
+                                            <img src="{$img_list}" alt="缩略图" class="thumbnail col-sm-4 col-md-4 show_img">
+                                            {/volist}
+                                        </td>
+                                        <td class="text-center">
+                                            {if condition="!empty($lists.forum_voice)"}
+<!--                                            <audio src="{$lists.forum_voice}" controls="controls"-->
+<!--                                                   style="width:100px;height: 20px"></audio>-->
+                                            <button  src="{$lists.forum_voice}" onclick="playArmFile(this)">点击播放</button>
+                                            {/if}
+                                        </td>
+                                        <td class="text-center">{$lists.forum_status}</td>
+                                        <td class="text-center">{$lists.createtime}</td>
+                                        <td class="text-center">
+                                            {if condition="in_array('/admin/forumAuditYes',$user_role_menu)"}
+                                            <button class=" btn btn-primary audit_yes">通过</button>
+                                            {/if}
+                                            {if condition="in_array('/admin/forumAuditNo',$user_role_menu)"}
+                                            <button class="btn btn-danger audit_no">拒绝</button>
+                                            {/if}
+                                        </td>
+                                    </tr>
+                                {/volist}
+                                {else}
+                                    <tr class="no-records-found">
+                                        <td colspan="7" class="text-center">没有找到匹配的记录</td>
+                                    </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page > 1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+<div id="outerdiv"
+     style="position:fixed;top:0;left:0;background:rgba(0,0,0,0.7);z-index:2;width:100%;height:100%;display:none;">
+    <div id="innerdiv" style="position:absolute;">
+        <img id="max_img" style="border:5px solid #fff;" src=""/>
+    </div>
+</div>
+<!--通过审核-->
+<div class="modal fade" id="audit_yes">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>通过审核</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <i class="glyphicon glyphicon-question-sign" id="audit_yes_msg"></i>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger" data-btn-danger="modal" onclick="audit_yes()">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--不通过审核-->
+<div class="modal fade" id="audit_no">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>拒绝通过审核</h3>
+            </div>
+            <div class="modal-body" style="text-align: center">
+                <i class="glyphicon glyphicon-question-sign" id="audit_no_msg"></i>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button class="btn btn-danger" data-btn-danger="modal" onclick="audit_no()">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+{include file="../view/admin/common/userItem.html"}
+<input type="hidden" value="{$token}" id="token">
+<input type="hidden" value="" id="to_id">
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$user_role_menu_input}" id="user_role_menu">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<style>
+</style>
+<script>
+    function playArmFile(obj){
+        url = $(obj).attr('src');
+        var amr = new BenzAMRRecorder();
+        amr.initWithUrl(url).then(function() {
+            amr.play();
+        });0
+        amr.onEnded(function() {
+            console.log('播放完毕');
+        })
+    }
+
+    $('body').on('hidden.bs.modal', '#select_forum_reply', function () {
+        $("#reply_tbody tr").remove();
+    });
+    $(function () {
+        //鼠标位于 a标签上方时发生 mouseover 事件
+        $("#forum_content").mouseover(function (e) {
+            this.Mytitle = this.title;//获取超链接 title属性的内容
+            this.title = ""; //设置 title属性内容为空
+            $("body").append("<div id='div_toop'>" + this.Mytitle + "</div>");//将要显示的内容添加到 新建 div标签中 并追加到 body 中
+            $("#div_toop")
+                .css({
+                    //设置 div 内容位置
+                    "top": (e.pageY + 10) + "px",
+                    "position": "absolute",//添加绝对位置
+                    "left": (e.pageX + 20) + "px"
+                }).show("fast");// show(spe.ed,callback) speed: xian'shi'su'du
+        }).mouseout(function () { //鼠标指针从 a标签 上离开时 发生mouseout 事件
+            this.title = this.Mytitle;
+            $("#div_toop").remove();//移除对象
+        }).mousemove(function (e) { //鼠标指针在 a标签 中移动时 发生mouseout 事件
+            $("#div_toop")
+                .css({
+                    //设置 div 内容位置
+                    "top": (e.pageY + 10) + "px",
+                    "position": "absolute",//添加绝对位置
+                    "left": (e.pageX + 20) + "px"
+                });
+        });
+    });
+
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/getForumAuditList&token=' + $("#token").val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+    });
+    //通过审核
+    $(".audit_yes").click(function () {
+        var id = $(this).parents("tr").find("#id").text();
+        $("#to_id").val(id);
+        var content = $(this).parents("tr").find("#forum_content").text();
+        $('#audit_yes').modal('show')
+        $("#audit_yes_msg").html(' 确定审核通过此条内容吗：' + content )
+    })
+
+    function audit_yes() {
+        var reply_id = $("#to_id").val();
+        var master_url = '/admin/forumAuditYes'
+        var token = $('#token').val()
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/forumAuditYes",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {reply_id: reply_id, master_url: master_url, token: token},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 500);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        //刷新页面
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+    //未通过审核
+    $(".audit_no").click(function () {
+        var id = $(this).parents("tr").find("#id").text();
+        $("#to_id").val(id);
+        var content = $(this).parents("tr").find("#forum_content").text();
+        $('#audit_no').modal('show')
+        $("#audit_no_msg").html(' 确定拒绝通过此条内容吗：' + content )
+    })
+
+    function audit_no() {
+        var reply_id = $("#to_id").val();
+        var master_url = '/admin/forumAuditNo'
+        var token = $('#token').val()
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/forumAuditNo",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {reply_id: reply_id, master_url: master_url, token: token},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 500);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        //刷新页面
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    }
+
+
+    $('.show_img').click(function () {
+        var _this = $(this);//将当前的min_img元素作为_this传入函数
+        imgShow("#outerdiv", "#innerdiv", "#max_img", _this);
+    })
+
+    function imgShow(outerdiv, innerdiv, max_img, _this) {
+        var src = _this.attr("src");//获取当前点击的min_img元素中的src属性
+        $("#max_img").attr("src", src);//设置#max_img元素的src属性
+
+        /*获取当前点击图片的真实大小，并显示弹出层及大图*/
+        $("<img/>").attr("src", src).load(function () {
+            var windowW = $(window).width();//获取当前窗口宽度
+            var windowH = $(window).height();//获取当前窗口高度
+            var realWidth = this.width;//获取图片真实宽度
+            var realHeight = this.height;//获取图片真实高度
+            var imgWidth, imgHeight;
+            var scale = 0.8;//缩放尺寸，当图片真实宽度和高度大于窗口宽度和高度时进行缩放
+
+            if (realHeight > windowH * scale) {
+                imgHeight = windowH * scale;
+                imgWidth = imgHeight / realHeight * realWidth;
+                if (imgWidth > windowW * scale) {
+                    imgWidth = windowW * scale;
+                }
+            } else if (realWidth > windowW * scale) {
+                imgWidth = windowW * scale;
+                imgHeight = imgWidth / realWidth * realHeight;
+            } else {
+                imgWidth = realWidth;
+                imgHeight = realHeight;
+            }
+            $("#max_img").css("width", imgWidth);//以最终的宽度对图片缩放
+
+            var w = (windowW - imgWidth) / 2;//计算图片与窗口左边距
+            var h = (windowH - imgHeight) / 2;//计算图片与窗口上边距
+            $(innerdiv).css({"top": h, "left": w});//设置#innerdiv的top和left属性
+            $(outerdiv).fadeIn("fast");//淡入显示#outerdiv及.pimg
+        });
+
+        $(outerdiv).click(function () {
+            $(this).fadeOut("fast");
+        });
+    }
+
+
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title></title>
+	<!--    全局css-->
+	{include file="../view/admin/common/cssHeader.html"}
+</head>
+
+<body class="gray-bg">
+	<div class="wrapper wrapper-content animated fadeInRight">
+		<!-- Panel Other -->
+		<div class="ibox float-e-margins">
+			<div class="ibox-content">
+				<div class="row row-lg">
+					<div class="col-sm-12">
+						<!-- Example Events -->
+						<div class="example-wrap">
+							<div class="example">
+								<div class="btn-group hidden-xs form-inline">
+									<div class="form-group">
+										用户ID：<input class="form-control" type="text" placeholder="请输入用户ID" value="{$uid}" id="uid">
+									</div>
+									<div class="form-group">
+										<button type="button" class="btn btn-outline btn-success" id="search">
+											<i aria-hidden="true"></i>搜索
+										</button>
+									</div>
+								</div>
+								<div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+									<button type="button" class="btn btn-outline btn-success" id="add">
+										<i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加
+									</button>
+								</div>
+							</div>
+							<table class="table table-hover table-responsive" id="data_table"
+								style="word-wrap: break-word; word-break: break-all;">
+								<thead>
+									<tr>
+										<th class="text-center">id</th>
+										<th class="text-center">用户ID</th>
+										<th class="text-center">手机</th>
+										<th class="text-center">昵称</th>
+										<th class="text-center">用户类型</th>
+										<th class="text-center">创建时间</th>
+										<th class="text-center">操作</th>
+									</tr>
+								</thead>
+								<tbody>
+									{if condition="!empty($list)"}
+									{volist name="list" id="list"}
+									<tr>
+										<td style="width: 20px;" class="text-center">{$list.id}</td>
+										<td style="width: 20px;" class="text-center">{$list.uid}</td>
+										<td style="width: 20px;" class="text-center">{$list.tel}</td>
+										<td style="width: 20px;" class="text-center">{$list.name}</td>
+										<td style="width: 20px;" class="text-center">{if condition="$list.type == 0" }
+											公会长 {else} 普通用户 {/if}</td>
+										<td style="width: 20px;" class="text-center">{$list.create_time}</td>
+										<td style="width: 20px;" class="text-center">
+
+											<button id="{$list.id}" class="btn btn-success status">删除</button>
+
+										</td>
+									</tr>
+									{/volist}
+									{else}
+									<tr class="no-records-found">
+										<td colspan="8" class="text-center">没有找到匹配的记录</td>
+									</tr>
+									{/if}
+								</tbody>
+							</table>
+							{if condition = "$page.total_page >1"}
+							<div id="Paginator" style="text-align: center">
+								<ul id="pageLimit"></ul>
+							</div>
+							{/if}
+							<!-- End Example Events -->
+						</div>
+
+					</div>
+				</div>
+			</div>
+			<!-- End Panel Other -->
+		</div>
+	</div>
+	<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true"
+							onclick="empty()">&times;</span>
+					</button>
+					<h4 class="modal-title" id="editModalLabel">添加</h4>
+				</div>
+				<div class="modal-body edit-append">
+
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+					<button type="button" class="btn btn-primary" onclick="edit_info()">保存</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	</div>
+	{include file="../view/admin/common/jsHeader.html"}
+	<input type="hidden" value="{$token}" name="token" id="token">
+	<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+	<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+	<script src="/admin/js/trap/fileinput.js" type="text/javascript"></script>
+	<script src="/admin/js/trap/fileinput_locale_zh.js" type="text/javascript"></script>
+	<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+	<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+	<script>
+		//添加装扮信息
+		$('#add').on('click', function () {
+			$(".attire-append").empty();
+			$(".edit-append").empty();
+			$(".edit-append").prepend(
+				"<form id='edit_form' method='post' >" +
+
+				"<div >" +
+				"<label class='control-label'>" + "类型:" + "</label>" +
+				"<select name='type' >" +
+				"<option value='0' >工会长</option>" +
+				"<option value='1' >普通用户</option>" +
+				"</select>" +
+				"</div>" +
+
+				"<div class='form-group'>" +
+				"<label class='control-label'>" + "用户id:" + "</label>" +
+				"<input type='text' class='form-control' name='uid'  required='required'>" +
+				"</div>" +
+
+				"<input type='hidden' value='{$token}' name='token'>" +
+				"<input type='hidden' value='/admin/daichong' id='master_url' name='master_url'>" +
+				" </form>"
+			);
+			$('#editModal').modal('show');
+		});
+
+		//添加执行
+		function edit_info() {
+			var edit_info = $("#edit_form").serializeArray();
+			if (edit_info[1]['value'] == '') {
+				toastr.warning("用户必填");
+				return false;
+			}
+			$.ajax({
+				async: false, //表示请求是否异步处理
+				type: "post", //请求类型
+				url: "/admin/daichongAdd", //请求的 URL地址
+				token: $("#token").val(),
+				dataType: "json", //返回的数据类型
+				data: edit_info,
+				success: function (rs) {
+					if (rs.code !== 200) {
+						toastr.warning(rs.msg);
+						return false;
+					}
+					toastr.success(rs.msg);
+					setTimeout(location, 1000); //延迟5秒刷新页面
+
+				},
+				error: function (rs) {
+					toastr.warning('请求失败');
+				}
+			});
+
+			function location() {
+				window.location.href = window.location.href;
+			}
+
+			return false;
+		}
+
+		$('.status').click(function () {
+			var id = $(this).attr('id')
+			$.ajax({
+				async: false, //表示请求是否异步处理
+				type: "post", //请求类型
+				url: "/admin/daichongStatus", //请求的 URL地址
+				token: $("#token").val(),
+				dataType: "json", //返回的数据类型
+				data: {
+					id: id,
+					token: $('#token').val(),
+					master_url: '/admin/daichongStatus'
+				},
+				success: function (rs) {
+					if (rs.code !== 200) {
+						toastr.warning(rs.msg);
+						return false;
+					}
+					toastr.success(rs.msg);
+					setTimeout(location, 1000); //延迟5秒刷新页面
+
+				},
+				error: function (rs) {
+					toastr.warning('请求失败');
+				}
+			});
+
+			function location() {
+				window.location.href = window.location.href;
+			}
+
+			return false;
+		})
+
+		$('#search').click(function() {
+            window.location.href = "/admin/daichong?token=" +  $("#token").val() + '&master_url=/admin/daichong' + '&uid=' + $("#uid").val();
+        })
+
+		$('#pageLimit').bootstrapPaginator({
+			currentPage: $("#page").val(),
+			totalPages: $("#total_page").val(),
+			size: "normal",
+			bootstrapMajorVersion: 3,
+			alignment: "right",
+			numberOfPages: '5',
+			pageUrl: function (type, page, current) {
+				//是每个分页码变成一个超链接
+				return '?page=' + page + '&master_url=/admin/daichong&token=' + $("#token").val()
+			},
+			itemTexts: function (type, page, current) {
+				switch (type) {
+					case "first":
+						return "首页";
+					case "prev":
+						return "上一页";
+					case "next":
+						return "下一页";
+					case "last":
+						return "末页";
+					case "page":
+						return page;
+				}
+			}
+			/*   onPageClicked:function (event, originalEvent, type, page) {
+			       location.href = "?page="+page;
+			   }*/
+		});
+	</script>
+	</div>
+</body>
+
+</html>

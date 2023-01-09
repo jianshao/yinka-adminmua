@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+
+    <style>
+        .form-control:focus {
+            border-color: #66afe9;
+            outline: 0;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, 0.6);
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, 0.6);
+        }
+        
+        table {
+            table-layout: fixed;
+        }
+        
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .img_big {
+            z-index: 100;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+
+</head>
+
+<body class="gray-bg">
+    <!--数据表格-->
+    <div class="wrapper wrapper-content animated fadeInRight">
+        <!-- Panel Other -->
+        <div class="ibox float-e-margins">
+            <div class="ibox-content">
+                <div class="row row-lg">
+                    <div class="col-sm-12">
+                        <!-- Example Events -->
+                        <div class="example-wrap">
+                            <div class="btn-group hidden-xs form-inline">
+                                <div class="form-group">
+                                    用户ID：<input class="form-control input-outline" type="text" placeholder="请输入用户ID" value="{$user_id}" id="user_id">
+                                </div>
+                                <div class="form-group">
+                                    审核状态：
+                                    <select class="form-control" id='search-status' name='status'>
+									{volist name="status_map" id="list" key="index"}
+									<option value="{$index-1}" {if $status==$index-1}selected="selected"
+											{/if}>{$status_map[$index-1]} </option> {/volist} </select> </div>
+                                <div class="form-group">
+                                    <button type="button" class="btn btn-outline btn-success" style="float:right;" id="search">
+								<i aria-hidden="true"></i>搜索
+							</button>
+                                </div>
+                                <div class="form-group">
+                                    <button type="button" class="btn btn-outline btn-success" style="float:right;" id="aproveAll">
+									<i aria-hidden="true"></i>批量审核
+								</button>
+                                </div>
+                                <div class="example">
+                                    <div>
+                                        <table class="table table-hover table-responsive" id="data_table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-center"  style="width:100px;">全选 <input type="checkbox" id="choseAll">
+                                                    </th>
+                                                    <th class="text-center" style="width:100px;">ID</th>
+                                                    <th class="text-center" style="width:100px;">用户ID</th>
+                                                    <th class="text-center" style="width:100px;">类型</th>
+                                                    <th class="text-center" style="width:100px;">状态</th>
+                                                    <th class="text-center" style="width:400px;">内容</th>
+                                                    <th class="text-center">创建时间</th>
+                                                    <th class="text-center">审核时间</th>
+                                                    <th class="text-center">审核人</th>
+                                                    <th class="text-center">操作</th>
+                                                    <th class="text-center">日志</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {if condition="!empty($data)"} {volist name="data" id="list"}
+                                                <tr>
+                                                    <td class="text-center chose"><input type="checkbox" onclick="choseOne(this)"></td>
+                                                    <td class="text-center id">{$list.id}</td>
+                                                    <td class="text-center user_id">{$list.user_id}</td>
+                                                    <td class="text-center action" actionval="{$list.action}">
+                                                        {$action_map[$list.action]}
+                                                    </td>
+                                                    <td class="text-center status" typeval="{$list.status}">
+                                                        {$status_map[$list.status]}
+                                                    </td>
+                                                    {if in_array($list.action, ['avatar', 'wall'])}
+                                                    <td class="text-center content" width="240px;">
+                                                        {volist name="list.content" id="img"}
+                                                        <img src="{$img}" alt="" style="width: 30px;" class="img_small" onclick="showImgDetail('<?php echo $img?>')"> {/volist}
+                                                    </td>
+                                                    {elseif condition="$list.action eq 'voice'"}
+                                                    <td class="text-center content" width="240px;">
+														<button id="amr-file-{$list.id}" src="{$list.content}" onclick="playArmFile(this)">点击播放</button>
+                                                    </td>
+                                                    {else}
+                                                    <td class="text-center content"><textarea disabled id="" cols="15" rows="2">{$list.content}</textarea></td>
+                                                    {/if}
+                                                    <td class="text-center create_time">{$list.create_time|date='Y-m-d H:i:s'}
+                                                    </td>
+                                                    <td class="text-center update_time">{$list.update_time}</td>
+                                                    <td class="text-center admin_user_name">{$list.admin_user_name}</td>
+                                                    <td class="text-center">
+                                                        {if $list.status == 0}
+                                                        <div class="btn-group hidden-xs form-inline">
+                                                            <button class="btn btn-success agree" pid="{$list.id}">通过</button>
+                                                        </div>
+                                                        <div class="btn-group hidden-xs form-inline">
+                                                            <button class="btn btn-danger refuse" pid="{$list.id}">拒绝</button>
+                                                        </div>
+                                                        {elseif $list.status == 1}
+                                                        <div class="btn-group hidden-xs form-inline">
+                                                            <span>已通过</span>
+                                                        </div>
+                                                        {elseif $list.status == 2}
+                                                        <div class="btn-group hidden-xs form-inline">
+                                                            <span>已拒绝</span>
+                                                        </div>
+                                                        {/if}
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-group hidden-xs form-inline">
+                                                            <button class="btn btn-success J_menuItem" href="/admin/memberAuditLog?master_url=/admin/memberAuditLog&token={$token}&user_id={$list.user_id}" class="J_menuItem" title="审核查看日志">查看日志</button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                {/volist} {else}
+                                                <tr class="no-records-found">
+                                                    <td colspan="7" class="text-center">没有找到匹配的记录</td>
+                                                </tr>
+                                                {/if}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            {if condition = "$page.total_page >1"}
+                            <div id="Paginator" style="text-align: center">
+                                <ul id="pageLimit"></ul>
+                            </div>
+                            {/if}
+                            <!-- End Example Events -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Panel Other -->
+        </div>
+
+        <div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="detailModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+							aria-hidden="true" onclick="empty()">&times;</span>
+					</button>
+                        <h4 class="modal-title" id="detailModalLabel">用户图片信息</h4>
+                    </div>
+                    <div class="modal-body detail-append">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="dealMsgModal" tabindex="-1" role="dialog" aria-labelledby="dealMsgModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+							aria-hidden="true" onclick="empty()">&times;</span>
+					</button>
+                        <h4 class="modal-title" id="dealMsgModalLabel">用户处理信息</h4>
+                    </div>
+                    <div class="modal-body dealMsg-append">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {include file="../view/admin/common/confirmHtml.html"}
+
+        <div class="modal fade" id="confirmAllModal" tabindex="-1" role="dialog" aria-labelledby="confirmAllModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">确认信息</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+							aria-hidden="true">×</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="confirMsg"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="all-refuse">全部拒绝</button>
+                        <button type="button" class="btn btn-primary" id="all-confirm">全部通过</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input type='hidden' value='0' id='agree-pid'>
+        <input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+        <input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+        <input type="hidden" value="{$token}" name="token" id="token">
+        <input type="hidden" value="{$user_id}" id="user_id">
+        <input type="hidden" value="/admin/ossAttireFile" name="master_url" id="master_url">
+        <!-- 全局js -->
+        {include file="../view/admin/common/jsHeader.html"}
+        <script>
+
+
+			function playArmFile(obj){
+				url = $(obj).attr('src');
+				console.log(url)
+				var amr = new BenzAMRRecorder();
+				amr.initWithUrl(url).then(function() {
+					amr.play();
+				});
+				amr.onEnded(function() {
+					alert('播放完毕');
+				})
+			}
+            $('#choseAll').click(function() {
+                if (typeof $(this).attr('checked') === "undefined") {
+                    $(this).attr('checked', 'checked');
+                    $(this).parent().parent().parent().parent().find('.chose input').prop('checked', true);
+                    $(this).parent().parent().parent().parent().find('.chose input').attr('checked', 'checked');
+                } else {
+                    $(this).removeAttr('checked', 'checked');
+                    $(this).parent().parent().parent().parent().find('.chose input').prop('checked', false);
+                    $(this).parent().parent().parent().parent().find('.chose input').removeAttr('checked', 'checked');
+                }
+            });
+
+            $('#pageLimit').bootstrapPaginator({
+                currentPage: $("#page").val(),
+                totalPages: $("#total_page").val(),
+                size: "normal",
+                bootstrapMajorVersion: 3,
+                alignment: "right",
+                numberOfPages: '5',
+                pageUrl: function(type, page, current) {
+                    //是每个分页码变成一个超链接
+                    return '?page=' + page + '&master_url=/admin/changeMemberInfo&token=' + $("#token")
+                        .val() + '&status=' + $("#search-status").val()
+                },
+                itemTexts: function(type, page, current) {
+                    switch (type) {
+                        case "first":
+                            return "首页";
+                        case "prev":
+                            return "上一页";
+                        case "next":
+                            return "下一页";
+                        case "last":
+                            return "末页";
+                        case "page":
+                            return page;
+                    }
+                }
+            });
+
+            $('.agree').on('click', function() {
+                var pid = $(this).attr('pid');
+                $("#agree-pid").attr('value', pid);
+                $('#confirmModal').modal('show');
+            });
+
+            $('#aproveAll').on('click', function() {
+                var ids_arr = [];
+                var len = 0;
+                var choses = $('.chose input[checked="checked"]').parent().parent().find('.id');
+                $.each(choses, function(index, obj) {
+                    ids_arr.push($(obj).text())
+                });
+                len = ids_arr.length;
+                var ids = ids_arr.toString();
+                console.log(ids);
+                $("#agree-pid").attr('value', ids);
+                $('#confirmAllModal #confirMsg').html('当前选中<span style="color:#3399cc">' + len + '</span>条数据,确认通过吗？');
+                $('#confirmAllModal').modal('show');
+            });
+
+
+
+            $('.refuse').on('click', function() {
+                var pid = $(this).attr('pid');
+                changeStatus(2, pid);
+            });
+
+            $('#second-confirm').click(function() {
+                var pid = $("#agree-pid").attr('value');
+                changeStatus(1, pid);
+            })
+
+            $('#all-confirm').click(function() {
+                var pid = $("#agree-pid").attr('value');
+                changeStatus(1, pid);
+            })
+
+            $('#all-refuse').click(function() {
+                var pid = $("#agree-pid").attr('value');
+                changeStatus(2, pid);
+            })
+
+
+            function showImgDetail(img) {
+                var str = '';
+                str += '<tr><img src="' + img + '" class="img_big"></td></tr>'
+                $(".detail-append").empty();
+                $(".detail-append").prepend(
+                    "<table class='table table-hover table-responsive' id='data_table' style='word-wrap: break-word; word-break: break-all;'>" +
+                    str +
+                    "<table>")
+                $('#detailModal').modal('show');
+            }
+
+            function dealMsg(msg) {
+                $(".dealMsg-append").empty();
+                $(".dealMsg-append").prepend(msg)
+                $('#dealMsgModal').modal('show');
+            }
+
+            function choseOne(obj) {
+                if (typeof $(obj).attr('checked') === "undefined") {
+                    $(obj).attr('checked', 'checked');
+                } else {
+                    $(obj).removeAttr('checked', 'checked');
+                }
+            }
+
+            function changeStatus(status, pid) {
+                $.ajax({
+                    async: false, //表示请求是否异步处理
+                    type: "post", //请求类型
+                    url: "/admin/memberInfoAgree", //请求的 URL地址
+                    token: $("#token").val(),
+                    dataType: "json", //返回的数据类型
+                    data: {
+                        token: $('#token').val(),
+                        master_url: '/admin/memberInfoAgree',
+                        id: pid,
+                        status: status
+                    },
+                    success: function(rs) {
+                        if (rs.code != 200) {
+                            toastr.warning(rs.desc);
+                            return false;
+                        }
+
+                        $('#confirmAllModal').modal('hide');
+                        $('#confirmModal').modal('hide');
+                        dealMsg(rs.desc);
+                        setTimeout(location, 3000); //延迟5秒刷新页面
+                    },
+                    error: function(rs) {
+                        toastr.warning('请求失败');
+                    }
+                });
+
+                function location() {
+                    window.location.href = window.location.href;
+                }
+                return false;
+            }
+
+            $("#shuaxin").click(function() {
+                window.location.href = "/admin/changeMemberInfo?token=" + $('#token').val() +
+                    '&master_url=/admin/changeMemberInfo';
+            })
+        </script>
+        <script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+        <script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+        <script src="/admin/js/BenzAMRRecorder.js"></script>
+        <script>
+            $('body').on('hidden.bs.modal', '#selectRate', function() {
+                $("#member_tbody tr").remove();
+            });
+            $('#choseAll').prop('checked', false);
+            $('.chose input').prop('checked', false);
+
+            $('#search').click(function() {
+                var stime = $('#datetimeStart').val();
+                var etime = $('#datetimeEnd').val();
+                var token = $('#token').val();
+                var page = $("#page").val();
+                var user_id = $("#user_id").val();
+                if (stime > etime) {
+                    toastr.warning('开始时间不能大于结束时间');
+                    return false;
+                }
+                window.location.href = "/admin/changeMemberInfo?token=" + token +
+                    '&master_url=/admin/changeMemberInfo&page=' + page + '&stime=' + stime + '&etime=' + etime +
+                    '&user_id=' + user_id + '&status=' + $("#search-status").val();
+            })
+
+            $('#daochu').click(function() {
+                var stime = $('#datetimeStart').val();
+                var etime = $('#datetimeEnd').val();
+                var token = $('#token').val();
+                var page = $("#page").val();
+                if (stime > etime) {
+                    toastr.warning('开始时间不能大于结束时间');
+                    return false;
+                }
+                window.location.href = "/admin/changeMemberInfo?token=" + token +
+                    '&master_url=/admin/changeMemberInfo&page=' + page + '&stime=' + stime + '&etime=' + etime +
+                    '&daochu=1';
+            })
+
+            $("#datetimeStart").datetimepicker({
+                weekStart: 1,
+                todayBtn: true,
+                todayHighlight: 1,
+                startView: 2,
+                forceParse: 0,
+                showMeridian: 1,
+                format: 'yyyy-mm-dd 00:00:00',
+                minView: '3',
+                language: 'zh-CN',
+                autoclose: true,
+                startDate: '-10y,-10m,-10d'
+            }).on("click", function() {
+                $("#datetimeStart").datetimepicker("setStartDate")
+            });
+            $("#datetimeEnd").datetimepicker({
+                weekStart: 1,
+                todayBtn: true,
+                todayHighlight: 1,
+                startView: 2,
+                forceParse: 0,
+                showMeridian: 1,
+                format: 'yyyy-mm-dd 23:59:59',
+                minView: '3',
+                language: 'zh-CN',
+                autoclose: true,
+                startDate: '-10y,-10m,-10d'
+            }).on("click", function() {
+                $("#datetimeEnd").datetimepicker("setEndDate")
+            });
+
+
+            $(function() {
+
+                $('.J_menuItem').on('click', function() {
+                    parent.childMenu(this)
+                });
+            })
+        </script>

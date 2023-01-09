@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <div class="pull-right search form-inline">
+                            状态:<select class="form-control" id="status">
+                            <option value="-1" >全部</option>
+                            <option value="1" {if $status == 1} echo selected="selected" {/if}>已通过</option>
+                            <option value="2" {if $status == 2} echo selected="selected" {/if}>审核中</option>
+                            <option value="3" {if $status == 3} echo selected="selected" {/if}>已拒绝</option>
+                        </select>
+                            <input class="form-control input-outline" type="text" value="{$uid}"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                   placeholder="用户Id"
+                                   id="uid">
+                            <input class="form-control input-outline" type="text" value="{$pretty_id}"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                   placeholder="用户靓号Id"
+                                   id="pretty_id">
+                            <input class="form-control input-outline" type="text" value="{$mobile}"
+                                   oninput="this.value = this.value.replace(/^1\d{11}$/, '');"
+                                   placeholder="请输入手机号"
+                                   id="mobile">
+                            <button type="button" class=" btn btn-primary" id="search">搜索</button>
+                        </div>
+                        <div class="example">
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <h1>人数：{$count}</h1>
+                                <tr>
+                                    <th class="text-center">Id</th>
+                                    <th class="text-center">昵称</th>
+                                    <th class="text-center">番茄豆</th>
+                                    <th class="text-center">钻石</th>
+                                    <th class="text-center">等级</th>
+                                    <th class="text-center">手机号</th>
+                                    <th class="text-center">状态</th>
+                                    <th class="text-center">时间</th>
+                                    <th class="text-center">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($data)"}
+                                {volist name="data" id="list"}
+                                <tr>
+                                    <td class="text-center">{$list.id}</td>
+                                    <td class="text-center" >{$list.nickname}</td>
+                                    <td class="text-center" >{$list.totalcoin}</td>
+                                    <td class="text-center" >{$list.diamond}</td>
+                                    <td class="text-center">{$list.lv_dengji}</td>
+                                    <td class="text-center">{$list.username}</td>
+                                    <td class="text-center">{if condition="$list.cancel_user_status==1"}已注销{elseif condition="$list.cancel_user_status==2"}待审核{elseif condition="$list.cancel_user_status==3"}已拒绝{/if}</td>
+                                    <td class="text-center">{$list.cancellation_time}</td>
+                                    <td class="text-center">
+                                        {if condition="$list.cancel_user_status==2"}
+                                        <!-- <button class="btn btn-success canceluserstatus" status="{$list.cancel_user_status}" uid="{$list.id}">通过</button> -->
+                                        <!-- <button class="btn btn-success refused-to" style="background-color: #fc5656;border-color:#fc5656;" uid="{$list.id}">拒绝</button> -->
+                                        {elseif condition="$list.cancel_user_status==1"}
+                                        <!-- <button class="btn btn-success canceluserstatus" status="{$list.cancel_user_status}" uid="{$list.id}">解除</button> -->
+                                        {elseif condition="$list.cancel_user_status==3"}
+                                        <!-- <button class="btn btn-success canceluserstatus" status="{$list.cancel_user_status}" uid="{$list.id}">通过</button> -->
+                                        <!-- <button class="btn btn-success refused-to" style="background-color: #fc5656;border-color:#fc5656;" uid="{$list.id}">拒绝</button> -->
+                                        {/if}
+
+                                    </td>
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="8" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page >1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+{include file="../view/admin/common/userItem.html"}
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$token}" id="token">
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+<style>
+</style>
+<script>
+
+    $('#search').click(function () {
+        var user_id = $("#uid").val();
+        var pretty_id = $("#pretty_id").val();
+        var token = $('#token').val();
+        var mobile = $('#mobile').val();
+        var status = $('#status').val();
+        window.location.href = "/admin/cancelUserStatus?token=" + token + '&master_url=/admin/cancelUserStatus&page=1&uid=' + user_id+'&pretty_id=' + pretty_id+'&mobile=' + mobile+'&status='+status;
+    })
+    
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/cancelUserStatus&token=' + $("#token").val()+'&uid=' + $("#uid").val()+'&pretty_id=' + $("#pretty_id").val()+'&mobile=' + $('#mobile').val()+'&status='+$('#status').val();
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+        /*   onPageClicked:function (event, originalEvent, type, page) {
+               location.href = "?page="+page;
+           }*/
+    });
+
+    $('.refused-to').click(function () {
+        var uid = $(this).attr('uid');
+        $.ajax({
+            type: "get",    //请求类型
+            url: "/admin/cancelUserStatusCancel",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data:{token:$('#token').val(),master_url:'/admin/cancelUserStatusCancel',id:uid},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+
+                setTimeout(function (){
+
+                    window.location.reload();
+                }, 3000);
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+    })
+    $('.canceluserstatus').click(function () {
+        var status = $(this).attr('status');
+        var uid = $(this).attr('uid');
+        $.ajax({
+            type: "get",    //请求类型
+            url: "/admin/cancelUserStatusSave",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data:{token:$('#token').val(),master_url:'/admin/cancelUserStatus',status:status,id:uid},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+
+                setTimeout(function (){
+
+                    window.location.reload();
+                }, 3000);
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+    })
+
+</script>
+
+</body>
+
+</html>

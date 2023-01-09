@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua语音 - 运营后台</title>
+    <!--    全局css-->
+    {include file="../view/admin/common/cssHeader.html"}
+    <link href="/admin/css/bootstrap-datetimepicker.css" rel="stylesheet">
+    <link href="/admin/css/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+
+    <style>
+
+        .form-control:focus {
+            border-color: #66afe9;
+            outline: 0;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
+            box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
+        }
+
+        table {
+            table-layout: fixed;
+        }
+
+        td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+    </style>
+
+</head>
+<body class="gray-bg">
+
+<!--数据表格-->
+<div class="wrapper wrapper-content animated fadeInRight" >
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+            <div class="row row-lg">
+                <div class="col-sm-12">
+                    <!-- Example Events -->
+                    <div class="example-wrap">
+                        <!--                            搜索-->
+                        {if condition="in_array('/admin/attListGold',$user_role_menu)"}
+                        <div class="pull-right search form-inline">
+                            <input class="form-control input-outline" type="text"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                   placeholder="请输入Id" value="{$attire_id}"
+                                   id="attire_id">
+                            <!-- <input class="form-control input-outline" type="text"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                   placeholder="输入1是上架，2是下架" value="{$status}"
+                                   id="status"> -->
+                            是否上下架:<select class="form-control" id="status">
+                            <option value="2" {if $status == 2} echo selected="selected" {/if}>全部</option>
+                            <option value="1" {if $status == 1} echo selected="selected" {/if}>上架</option>
+                            <option value="3" {if $status == 3} echo selected="selected" {/if}>下架</option>
+                        </select>
+                            是否展示:<select class="form-control" id="is_show">
+                            <option value="2" {if $is_show == 2} echo selected="selected" {/if}>全部</option>
+                            <option value="1" {if $is_show == 1} echo selected="selected" {/if}>是</option>
+                            <option value="0" {if $is_show == 0} echo selected="selected" {/if}>否</option>
+                        </select>
+                            <button type="button" class=" btn btn-primary" id="search">搜索</button>
+                        </div>
+                        {/if}
+                        <div class="example">
+                            <!--                            添加装扮-->
+                            <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+                                <button type="button" class="btn editGift btn-outline btn-success" id="add_gift">
+                                    <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>添加装扮
+                                </button>
+                            </div>
+                            <table class="table table-hover table-responsive" id="data_table">
+                                <thead>
+                                <tr>
+                                    <th class="text-center"width="50" >ID</th>
+                                    <th class="text-center" >描述</th>
+                                    <th class="text-center">装扮名称</th>
+                                    <th class="text-center">装扮图片</th>
+                                    <th class="text-center">金币</th>
+                                    <th class="text-center">天数</th>
+                                    <th class="text-center" >可否购买</th>
+                                    <th class="text-center" width="200">装扮等级</th>
+                                    <th class="text-center">状态</th>
+                                    <th class="text-center">头像框获取方式</th>
+                                    <th class="text-center" >是否展示</th>
+                                    <th class="text-center">操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {if condition="!empty($list)"}
+                                {volist name="list" id="lists"}
+                                <tr>
+                                    <td class="text-center attire_id" >{$lists.id}</td>
+                                    <td class="text-center  desc">{$lists.attire_describe}</td>
+                                    <td class="text-center attire_name">{$lists.attire_name}</td>
+                                    <td class="text-center attire_image" >
+                                        <img src="{$lists.attire_image}" width="70"  heght="70">
+                                    </td>
+
+                                    <td class="text-center price">{$lists.reward_price}</td>
+                                    <td class="text-center day">{$lists.goldmall_time}</td>
+                                    {if $lists.is_buy==1}
+                                    <td class="text-center is_buy" is_buy="1" >可以</td>
+                                    {else}
+                                    <td class="text-center is_buy" is_buy="0" >不可</td>
+                                    {/if}
+
+                                    <td class="text-center is_vip" is_vip="0" >{$lists.is_vip}</td>
+
+                                    {if $lists.status==1}
+                                    <td class="text-center status" status="1" >上架</td>
+                                    {else}
+                                    <td class="text-center status" status="0" >下架</td>
+                                    {/if}
+
+                                    <!--                                    1：金宝箱获取  2：银宝箱获取 3：商城购买 4：首充获得'-->
+                                    {if $lists.get_type==0}
+                                    <td class="text-center get_type" get_type="0" >无</td>
+                                    {elseif $lists.get_type==1}
+                                    <td class="text-center get_type" get_type="1" >金宝箱获取</td>
+                                    {elseif $lists.get_type==2}
+                                    <td class="text-center get_type" get_type="2" >银宝箱获取</td>
+                                    {elseif $lists.get_type==3}
+                                    <td class="text-center get_type" get_type="3" >商城购买</td>
+                                    {elseif $lists.get_type==4}
+                                    <td class="text-center get_type" get_type="4" >首充获得</td>
+                                    {elseif $lists.get_type==6}
+                                    <td class="text-center get_type" get_type="6" >vip获取</td>
+                                    {elseif $lists.get_type==7}
+                                    <td class="text-center get_type" get_type="7" >svip获取</td>
+                                    {else}
+                                    <td class="text-center get_type" get_type="7" ></td>
+                                    {/if}
+
+                                    {if $lists.is_show==1}
+                                    <td class="text-center is_show" is_show="1">显示</td>
+                                    {else}
+                                    <td class="text-center is_show" is_show="0" >不显示</td>
+                                    {/if}
+                                    <td class="text-center"  >
+                                        <div class="btn-group hidden-xs form-inline">
+                                            <button type="button" class="btn btn-outline btn-success statusupdate" status="{$lists.status}"  style="float:right;" attireType_id="{$lists.id}">
+                                                <i aria-hidden="true"></i>切换上下架
+                                            </button>
+                                            <button attireType_id="{$lists.son_id}" get_type="{$lists.get_type}"  attireType_pid="{$lists.pid}" list_type="{$lists.list_type}" type="button" class="btn btn-outline update btn-success" style="float:right;" attire_id="{$lists.id}">
+                                                <i aria-hidden="true"></i>修改
+                                            </button>
+                                        </div>
+                                    </td >
+                                </tr>
+                                {/volist}
+                                {else}
+                                <tr class="no-records-found">
+                                    <td colspan="7" class="text-center">没有找到匹配的记录</td>
+                                </tr>
+                                {/if}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {if condition = "$page.total_page >1"}
+                    <div id="Paginator" style="text-align: center">
+                        <ul id="pageLimit"></ul>
+                    </div>
+                    {/if}
+                    <!-- End Example Events -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Panel Other -->
+</div>
+
+<!--编辑装扮信息-->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+                </button>
+                <h4 class="modal-title" id="editModalLabel">编辑装扮信息</h4>
+            </div>
+            <div class="modal-body edit-append">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" >关闭</button>
+                <button type="button" class="btn btn-primary" onclick="edit_info()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="attireModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" onclick="empty()">&times;</span>
+                </button>
+                <h4 class="modal-title" id="attireModalLabel">编辑装扮信息</h4>
+            </div>
+            <div class="modal-body attire-append">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" >关闭</button>
+                <button type="button" class="btn btn-primary" id="search2">修改</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--操作modal-->
+<input type="hidden" value="{$page.page ? $page.page: 0}" id="page">
+<input type="hidden" value="{$page.total_page ? $page.total_page: 0}" id="total_page">
+<input type="hidden" value="{$token}" name="token" id="token">
+<input type="hidden" value="/admin/ossAttFileGold" name="master_url" id="master_url">
+
+<!-- 全局js -->
+{include file="../view/admin/common/jsHeader.html"}
+
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.js"></script>
+<script src="/admin/js/datetimepicker/bootstrap-datetimepicker.zh-CN.js"></script>
+<script>
+
+    //分页
+    $('#pageLimit').bootstrapPaginator({
+        currentPage: $("#page").val(),
+        totalPages: $("#total_page").val(),
+        size: "normal",
+        bootstrapMajorVersion: 3,
+        alignment: "right",
+        numberOfPages: '5',
+        pageUrl: function (type, page, current) {
+            //是每个分页码变成一个超链接
+            return '?page=' + page + '&master_url=/admin/attListGold&token=' + $("#token").val() + '&attire_name=' + $("#attire_name").val()+'&status=' + $("#status").val()+'&is_show=' + $("#is_show").val()
+        },
+        itemTexts: function (type, page, current) {
+            switch (type) {
+                case "first":
+                    return "首页";
+                case "prev":
+                    return "上一页";
+                case "next":
+                    return "下一页";
+                case "last":
+                    return "末页";
+                case "page":
+                    return page;
+            }
+        }
+    });
+
+
+
+
+    //添加装扮信息
+    $('.editGift').on('click',function(){
+        $(".edit-append").empty();
+        $(".edit-append").prepend(
+            "<form id='edit_form' method='post' >"+
+            "<div id='type1'>"+
+            "装扮类型:"+
+            "<select name='typeid' id='typeid'>"+
+            "<option value=''>---请选择---</option>"+
+            "{volist name='type' id='list' key='k'}"+
+            "{if $list.pid == 0}"+
+            "<option value='{$list.id}' >{$list.name}</option>"+
+            "{/if}"+
+            "{/volist}"+
+            "</select>"+
+            "<select name='typepid' id='typepid'>"+
+            "<option id='pidop' value=''>---请选择---</option>"+
+            "</select>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>" + "天： "+"</label>"+
+            "<input type='text' class='form-control  day' name='goldmall_time'  value='' required='required'>"+
+            "<label class='control-label'>" + "金币： "+"</label>"+
+            "<input type='text' class='form-control price' name='reward_price'  value='' required='required'>"+
+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>添加添加装备图片:</label>"+
+            "<input type='file' class='form-control image' name='image'  id='image' value='' required>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"描述:"+"</label>" +
+            "<input type='text' id='desc' class='form-control desc' name='desc'  value='' required='required'>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"名称:"+"</label>"+
+            "<input type='text' id='name' class='form-control name attire_name' name='attire_name' value='' required>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            // '跳转方式 1：金宝箱获取  2：银宝箱获取 3：商城购买 4：首充获得',
+            "<label class='control-label'>"+"装扮获取方式:"+"</label>"+
+            "<select name='get_type' id='get_type'>"+
+            "<option  value='0'>---请选择---</option>"+
+            "<option  value='1'>---金宝箱获取---</option>"+
+            "<option  value='2'>---银宝箱获取---</option>"+
+            "<option  value='3'>----商城购买----</option>"+
+            "<option  value='4'>----首充获得----</option>"+
+            "<option  value='6'>----vip购买----</option>"+
+            "<option  value='7'>----svip购买----</option>"+
+            "<option  value='8'>----任务中心----</option>"+
+            "</select>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"装扮展示分类:"+"</label>"+
+            "<select name='list_type' id='list_type'>"+
+            "<option  value='999'>---请选择---</option>"+
+            "<option  value='0'>---商城装扮---</option>"+
+            "<option  value='1'>---VIP/SVIP装扮---</option>"+
+            "<option  value='2'>----贵族装扮----</option>"+
+            "<option  value='3'>----活动装扮----</option>"+
+            "<option  value='4'>----金币商城与抽奖----</option>"+
+            "</select>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"是否上架:"+"</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='status' class='status' checked  value='1'>"+" 是"+
+            "</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='status' class='status'  value='0'>"+" 否"+
+            "</label>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"能否购买:"+"</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='is_buy' class='is_buy' checked value='1'>"+" 是"+
+            "</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='is_buy' class='is_buy'  value='0'>"+" 否"+
+            "</label>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"会员装扮:"+"</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='is_vip' class='is_vip' checked value='0'>"+" 无"+
+            "</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='is_vip' class='is_vip'  value='1'>"+" vip"+
+            "</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='is_vip' class='is_vip'  value='2'>"+" svip"+
+            "</label>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"是否展示:"+"</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='is_show' class='is_show' checked value='1'>"+" 是"+
+            "</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='is_show' class='is_show'  value='0'>"+" 否"+
+            "</label>"+
+            "</div>"+
+
+            "<input type='hidden' value='{$token}' name='token'>"+
+            "<input type='hidden' value='/admin/addAttGold' id='master_url' name='master_url'>"+
+            " </form>"
+        );
+        $('#editModal').modal('show');
+    });
+
+
+
+
+    //图片上传
+    $(document).on("change","#image",function(){
+        if($('#image')[0].files[0]){
+            var animationType = $('#image')[0].files[0].name.split('.');
+            if (animationType[1] != "bmp"&&animationType[1] != "png"&&animationType[1] != "gif" && animationType[1]!="jpg" && animationType[1]!="jpeg" && animationType[1] != "svga") {
+                toastr.warning("文件只限图片");
+                return false;
+            }
+        }
+        var formData = new FormData();
+        formData.append("token", $("#token").val());
+        formData.append("master_url", $("#master_url").val());
+        formData.append("image", $('#image')[0].files[0]);
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            cache: false,
+            processData: false,
+            contentType: false,
+            type: "post",    //请求类型
+            url: "/admin/ossAttFileGold",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: formData,
+            success: function (rs) {
+                if (rs.status !== 1) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                $('#image').parent().append("<input type='hidden' name='image'  value="+rs.image+">");
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    })
+
+    //添加执行
+    function edit_info(){
+
+        var edit_info = $("#edit_form").serializeArray();
+        if($('#image').val()==''){
+            toastr.warning("图片必选");
+            return false;
+        }
+
+
+        if($('#desc').val() == ''){
+            toastr.warning('描述不可为空');
+            return false;
+        }
+        if($('#name').val() == ''){
+            toastr.warning('名称不可为空');
+            return false;
+        }
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/addAttGold",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data: edit_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+
+        function location() {
+            window.location.href = window.location.href;
+        }
+
+        return false;
+    }
+
+    //搜索
+    $("#search").click(function () {
+        var attire_id = $("#attire_id").val();
+        var status = $("#status").val();
+        var is_show = $("#is_show").val();
+        if (isNaN(attire_id)) {
+            toastr.warning('请输入正确的Id');
+            return false;
+        }
+        var token = $('#token').val();
+        window.location.href = "/admin/attListGold?token=" + token + '&master_url=/admin/attListGold&page=1&attire_id=' + attire_id+'&status=' + status+'&is_show=' + is_show;
+    })
+
+    //修改框追加
+    $('.update').on('click',function(){
+        $(".attire-append").empty();
+        var attireType_id = $(this).attr('attireType_id')
+        var attireType_pid = $(this).attr('attireType_pid')
+        var list_type = $(this).attr('list_type')
+        var get_type = $(this).attr('get_type')
+        var list_type = $(this).attr('list_type')
+        var master_url = $('#master_url').val()
+        $(".attire-append").prepend(
+            "<form id='attire_form' method='post' >"+
+            "<div id='type1'>"+
+            "装扮类型:"+
+            "<select name='typeid1' id='typeid1' >"+
+            "{volist name='type' id='list' key='k'}"+
+            "{if $list.pid == 0}"+
+            "<option value='{$list.id}' >{$list.name}</option>"+
+            "{/if}"+
+            "{/volist}"+
+            "</select>"+
+            "<select name='typepid' id='typepid' >"+
+            "</select>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>" + "金币： "+"</label>"+
+            "<input type='text'   class='form-control price' name='reward_price'  value='' required='required'>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>" + "天： "+"</label>"+
+            "<input type='text'   class='form-control day' name='goldmall_time'  value='' required='required'>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>添加添加装备图片:</label>"+
+            "<input type='file' class='form-control image' name='image'  id='image' value='' required>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"描述:"+"</label>" +
+            "<input type='text' class='form-control desc' name='desc'  value='' required='required'>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"名称:"+"</label>"+
+            "<input type='text' class='form-control name attire_name' name='attire_name' value='' required>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            // '跳转方式 1：金宝箱获取  2：银宝箱获取 3：商城购买 4：首充获得 6：vip购买 7：svip购买',
+            "<label class='control-label'>"+"装扮获取方式:"+"</label>"+
+            "<select name='get_type' id='get_type'>"+
+            "<option  value='0'>---请选择---</option>"+
+            "<option  value='1'>---金宝箱获取---</option>"+
+            "<option  value='2'>---银宝箱获取---</option>"+
+            "<option  value='3'>----商城购买----</option>"+
+            "<option  value='4'>----首充获得----</option>"+
+            "<option  value='6'>----vip购买----</option>"+
+            "<option  value='7'>----svip购买----</option>"+
+            "<option  value='8'>----任务中心----</option>"+
+            "</select>"+
+            "</div>"+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"装扮展示分类:"+"</label>"+
+            "<select name='list_type' id='list_type'>"+
+            "<option  value='999'>---请选择---</option>"+
+            "<option  value='0'>---商城装扮---</option>"+
+            "<option  value='1'>---VIP/SVIP装扮---</option>"+
+            "<option  value='2'>----贵族装扮----</option>"+
+            "<option  value='3'>----活动装扮----</option>"+
+            "<option  value='4'>----金币商城与抽奖----</option>"+
+            "</select>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"是否上架:"+"</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='status' class='status' id='status_1'  value='1'>"+" 是"+
+            "</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='status' class='status' id='status_0' value='0'>"+" 否"+
+            "</label>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"能否购买:"+"</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='is_buy' class='is_buy'  value='1'>"+" 是"+
+            "</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='is_buy' class='is_buy'  value='0'>"+" 否"+
+            "</label>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"会员装扮:"+"</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='is_vip' class='is_vip' checked value='0'>"+" 无"+
+            "</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='is_vip' class='is_vip'  value='1'>"+" vip"+
+            "</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='is_vip' class='is_vip'  value='2'>"+" svip"+
+            "</label>"+
+            "</div>"+
+
+            "<div class='form-group'>"+
+            "<label class='control-label'>"+"是否展示:"+"</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='is_show' class='is_show'  value='1'>"+" 是"+
+            "</label>"+
+            "<label class='radio-inline'>"+
+            "<input type='radio' name='is_show' class='is_show'  value='0'>"+" 否"+
+            "</label>"+
+            "</div>"+
+
+            "<input type='hidden' value='{$token}' name='token'>"+
+            "<input type='hidden' value='/admin/addAttGold' id='master_url' name='master_url'>"+
+            "<input type='hidden' value='update' name='update'>"+
+            "<input type='hidden' class='attire_id' value='' name='attire_id'>"+
+            " </form>"
+        );
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/attTypeGold",//请求的 URL地址
+            token: $("#token").val(),
+            data: {master_url:master_url,token:$("#token").val()},
+            success: function (rs) {
+                var arr = JSON.parse( rs )
+                for( k  in arr ) {
+                    if(arr[k]['pid'] != 0){
+                        if (arr[k]['pid'] == attireType_pid  ) {
+                            $('#typepid').append( "<option class='attiretypepid' value='" + arr[k]['id'] + "' >" + arr[k]['name'] + "</option>")
+                        }
+                    }
+                }
+            }
+        });
+
+        $(".attire_id").val($(this).parents("tr").find(".attire_id").text());
+        $(".price").val($(this).parents("tr").find(".price").text());
+        $(".desc").val($(this).parents("tr").find(".desc").text());
+        $(".day").val($(this).parents("tr").find(".day").text());
+        $(".attire_name").val($(this).parents("tr").find(".attire_name").text());
+        var status = $(this).parents("tr").find(".status").attr('status');
+        $(":radio[name='status'][value="+status+"]").attr("checked","checked");
+
+        var is_buy = $(this).parents("tr").find(".is_buy").attr('is_buy');
+        var is_vip = $(this).parents("tr").find(".is_vip").attr('is_vip');
+        $(":radio[name='is_buy'][value="+is_buy+"]").attr("checked","checked");
+        $(":radio[name='is_vip'][value="+is_vip+"]").attr("checked","checked");
+
+        $("#typeid1 option[value='"+attireType_pid+"']").attr("selected","select");
+        $("#typepid option[value='"+attireType_id+"']").attr("selected","select");
+        $("#get_type option[value='"+get_type+"']").attr("selected","select");
+        $("#list_type option[value='"+list_type+"']").attr("selected","select");
+
+        var is_show = $(this).parents("tr").find(".is_show").attr('is_show');
+        $(":radio[name='is_show'][value="+is_show+"]").attr("checked","checked");
+        $('#attireModal').modal('show');
+    });
+
+    //追加select
+    $(document).on('change','#typeid',function(){
+        $('.attiretypepid').remove();
+        var id = $(this).val();
+        var edit_info = $("#edit_form").serializeArray();
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/attTypeGold",//请求的 URL地址
+            token: $("#token").val(),
+            data: edit_info,
+            success: function (rs) {
+                var arr = JSON.parse( rs )
+                for( k  in arr ) {
+                    if(arr[k]['pid'] != 0){
+                        if (arr[k]['pid'] == id  ) {
+                            $('#typepid').append( "<option class='attiretypepid' value='" + arr[k]['id'] + "' >" + arr[k]['name'] + "</option>")
+                        }
+                    }
+                }
+            }
+        });
+        return false;
+    });
+
+
+    //修改按钮
+    $('#search2').click(function () {
+        var attire_info = $("#attire_form").serializeArray();
+        if($('#desc').val() == ''){
+            toastr.warning('描述不可为空');
+            return false;
+        }
+        if($('#name').val() == ''){
+            toastr.warning('名称不可为空');
+            return false;
+        }
+        // for( k in arr ){
+        //     return false;
+        //     if(arr[k]==''||arr[k]==0){
+        //         toastr.warning('天数不可为空或为0');
+        //         return false;
+        //     }
+        // }
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            url: "/admin/attUpdGold",//请求的 URL地址
+            token: $("#token").val(),
+            dataType: "json",//返回的数据类型
+            data: attire_info,
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+
+    })
+
+
+    //上下架
+    $('.statusupdate').on('click',function(){
+        var master_url = '/admin/statusAttGold';
+        var attireType_id = $(this).attr('attireType_id')
+        var status = $(this).attr('status')
+        $.ajax({
+            async: false,    //表示请求是否异步处理
+            type: "post",    //请求类型
+            token: $("#token").val(),
+            url: "/admin/statusAttGold",//请求的 URL地址
+            dataType: "json",//返回的数据类型
+            data: {master_url:master_url,attireType_id:attireType_id,token:$("#token").val(),update:'update',status:status},
+            success: function (rs) {
+                if (rs.code !== 200) {
+                    toastr.warning(rs.msg);
+                    return false;
+                }
+                toastr.success(rs.msg);
+                setTimeout(location, 1000);   //延迟5秒刷新页面
+            },
+            error: function (rs) {
+                toastr.warning('请求失败');
+            }
+        });
+        function location() {
+            window.location.href = window.location.href;
+        }
+        return false;
+    })
+</script>
+</body>
+</html>
